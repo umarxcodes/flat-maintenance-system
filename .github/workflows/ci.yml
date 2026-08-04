@@ -16,6 +16,9 @@ permissions:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -26,7 +29,7 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          cache-dependency-path: yarn.lock
+          cache-dependency-path: backend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
