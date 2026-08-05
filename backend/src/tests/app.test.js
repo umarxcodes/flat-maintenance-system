@@ -33,7 +33,7 @@ describe("App routes", () => {
     assert.strictEqual(response.body, "App is Working Fine !");
   });
 
-  test("GET /health returns 200 with ok status", async () => {
+  test("GET /health returns 200 with success status", async () => {
     const address = server.address();
     const response = await new Promise((resolve, reject) => {
       http
@@ -46,6 +46,8 @@ describe("App routes", () => {
     });
 
     assert.strictEqual(response.status, 200);
-    assert.strictEqual(JSON.parse(response.body).status, "ok");
+    const body = JSON.parse(response.body);
+    assert.strictEqual(body.success, true);
+    assert.strictEqual(body.message, "Pollify API is healthy");
   });
 });

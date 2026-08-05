@@ -28,7 +28,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "health": "node -e \"import('http').then(m=>m.get('http://localhost:5000/health',r=>console.log(r.statusCode)))\"",
+    "build": "node -e \"import('./src/server.js').then(() => console.log('Build validated')).catch(e => { console.error(e); process.exit(1); })\"",
     "test": "node --test",
     "prepare": "husky"
   },
