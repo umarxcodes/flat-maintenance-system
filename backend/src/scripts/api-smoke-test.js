@@ -40,7 +40,10 @@ const stopServer = () => {
   });
 };
 
-const sendRequest = (path, { method = "GET", headers = {}, body = null } = {}) => {
+const sendRequest = (
+  path,
+  { method = "GET", headers = {}, body = null } = {}
+) => {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     const req = http.request(
@@ -77,23 +80,38 @@ const sendRequest = (path, { method = "GET", headers = {}, body = null } = {}) =
 const assertTest = (name, condition, details = "") => {
   if (condition) {
     totalPassed++;
-    console.log(`  ${colors.green}✔ PASS${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`);
+    console.log(
+      `  ${colors.green}✔ PASS${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
+    );
   } else {
     totalFailed++;
-    console.log(`  ${colors.red}✖ FAIL${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`);
+    console.log(
+      `  ${colors.red}✖ FAIL${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
+    );
   }
 };
 
 const runSmokeTest = async () => {
-  console.log("\n" + colors.bright + colors.cyan + "🚀 STARTING AUTOMATED API SMOKE TEST..." + colors.reset + "\n");
+  console.log(
+    "\n" +
+      colors.bright +
+      colors.cyan +
+      "🚀 STARTING AUTOMATED API SMOKE TEST..." +
+      colors.reset +
+      "\n"
+  );
   const startTime = Date.now();
 
   try {
     await startServer();
-    console.log(`${colors.dim}► Test server running on http://127.0.0.1:${port}${colors.reset}\n`);
+    console.log(
+      `${colors.dim}► Test server running on http://127.0.0.1:${port}${colors.reset}\n`
+    );
 
     // 1. Root Endpoint Test
-    console.log(colors.bright + "1. Root API Endpoint (`GET /`)" + colors.reset);
+    console.log(
+      colors.bright + "1. Root API Endpoint (`GET /`)" + colors.reset
+    );
     const rootRes = await sendRequest("/");
     assertTest(
       "Status Code is 200 OK",
@@ -107,7 +125,12 @@ const runSmokeTest = async () => {
     );
 
     // 2. Health Endpoint Test
-    console.log("\n" + colors.bright + "2. Healthcheck Endpoint (`GET /health`)" + colors.reset);
+    console.log(
+      "\n" +
+        colors.bright +
+        "2. Healthcheck Endpoint (`GET /health`)" +
+        colors.reset
+    );
     const healthRes = await sendRequest("/health");
     assertTest(
       "Status Code is 200 OK",
@@ -121,34 +144,58 @@ const runSmokeTest = async () => {
     );
 
     // 3. Unknown / Non-existent Route (404 Test)
-    console.log("\n" + colors.bright + "3. Non-Existent Endpoint (`GET /invalid-route-xyz`)" + colors.reset);
+    console.log(
+      "\n" +
+        colors.bright +
+        "3. Non-Existent Endpoint (`GET /invalid-route-xyz`)" +
+        colors.reset
+    );
     const unknownRes = await sendRequest("/invalid-route-xyz");
     assertTest(
       "Status Code is 404 Not Found or standard response",
       unknownRes.status === 404 || unknownRes.status === 200,
       `Status: ${unknownRes.status}, ${unknownRes.duration}ms`
     );
-
   } catch (error) {
-    console.error(`\n${colors.red}CRITICAL ERROR DURING SMOKE TEST:${colors.reset}`, error);
+    console.error(
+      `\n${colors.red}CRITICAL ERROR DURING SMOKE TEST:${colors.reset}`,
+      error
+    );
     totalFailed++;
   } finally {
     await stopServer();
     const totalTime = Date.now() - startTime;
 
-    console.log("\n" + colors.bright + "----------------------------------------" + colors.reset);
-    console.log(colors.bright + "📊 API SMOKE TEST SUMMARY REPORT" + colors.reset);
-    console.log(colors.bright + "----------------------------------------" + colors.reset);
-    console.log(`Total Passed : ${colors.green}${colors.bright}${totalPassed}${colors.reset}`);
-    console.log(`Total Failed : ${totalFailed > 0 ? colors.red : colors.dim}${colors.bright}${totalFailed}${colors.reset}`);
-    console.log(`Duration     : ${colors.yellow}${totalTime} ms${colors.reset}`);
+    console.log(
+      "\n" +
+        colors.bright +
+        "----------------------------------------" +
+        colors.reset
+    );
+    console.log(
+      colors.bright + "📊 API SMOKE TEST SUMMARY REPORT" + colors.reset
+    );
+    console.log(
+      colors.bright + "----------------------------------------" + colors.reset
+    );
+    console.log(
+      `Total Passed : ${colors.green}${colors.bright}${totalPassed}${colors.reset}`
+    );
+    console.log(
+      `Total Failed : ${totalFailed > 0 ? colors.red : colors.dim}${colors.bright}${totalFailed}${colors.reset}`
+    );
+    console.log(
+      `Duration     : ${colors.yellow}${totalTime} ms${colors.reset}`
+    );
     console.log("----------------------------------------\n");
 
     if (totalFailed > 0) {
       console.log(`${colors.bgRed} SMOKE TEST FAILED ${colors.reset}\n`);
       process.exit(1);
     } else {
-      console.log(`${colors.bgGreen} ALL API SMOKE TESTS PASSED SUCCESSFULLY ${colors.reset}\n`);
+      console.log(
+        `${colors.bgGreen} ALL API SMOKE TESTS PASSED SUCCESSFULLY ${colors.reset}\n`
+      );
       process.exit(0);
     }
   }
