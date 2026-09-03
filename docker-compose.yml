@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: portfolio-backend
+    container_name: flat-maintenance-backend
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -28,7 +28,7 @@ services:
 
   mongo:
     image: mongo:7
-    container_name: portfolio-mongo
+    container_name: flat-maintenance-mongo
     restart: unless-stopped
     # ports:
     #   - "27017:27017"
@@ -36,7 +36,7 @@ services:
       - mongo-data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s

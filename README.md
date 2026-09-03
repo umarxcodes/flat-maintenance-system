@@ -22,7 +22,7 @@ An **enterprise-grade, production-ready REST API boilerplate** built with Node.j
 8. [Security Controls](#-security-controls)
 9. [API Response & Error Format](#-api-response--error-format)
 10. [Docker & Containerization](#-docker--containerization)
-11. [Deployment (Vercel & Cloud)](#-deployment-vercel--cloud)
+11. [Deployment & Cloud](#-deployment--cloud)
 12. [Code Quality & Git Hooks](#-code-quality--git-hooks)
 13. [License](#-license)
 
@@ -37,7 +37,7 @@ This boilerplate provides a solid foundation for enterprise backend applications
 - **Security Hardened**: Built-in HTTP header protection, CORS configuration, rate limiting, NoSQL injection defense, and input validation.
 - **Database Ready**: Preconfigured MongoDB connection via Mongoose with connection pooling and graceful error handling.
 - **Observability & Error Handling**: Global exception capture, standardized error responses, and clean process lifecycle handling.
-- **DevOps Ready**: Pre-built Docker containerization, Docker Compose, and Vercel serverless integration.
+- **DevOps Ready**: Pre-built Docker containerization and Docker Compose orchestration.
 
 ---
 
@@ -121,8 +121,8 @@ backend/
 │   ├── models/                  # Mongoose Schemas & Data Models
 │   ├── modules/                 # Modular feature domains (Auth, User, etc.)
 │   ├── services/                # Business logic services & third-party integrations
-│   ├── tests/                   # Automated unit & integration tests
-│   │   └── app.test.js          # Health check & App sanity test suite
+│   ├── scripts/                 # Internal automated scripts & utilities
+│   │   └── api-smoke-test.js    # Automated API smoke test suite
 │   └── utils/                   # Shared utility modules (ApiError, AsyncHandler, Response)
 ├── .dockerignore                # Docker ignore rules
 ├── .env.example                 # Environment variables configuration template
@@ -131,7 +131,6 @@ backend/
 ├── docker-compose.yml           # Local multi-container Docker orchestrator
 ├── eslint.config.js             # ESLint configuration
 ├── package.json                 # Project dependencies & operational scripts
-├── vercel.json                  # Serverless deployment configuration
 └── README.md                    # Backend Boilerplate Documentation
 ```
 
@@ -306,18 +305,9 @@ docker run -p 5000:5000 --env-file .env express-backend-boilerplate:latest
 
 ---
 
-## ☁️ Deployment (Vercel & Cloud)
+## ☁️ Deployment & Cloud
 
-### Deploying to Vercel (Serverless)
-
-This repository includes a pre-configured `vercel.json` file.
-
-1. Install Vercel CLI or connect your GitHub repository to Vercel.
-2. Set Environment Variables in your Vercel Project Settings.
-3. Deploy:
-   ```bash
-   vercel --prod
-   ```
+Deploy using Docker containers, VPS (e.g. DigitalOcean, AWS EC2, Render, Railway) by building the Docker image or running directly with Node.js.
 
 ---
 
