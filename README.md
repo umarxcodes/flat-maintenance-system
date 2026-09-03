@@ -1,137 +1,139 @@
-# 🚀 Express Node.js & MongoDB Backend Boilerplate
+# 🏢 Flat Maintenance Management System — Backend REST API
 
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5.x-black.svg)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green.svg)](https://mongoosejs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0%2B-green.svg)](https://www.mongodb.com/)
+[![Mongoose](https://img.shields.io/badge/Mongoose-8.x-red.svg)](https://mongoosejs.com/)
+[![Security: Hardened](https://img.shields.io/badge/Security-Helmet%20%7C%20JWT%20%7C%20Zod-blue.svg)](docs/BACKEND_TECHNICAL_DOCUMENTATION.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io)
 
-An **enterprise-grade, production-ready REST API boilerplate** built with Node.js (ESM), Express 5, MongoDB / Mongoose, and Clean Architecture principles. Designed to serve as a secure, scalable, and standardized baseline for building modern backend services.
+An enterprise-grade, production-oriented **Modular Monolith Backend REST API** built with **Node.js (v22 ESM)**, **Express.js 5**, **MongoDB / Mongoose ODM**, **Zod**, and **JWT dual-token authentication**.
+
+This system provides a complete administrative, financial, operational, and security intelligence engine for modern residential complexes, gated communities, and housing societies.
+
+> 📖 **Single Source of Truth Blueprint:**  
+> For the complete 70-point architectural specification, 22 database collection schemas, security controls, business rules, state machines, and sequence diagrams, refer to:  
+> 👉 [**Backend Technical Architecture Documentation (`docs/BACKEND_TECHNICAL_DOCUMENTATION.md`)**](docs/BACKEND_TECHNICAL_DOCUMENTATION.md)
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Overview & Highlights](#-overview--highlights)
-2. [Tech Stack](#-tech-stack)
-3. [Architecture & Design Patterns](#-architecture--design-patterns)
-4. [Project Structure](#-project-structure)
-5. [Getting Started](#-getting-started)
-6. [Environment Variables](#-environment-variables)
-7. [NPM Scripts Reference](#-npm-scripts-reference)
-8. [Security Controls](#-security-controls)
-9. [API Response & Error Format](#-api-response--error-format)
-10. [Docker & Containerization](#-docker--containerization)
-11. [Deployment & Cloud](#-deployment--cloud)
-12. [Code Quality & Git Hooks](#-code-quality--git-hooks)
-13. [License](#-license)
+1. [Overview & System Purpose](#-overview--system-purpose)
+2. [Key Core Modules](#-key-core-modules)
+3. [Technology Stack](#-technology-stack)
+4. [Backend Layered Architecture](#-backend-layered-architecture)
+5. [Directory Structure](#-directory-structure)
+6. [Getting Started](#-getting-started)
+7. [Environment Variables Configuration](#-environment-variables-configuration)
+8. [API Standards & Response Specification](#-api-standards--response-specification)
+9. [Security Hardening & Controls](#-security-hardening--controls)
+10. [Docker Containerization](#-docker-containerization)
+11. [Development Workflow & Implementation Phases](#-development-workflow--implementation-phases)
+12. [License & Contact](#-license--contact)
 
 ---
 
-## 🌟 Overview & Highlights
+## 🌟 Overview & System Purpose
 
-This boilerplate provides a solid foundation for enterprise backend applications, removing boilerplate setup work while enforcing clean code structure and security best practices out of the box:
+The **Flat Maintenance Management System Backend** automates residential society operations by providing:
 
-- **Clean Architecture & Domain Driven Design**: Separation of concerns across controllers, services, repositories, models, and routes.
-- **ES Modules (ESM)**: Modern JavaScript syntax (`import/export`) running natively on Node 22+.
-- **Security Hardened**: Built-in HTTP header protection, CORS configuration, rate limiting, NoSQL injection defense, and input validation.
-- **Database Ready**: Preconfigured MongoDB connection via Mongoose with connection pooling and graceful error handling.
-- **Observability & Error Handling**: Global exception capture, standardized error responses, and clean process lifecycle handling.
-- **DevOps Ready**: Pre-built Docker containerization and Docker Compose orchestration.
-
----
-
-## 💻 Tech Stack
-
-| Domain             | Technology / Library                             | Description                                                    |
-| :----------------- | :----------------------------------------------- | :------------------------------------------------------------- |
-| **Runtime**        | Node.js (v22+)                                   | Native ES Modules execution environment                        |
-| **Framework**      | Express 5.x                                      | Web framework with improved async error handling               |
-| **Database**       | MongoDB & Mongoose (v9.x)                        | NoSQL Document Store with Schema Modeling                      |
-| **Security**       | Helmet, CORS, Express-Rate-Limit, Mongo-Sanitize | Defense-in-depth security layer                                |
-| **Validation**     | Zod                                              | TypeScript-first Schema Validation                             |
-| **Authentication** | JSON Web Tokens (`jsonwebtoken`) & `bcrypt`      | Secure authentication token generation and password hashing    |
-| **File Storage**   | Multer & Cloudinary                              | File upload middleware and cloud CDN media management          |
-| **Mail Service**   | Nodemailer                                       | Transactional email & OTP delivery                             |
-| **Code Quality**   | ESLint 10, Prettier, Husky, Commitlint           | Automated linting, code formatting, and conventional git hooks |
-| **Testing**        | Node Native Test Runner (`node --test`)          | Zero-dependency high performance test suite                    |
+- **Hierarchy Management:** Buildings, Blocks, Floors, and Flat Units tracking.
+- **Occupancy Management:** Property Owners, Tenants, and Lease profiles.
+- **Financial Billing Engine:** Automated maintenance billing, penalty calculation, and payment transactions.
+- **Complaint & SLA Tracking:** Resident maintenance ticket dispatching, staff allocation, and resolution reviews.
+- **Service Ratings & Reviews:** 1-5 star service rating engine for maintenance work moderation and staff performance analytics.
+- **Gate Visitor Security:** Digital guest pass generation, resident verification, and check-in/out gate logging.
+- **Society Notices & Documents:** Broadcast announcements, file storage integration (Cloudinary), and document governance.
+- **Immutable Auditing:** System-wide audit event recording for security compliance and financial accountability.
 
 ---
 
-## 🏗️ Architecture & Design Patterns
+## 📦 Key Core Modules (22 Modules)
 
-The architecture follows strict separation of concerns to allow teams to scale features independently:
+| #         | Module Domain                | Description                                                                                     |
+| :-------- | :--------------------------- | :---------------------------------------------------------------------------------------------- |
+| **1**     | **Authentication**           | JWT access/refresh token dual-system, bcrypt password hashing, session rotation.                |
+| **2**     | **Users**                    | User account management, profile data, status lifecycles (`ACTIVE`, `SUSPENDED`).               |
+| **3**     | **Roles & Permissions**      | Granular RBAC supporting SuperAdmin, BuildingAdmin, Accountant, Security, Staff, Owner, Tenant. |
+| **4-7**   | **Building Hierarchy**       | Buildings, Blocks, Floors, and Flat Unit management.                                            |
+| **8-9**   | **Owners & Tenants**         | Property ownership, lease agreements, tenant occupancy, move-in/out tracking.                   |
+| **10**    | **Staff**                    | Security guards, technicians, shifts, performance ratings.                                      |
+| **11-13** | **Financial Engine**         | Charge configs, batch invoice generation, ACID-compliant payment processing.                    |
+| **14-15** | **Complaints & Reviews**     | Maintenance ticket lifecycle (`OPEN` -> `RESOLVED`), post-service star reviews.                 |
+| **16-17** | **Notices & Notifications**  | Target broadcasts, emergency alerts, resident in-app notifications.                             |
+| **18-20** | **Expenses, Visitors, Docs** | Society expenses tracking, gate visitor check-in, Cloudinary document management.               |
+| **21-22** | **Reports & Audit Logs**     | Collection analytics, SLA reports, append-only immutable audit trail.                           |
 
+---
+
+## 💻 Technology Stack
+
+| Component             | Selected Technology                      | Purpose / Detail                                      |
+| :-------------------- | :--------------------------------------- | :---------------------------------------------------- |
+| **Runtime**           | Node.js v22 LTS                          | Native ES Modules (`import/export`) execution         |
+| **Web Framework**     | Express.js v5.x                          | Native async error propagation middleware             |
+| **Database & ODM**    | MongoDB 7.0+ / Mongoose 8.x              | Schema-flexible document store with ACID transactions |
+| **Validation Engine** | Zod 3.x                                  | Schema validation for Body, Query, and Params         |
+| **Security Suite**    | Helmet, CORS, Mongo-Sanitize, Rate-Limit | Multi-layer HTTP and query defense                    |
+| **Authentication**    | JWT (`jsonwebtoken`) & `bcrypt`          | Dual-token authentication with cookie rotation        |
+| **File Storage**      | Multer & Cloudinary                      | Direct memory stream cloud object storage             |
+| **Testing**           | Node Native Runner & Supertest           | Zero-dependency unit and HTTP integration testing     |
+| **DevOps**            | Docker & GitHub Actions                  | Containerization & automated CI/CD pipeline           |
+
+---
+
+## 🏗️ Backend Layered Architecture
+
+The system enforces strict **Separation of Concerns**:
+
+```text
+Client (Next.js SPA / Mobile App)
+          │
+          ▼
+Express Gateway Middleware (Helmet, CORS, Rate Limit, Mongo-Sanitize)
+          │
+          ▼
+API Routing (/api/v1/<module>)
+          │
+          ▼
+Zod Validation Interceptor
+          │
+          ▼
+Controller Layer (HTTP Adapter: Parses Request, Invokes Service, Maps Response)
+          │
+          ▼
+Service Layer (100% Core Business Logic & MongoDB Transactions)
+          │
+          ▼
+Data Model Layer (Mongoose Schemas, Indexes & Hooks)
+          │
+          ▼
+MongoDB Database Cluster
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Client Layer                       │
-│              (Web / Mobile / Frontend SPA)              │
-└────────────────────────────┬────────────────────────────┘
-                             │ HTTP / REST APIs
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Express 5 App Layer                   │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │                  Middleware Pipeline                │ │
-│ │    Helmet • CORS • Rate Limit • Mongo Sanitize      │ │
-│ │         Cookie Parser • Body Parser • Auth          │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │                     Router Layer                    │ │
-│ │            (/api/v1/auth, /api/v1/users)            │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │                  Controller Layer                   │ │
-│ │     Parses HTTP Request & Maps API Response         │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │                    Service Layer                    │ │
-│ │           Encapsulates Core Business Logic          │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │                  Repository Layer                   │ │
-│ │        Direct Data Access Abstraction (Mongoose)    │ │
-│ └─────────────────────────────────────────────────────┘ │
-└────────────────────────────┬────────────────────────────┘
-                             │ Mongoose ODM
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│                   MongoDB Database                      │
-│             (Local Mongo Instance / Atlas)              │
-└─────────────────────────────────────────────────────────┘
-```
 
 ---
 
-## 📁 Project Structure
+## 📁 Directory Structure
 
-```
+```text
 backend/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml               # Automated Lint, Format & Security Audit CI Pipeline
-│       └── cd.yml               # Automated Deployment Pipeline
-├── .husky/                      # Git hooks (commitlint, lint-staged)
+├── docs/
+│   └── BACKEND_TECHNICAL_DOCUMENTATION.md  # Master Technical Blueprint
 ├── src/
-│   ├── app.js                   # Express application setup & middleware stack
-│   ├── server.js                # Server startup, database connection & shutdown handlers
-│   ├── config/                  # DB, Environment & Third-party service configurations
-│   │   └── db.config.js         # Mongoose connection setup
-│   ├── middlewares/             # Custom middlewares (Auth, Validation, Errors, Uploads)
-│   ├── models/                  # Mongoose Schemas & Data Models
-│   ├── modules/                 # Modular feature domains (Auth, User, etc.)
-│   ├── services/                # Business logic services & third-party integrations
-│   ├── scripts/                 # Internal automated scripts & utilities
-│   │   └── api-smoke-test.js    # Automated API smoke test suite
-│   └── utils/                   # Shared utility modules (ApiError, AsyncHandler, Response)
-├── .dockerignore                # Docker ignore rules
-├── .env.example                 # Environment variables configuration template
-├── .gitignore                   # Git ignore specification
-├── Dockerfile                   # Multi-stage production Dockerfile
-├── docker-compose.yml           # Local multi-container Docker orchestrator
-├── eslint.config.js             # ESLint configuration
-├── package.json                 # Project dependencies & operational scripts
-└── README.md                    # Backend Boilerplate Documentation
+│   ├── app.js                          # Express App & Global Middleware
+│   ├── server.js                       # Server Startup & Process Lifecycle
+│   ├── config/                         # Env validation, DB & Cloudinary Configs
+│   ├── constants/                      # Enums, Roles, Permissions, Error Codes
+│   ├── middlewares/                    # Auth, RBAC, Validation, Error Handler
+│   ├── modules/                        # 22 Modular Feature Domains
+│   ├── routes/                         # Central Router Dispatcher (/api/v1)
+│   └── utils/                          # ApiError, ApiResponse, Pagination, JWT
+├── tests/                              # Unit, Integration & E2E Test Suites
+├── scripts/                            # DB Seeding & Smoke Test Scripts
+├── Dockerfile                          # Multi-stage Container Build
+├── docker-compose.yml                  # Local Node + Mongo Stack
+└── README.md                           # Overview Documentation
 ```
 
 ---
@@ -140,13 +142,11 @@ backend/
 
 ### Prerequisites
 
-Ensure you have the following installed on your machine:
-
 - **Node.js**: `v22.0.0` or higher
-- **MongoDB**: Local MongoDB instance or a MongoDB Atlas URI
+- **MongoDB**: Local instance (v7.0+ Replica Set for transactions) or MongoDB Atlas URI
 - **Yarn / NPM**: Package Manager
 
-### Step-by-Step Setup
+### Installation & Execution
 
 1. **Clone the Repository**
 
@@ -158,9 +158,9 @@ Ensure you have the following installed on your machine:
 2. **Install Dependencies**
 
    ```bash
-   npm install
-   # OR
    yarn install
+   # or
+   npm install
    ```
 
 3. **Configure Environment Variables**
@@ -169,90 +169,51 @@ Ensure you have the following installed on your machine:
    cp .env.example .env
    ```
 
-   _Edit `.env` and configure your database URI and secrets._
+   _Edit `.env` to configure your MongoDB connection string, JWT secrets, and Cloudinary keys._
 
-4. **Start the Development Server**
+4. **Start Development Server**
 
    ```bash
-   npm run dev
-   # OR
    yarn dev
+   # or
+   npm run dev
    ```
 
-5. **Verify Installation**
-   Open your browser or API client (Postman/cURL):
+5. **Verify Server Health**
    - Health Check: `GET http://localhost:5000/health`
-   - API Status: `GET http://localhost:5000/`
+   - Readiness Check: `GET http://localhost:5000/ready`
 
 ---
 
-## 🔑 Environment Variables
-
-The application relies on the following key environment variables configured in `.env`:
+## ⚙️ Environment Variables Configuration
 
 ```env
-# Server Configuration
-PORT=5000
 NODE_ENV=development
-CORS_ORIGIN=http://localhost:5173
-COOKIE_SECURE=false
+PORT=5000
+CORS_ORIGIN=http://localhost:3000
+COOKIE_SECRET=super_secret_cookie_key_min_32_chars
 
-# Database Configuration
-MONGO_URI=mongodb+srv://USERNAME:PASSWORD@HOST/DB_NAME?retryWrites=true&w=majority
+MONGODB_URI=mongodb://localhost:27017/flat_maintenance_db?replicaSet=rs0
 
-# Authentication & JWT Secrets (Minimum 32 characters for production)
-JWT_ACCESS_SECRET=your_super_secret_access_key_min_32_chars
-JWT_REFRESH_SECRET=your_super_secret_refresh_key_min_32_chars
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
+JWT_ACCESS_SECRET=access_token_secret_key_minimum_32_characters_long
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=refresh_token_secret_key_minimum_32_characters_long
+JWT_REFRESH_EXPIRES_IN=7d
+
 BCRYPT_SALT_ROUNDS=12
 
-# Cloudinary Storage Configuration
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# SMTP Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-SMTP_FROM=your_email@gmail.com
+LOG_LEVEL=info
 ```
 
 ---
 
-## 🛠️ NPM Scripts Reference
+## 📊 API Standards & Response Specification
 
-| Command                | Description                                                       |
-| :--------------------- | :---------------------------------------------------------------- |
-| `npm run dev`          | Starts the server in development mode with hot-reload (`nodemon`) |
-| `npm start`            | Runs the server in production mode (`node src/server.js`)         |
-| `npm test`             | Runs the native Node.js test suite (`node --test`)                |
-| `npm run lint`         | Runs ESLint to check for code issues                              |
-| `npm run lint:fix`     | Automatically fixes repairable ESLint issues                      |
-| `npm run format`       | Formats all files using Prettier                                  |
-| `npm run format:check` | Verifies formatting across files without modifying them           |
-| `npm run build`        | Validates application entry point for production build readiness  |
-
----
-
-## 🛡️ Security Controls
-
-This boilerplate comes pre-configured with industry-standard security protections:
-
-- **HTTP Headers Security**: Helmet hides `X-Powered-By` header, enables HSTS, CSP, X-Frame-Options, and XSS filtering.
-- **Cross-Origin Resource Sharing (CORS)**: Strict origin whitelisting with credential support for secure frontend integrations.
-- **Rate Limiting**: Default rate-limiter prevents brute-force login and API abuse (100 requests per 15-minute window).
-- **NoSQL Injection Defense**: `mongo-sanitize` strips out parameter keys starting with `$` or `.` from request payloads.
-- **Data Protection**: Secure HttpOnly, SameSite cookies for handling auth tokens and preventing XSS token theft.
-
----
-
-## 📊 API Response & Error Format
-
-All API endpoints return predictable, standardized JSON responses.
+Base Endpoint Namespace: `/api/v1`
 
 ### Success Response (`200 / 201 OK`)
 
@@ -260,61 +221,73 @@ All API endpoints return predictable, standardized JSON responses.
 {
   "success": true,
   "message": "Operation completed successfully",
-  "data": {}
+  "data": {},
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
 }
 ```
 
-### Error Response (`400 / 401 / 500`)
+### Error Response (`400 / 401 / 404 / 422 / 500`)
 
 ```json
 {
   "success": false,
-  "message": "Detailed error message explanation",
-  "stack": "Included only in development mode"
+  "message": "Validation failed for request payload",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email address format"
+    }
+  ],
+  "data": null
 }
 ```
 
 ---
 
-## 🐳 Docker & Containerization
+## 🛡️ Security Hardening & Controls
 
-### Running with Docker Compose (Backend + MongoDB)
+- **HTTP Protection:** Helmet hides `X-Powered-By`, enforces HSTS, CSP, and XSS protection headers.
+- **CORS Whitelisting:** Strict origin validation for Next.js frontend clients with credential cookie support.
+- **NoSQL Injection Guard:** `express-mongo-sanitize` strips out `$` and `.` operators from requests.
+- **Rate Limiting:** Prevents brute-force attacks on Auth and Password routes.
+- **JWT Storage:** Access Tokens in Memory/Header; Refresh Tokens in HttpOnly, SameSite, Secure cookies.
 
-Start the full stack environment locally with zero host dependencies:
+---
+
+## 🐳 Docker Containerization
+
+Run the backend and MongoDB via Docker Compose:
 
 ```bash
-# Build and start services
-docker-compose up --build
+# Build and launch stack
+docker-compose up --build -d
+
+# Check running logs
+docker-compose logs -f backend
 
 # Stop services
 docker-compose down
-
-# Stop services and purge database volume
-docker-compose down -v
-```
-
-### Building Standalone Docker Image
-
-```bash
-# Build production multi-stage image
-docker build -t express-backend-boilerplate:latest .
-
-# Run container standalone
-docker run -p 5000:5000 --env-file .env express-backend-boilerplate:latest
 ```
 
 ---
 
-## ☁️ Deployment & Cloud
+## 🛠️ Development Workflow & Implementation Phases
 
-Deploy using Docker containers, VPS (e.g. DigitalOcean, AWS EC2, Render, Railway) by building the Docker image or running directly with Node.js.
+Development proceeds sequentially according to the **27 Phase Plan** documented in [BACKEND_TECHNICAL_DOCUMENTATION.md](docs/BACKEND_TECHNICAL_DOCUMENTATION.md):
 
----
-
-## 🧹 Code Quality & Git Hooks
-
-- **Husky & Lint-Staged**: Runs ESLint and Prettier automatically on staged files before each commit.
-- **Commitlint**: Enforces Conventional Commits formatting (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`).
+- **Phase 0:** Architecture Foundation & Global Middlewares
+- **Phase 1-2:** Authentication & RBAC System
+- **Phase 3-7:** Building Hierarchy (Buildings, Blocks, Floors, Flats, Owners)
+- **Phase 8-10:** Occupants & Staff (Tenants, Staff)
+- **Phase 11-13:** Billing Engine (Maintenance Configs, Invoices, Payments)
+- **Phase 14-15:** Operations (Complaints, Ratings & Reviews)
+- **Phase 16-22:** Auxiliaries & Security (Notices, Notifications, Expenses, Visitors, Documents, Reports, Audit Logs)
+- **Phase 23-26:** Testing, Containerization, CI/CD & Production Hardening
 
 ---
 
@@ -324,6 +297,6 @@ Distributed under the **MIT License**. See `LICENSE` for details.
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Author & Maintainer
 
-Crafted & Maintained by **Muhammad Umar**.
+Crafted & Maintained by **Muhammad Umar** for **Flat Maintenance Management System**.
