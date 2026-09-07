@@ -4,8 +4,8 @@
 
 ---
 
-> **Document Version:** 1.0.0  
-> **Status:** Approved / Single Source of Truth  
+> **Document Version:** 2.0.0
+> **Status:** Target architecture / implementation blueprint (SSOT)
 > **Target System:** Flat Maintenance Management System (Backend REST API)  
 > **Primary Stack:** Node.js (v22+ ESM), Express.js (v5.x), MongoDB, Mongoose ODM, Zod, JWT, Docker  
 > **Architecture Pattern:** Modular Monolith with Layered Hexagonal/Clean Principles
@@ -78,6 +78,12 @@
 62. [Entity Relationship (ER) Diagrams](#62-entity-relationship-er-diagrams)
 63. [Request Flow Sequence Diagrams](#63-request-flow-sequence-diagrams)
 64. [Engineering Rules & Quality Controls](#64-engineering-rules--quality-controls)
+65. [Implementation Status & Source-of-Truth Rules](#65-implementation-status--source-of-truth-rules)
+66. [Provisioning, Authentication & Session Contracts](#66-provisioning-authentication--session-contracts)
+67. [Authorization, Building Scope & Permission Contract](#67-authorization-building-scope--permission-contract)
+68. [Domain Delivery Contracts](#68-domain-delivery-contracts)
+69. [n8n Automation & Event Contract](#69-n8n-automation--event-contract)
+70. [Operational Delivery Contract](#70-operational-delivery-contract)
 
 ---
 
@@ -968,7 +974,7 @@ Below is the complete API Endpoint Inventory across all core modules:
 
 | Module         | Method  | Endpoint                        | Auth | Required Permission | Purpose                               |
 | :------------- | :------ | :------------------------------ | :--- | :------------------ | :------------------------------------ |
-| **Auth**       | `POST`  | `/api/v1/auth/register`         | No   | Public              | Register new user account             |
+| **Auth**       | `POST`  | `/api/v1/auth/activate-account` | No   | Invitation token    | Activate an invited account only      |
 | **Auth**       | `POST`  | `/api/v1/auth/login`            | No   | Public              | Authenticate user & issue tokens      |
 | **Auth**       | `POST`  | `/api/v1/auth/logout`           | Yes  | Authenticated       | Revoke refresh token                  |
 | **Auth**       | `POST`  | `/api/v1/auth/refresh`          | No   | Public (Cookie)     | Rotate access & refresh tokens        |
@@ -1273,3 +1279,144 @@ sequenceDiagram
 ---
 
 ### END OF BACKEND TECHNICAL ARCHITECTURE SPECIFICATION
+
+---
+
+## 65. IMPLEMENTATION STATUS & SOURCE-OF-TRUTH RULES
+
+This document defines the intended production system; it is not evidence that a feature has shipped. As of this version, the repository contains only the Express application bootstrap, `GET /`, `GET /health`, MongoDB connection helper, Docker assets, and a smoke-test script. No domain routes, persistence models, authentication, RBAC, Cloudinary upload, n8n integration, or production middleware are implemented yet.
+
+| Area | Current repository state | Required before release |
+| :-- | :-- | :-- |
+| HTTP API | Root and health routes only | Versioned router, modules, standard responses and 404/error handlers |
+| Database | Connection helper only | All schemas, indexes, migrations/seeds and transaction boundaries |
+| Identity | Dependency declarations only | Invitation-only accounts, JWT rotation, password and verification flows |
+| Security | Dependency declarations only | Helmet, CORS, rate limits, sanitisation, validation, audit logging |
+| Operations | Docker/CI assets present | Verified readiness, graceful shutdown, metrics, backups and deployment runbook |
+
+`package.json`, the running source, and deployed configuration are authoritative for what is currently available. This blueprint is authoritative for new implementation decisions. A completed feature must update this status table, its endpoint row, tests, environment variables, and audit events in the same pull request. “Planned” controls must never be described as enabled to API consumers or auditors.
+
+### 65.1 Current HTTP contract
+
+| Method | Path | Behaviour today |
+| :-- | :-- | :-- |
+| `GET` | `/` | Returns `{ success: true, message: "API is working fine" }` |
+| `GET` | `/health` | Returns `{ success: true, message: "Backend API is healthy" }` |
+
+`/ready` and every `/api/v1/*` endpoint are planned, not currently served. The smoke test's permissive unknown-route assertion must be tightened to require `404` when the global not-found handler is introduced.
+
+### 65.2 Delivery baseline
+
+Before adding a domain, create `model`, `validation`, `service`, `controller`, and `routes` files in its module; register its routes centrally; and write service plus HTTP tests. Controllers only translate HTTP to service calls. Services receive explicit actor and scope context, enforce invariants, and emit audit/automation events after a successful transaction. Models must not make authorization decisions.
+
+---
+
+## 66. PROVISIONING, AUTHENTICATION & SESSION CONTRACTS
+
+### 66.1 Account provisioning policy
+
+There is no public registration endpoint. A deployment is bootstrapped by a one-time, idempotent seed command that creates the first `SUPER_ADMIN` from explicitly supplied secrets. Only authorized administrators may invite other users; the server chooses the role from the inviter's allowed roles and scope. The client may request an invite type, but must never set a privileged role, building assignment, owner relationship, or staff assignment.
+
+```text
+seed SUPER_ADMIN -> authenticated SUPER_ADMIN -> invite BUILDING_ADMIN
+-> authorized administrator invites scoped staff / owner / tenant
+-> invitee verifies token and sets password -> email verification -> ACTIVE
+```
+
+Invitations are single-use, random high-entropy tokens stored only as hashes, expire (recommended: 72 hours), and are revoked on resend. Deactivation and suspension revoke all sessions immediately. Soft deletion removes an account from normal queries and login while retaining the minimum audit linkage required by policy.
+
+### 66.2 Required authentication endpoints
+
+| Method | Path | Input / result | Rules |
+| :-- | :-- | :-- | :-- |
+| `POST` | `/api/v1/auth/login` | email, password -> access token + refresh cookie | Reject deleted, pending, inactive and suspended accounts; rate limit and audit outcome. |
+| `POST` | `/api/v1/auth/refresh` | refresh cookie -> rotated token pair | One-time token rotation; detected reuse revokes the user's token family. |
+| `POST` | `/api/v1/auth/logout` | refresh cookie | Revoke matching session and clear cookie. |
+| `GET` | `/api/v1/auth/me` | bearer access token -> safe profile | Never return token hashes, password, or security counters. |
+| `POST` | `/api/v1/auth/forgot-password` | email -> accepted response | Always return a non-enumerating response. |
+| `POST` | `/api/v1/auth/reset-password` | reset token, new password | Consume token and revoke all sessions. |
+| `PATCH` | `/api/v1/auth/change-password` | current and new password | Requires access token; revoke all other sessions. |
+| `POST` | `/api/v1/auth/verify-email` | verification token | Idempotently marks email verified. |
+| `POST` | `/api/v1/auth/activate-account` | invitation token, password | One-time invitation onboarding only. |
+| `POST` | `/api/v1/auth/resend-invitation` | invited user identifier | Authorized administrator only; revoke prior invite. |
+
+### 66.3 Token and cookie lifecycle
+
+Access JWTs last 15 minutes and contain only `sub`, role/permission version, issued/expiry times, and a session identifier. They travel in `Authorization: Bearer <token>`, not persistent browser storage. Refresh JWTs last seven days, live only in an `HttpOnly`, `Secure` (production), `SameSite=Lax` or stricter cookie with a narrow `/api/v1/auth` path, and are hashed at rest with a server-side pepper where appropriate.
+
+Persist a session record containing token hash, `jti`, family ID, expiry, creation metadata, and revocation metadata. On refresh, atomically mark the presented record used/revoked and create its replacement. A previously used/revoked token is a reuse signal: revoke its entire family, clear the cookie, log a security event, and require login. Password reset/change, suspension, deletion and explicit logout invalidate applicable records.
+
+### 66.4 User data safeguards
+
+The user model must include the fields in section 11 plus invitation, password-reset and email-verification token hashes and expiries, `lastLoginAt`, and login-lock counters. Use `select: false` for password and every token/hash. Use a unique, case-normalised email index (partial for non-deleted documents), indexes on role/status and assigned scopes, and a password pre-save hook only when the password changed. Never log a password, raw token, cookie, OTP, or complete identity document URL.
+
+---
+
+## 67. AUTHORIZATION, BUILDING SCOPE & PERMISSION CONTRACT
+
+Authorization is three checks in this order: authenticate identity, verify named permission, then verify resource ownership/building scope. Route middleware supplies the first two; services must make the final resource check before reading or mutating a record. Every scoped collection carries `buildingId` directly, even if it can be derived from a flat, to make safe queries and indexes possible.
+
+| Role | Allowed scope | Examples |
+| :-- | :-- | :-- |
+| `SUPER_ADMIN` | All buildings | Platform setup, system roles, cross-building audit access |
+| `BUILDING_ADMIN` | Explicitly assigned building(s) | Hierarchy, invitations, notices, operational configuration |
+| `ACCOUNTANT` | Explicitly assigned building(s) | Invoices, payments, expenses, finance reports |
+| `SECURITY_STAFF` | Assigned building and shifts | Visitor verification/check-in/out |
+| `MAINTENANCE_STAFF` | Assigned building and work items | View assigned complaints; permitted status updates |
+| `OWNER` | Own active/historical flats as policy permits | Own bills, documents, occupants and complaints |
+| `TENANT` | Current active tenancy/flat | Own notices, visitors, complaints and permitted bills |
+
+Use stable permission strings such as `USER_CREATE`, `USER_READ`, `USER_UPDATE`, `USER_DELETE`, `BUILDING_CREATE`, `BUILDING_READ`, `BUILDING_UPDATE`, `BUILDING_DELETE`, `COMPLAINT_CREATE`, `COMPLAINT_ASSIGN`, `COMPLAINT_UPDATE`, `COMPLAINT_RESOLVE`, `INVOICE_CREATE`, `INVOICE_READ`, `PAYMENT_CREATE`, `PAYMENT_READ`, `EXPENSE_CREATE`, `EXPENSE_APPROVE`, and `REPORT_VIEW`. System-role permissions are seeded and versioned; custom role changes require audit records. Never accept `buildingId` from a client without intersecting it with the actor's assignments.
+
+---
+
+## 68. DOMAIN DELIVERY CONTRACTS
+
+Each module must provide CRUD/list validation, pagination/filtering/sorting, scope checks, audit events, and domain tests in addition to the rules below.
+
+| Domain | Required implementation contract |
+| :-- | :-- |
+| Buildings / blocks / floors / flats | Enforce the `building -> block -> floor -> flat` parent chain on every write. Unique codes/numbers are scoped to their parent. Soft-delete only when no active dependent records or financial obligations exist. |
+| Owners / tenants / staff | Model ownership and tenancy history rather than overwriting it. A flat may have multiple owners but only one active tenancy unless product policy changes. Move-out closes tenancy and recalculates flat status. Staff assignments carry building, category, status and shift. |
+| Maintenance configuration | Version by `effectiveFrom`; only one active configuration per building/date range. Invoice generation snapshots all rates and inputs. |
+| Invoices / payments | Invoice creation is idempotent on `(flatId, billingPeriod)`. Monetary amounts use integer minor units or Decimal128—never JavaScript floating point. Payments, invoice balance/status, receipt and audit event update in one MongoDB transaction; reversals use compensating records, never destructive edits. |
+| Complaints / reviews | Only resident users with the flat scope may create complaints. Assignment validates staff building/category. Enforce the documented transition graph and SLA timestamps. One review per resolved complaint; update staff aggregates atomically. |
+| Notices / notifications | Target recipients by building plus audience, then create per-recipient notification records. Expired notices are hidden from normal reads, not deleted. |
+| Expenses / documents | Expense approval is separate from creation and records approver/time. Files use allow-listed type/size, malware scanning policy, Cloudinary public ID, and authorization before signed delivery/deletion. |
+| Visitors | Pass codes are cryptographically random, expire, and are unique. Check-in/out is restricted to assigned security staff; residents only view their own flat's visitors. |
+| Reports / audit logs | Reports apply the caller's building scope before aggregation/export. Audit logs are append-only; redact secrets/PII and capture actor, action, resource, before/after, IP, user agent and correlation ID. |
+
+### 68.1 Required state transitions
+
+Invoice: `DRAFT -> ISSUED -> PARTIALLY_PAID|PAID|OVERDUE`; `PARTIALLY_PAID -> PAID|OVERDUE`; no transition out of `PAID` except a separately audited credit/reversal workflow. Complaint: `OPEN -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED`; reopening is an explicit, audited policy decision, not a generic update. Visitor: `EXPECTED -> CHECKED_IN -> CHECKED_OUT` or `EXPECTED -> DENIED`; no exit before entry.
+
+---
+
+## 69. n8n AUTOMATION & EVENT CONTRACT
+
+Express owns business decisions and MongoDB remains the source of truth. n8n only receives signed, versioned events after the database transaction commits; it must never be a frontend-to-database path.
+
+```text
+service transaction -> outbox event -> signed n8n webhook -> delivery workflow
+                                              -> email / WhatsApp / push provider
+```
+
+Create `src/modules/automations/` with `automation.constants.js`, `automation.events.js`, `automation.service.js`, and `automation.validation.js`. The outbox pattern makes delivery retryable and prevents an unavailable n8n server from failing a payment or complaint write. Events include `USER_CREATED`, `USER_INVITED`, `COMPLAINT_CREATED`, `COMPLAINT_ASSIGNED`, `COMPLAINT_RESOLVED`, `INVOICE_CREATED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `REVIEW_REQUEST`, and `NOTICE_PUBLISHED`.
+
+Each webhook contains `eventId`, `eventType`, `schemaVersion`, UTC timestamp, correlation ID, idempotency key, scoped resource identifiers, and minimal non-sensitive payload. Sign the raw body with HMAC SHA-256 using `N8N_WEBHOOK_SECRET`; n8n validates signature and timestamp, deduplicates `eventId`, and never receives passwords, JWTs, refresh tokens, or full payment credentials. Record delivery attempts and outcomes.
+
+MVP workflows: invitation/welcome; complaint-created alert to building admin; complaint-assigned alert to maintenance staff; complaint-resolved review request; invoice-created delivery; payment receipt; scheduled overdue reminder; and notice-published broadcast. Scheduled jobs identify candidates in the backend first, then emit events; n8n must not independently alter invoice or complaint state.
+
+---
+
+## 70. OPERATIONAL DELIVERY CONTRACT
+
+### 70.1 Configuration and health
+
+Validate configuration at startup with Zod. The canonical connection variable is currently `MONGO_URI`; do not document `MONGODB_URI` unless code is changed to support it. Add required `CORS_ORIGIN`, JWT expiry/secret values, cookie settings, Cloudinary values, SMTP values, `N8N_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`, and logging configuration to `.env.example` only when their consuming code lands. Secrets are never committed.
+
+`GET /health` is a liveness check and must not query dependencies. Add `GET /ready` only after it verifies MongoDB connectivity (and any critical dependencies) with a bounded timeout and returns `503` when unready. Server shutdown must stop accepting requests, drain connections, close MongoDB, and exit non-zero on forced timeout.
+
+### 70.2 Security, quality and release gates
+
+Apply Helmet, explicit credentialed CORS origin allow-list, body-size limits, rate limits (especially auth/invitation/reset), Zod validation, safe Mongo query handling, secure cookies, request IDs and structured redacted logs before exposing authenticated routes. Use `node --test` plus Supertest for route tests; add unit tests for services and integration tests against a replica set for financial transactions. CI must run install, lint, format check, tests, dependency audit and Docker build. A release requires a passing smoke test, environment validation, backup/restore exercise, alerting ownership, and a rollback-tested deployment runbook.

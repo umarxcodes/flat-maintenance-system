@@ -7,7 +7,7 @@
 [![Security: Hardened](https://img.shields.io/badge/Security-Helmet%20%7C%20JWT%20%7C%20Zod-blue.svg)](docs/BACKEND_TECHNICAL_DOCUMENTATION.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An enterprise-grade, production-oriented **Modular Monolith Backend REST API** built with **Node.js (v22 ESM)**, **Express.js 5**, **MongoDB / Mongoose ODM**, **Zod**, and **JWT dual-token authentication**.
+An Express 5 starter for the Flat Maintenance Management System, with a production-oriented **modular-monolith blueprint** built around **Node.js (v22 ESM)**, MongoDB/Mongoose, Zod, and JWT.
 
 This system provides a complete administrative, financial, operational, and security intelligence engine for modern residential complexes, gated communities, and housing societies.
 
@@ -35,6 +35,10 @@ This system provides a complete administrative, financial, operational, and secu
 ---
 
 ## 🌟 Overview & System Purpose
+
+## Current implementation status
+
+The checked-in application currently exposes only `GET /` and `GET /health`, plus MongoDB connection bootstrap and a smoke test. The modules, JWT/RBAC, Cloudinary, n8n, production middleware, and versioned REST API described below are the approved implementation target, not features already available. See the [implementation status section](docs/BACKEND_TECHNICAL_DOCUMENTATION.md#65-implementation-status--source-of-truth-rules) before integrating with the API.
 
 The **Flat Maintenance Management System Backend** automates residential society operations by providing:
 
@@ -73,8 +77,8 @@ The **Flat Maintenance Management System Backend** automates residential society
 | :-------------------- | :--------------------------------------- | :---------------------------------------------------- |
 | **Runtime**           | Node.js v22 LTS                          | Native ES Modules (`import/export`) execution         |
 | **Web Framework**     | Express.js v5.x                          | Native async error propagation middleware             |
-| **Database & ODM**    | MongoDB 7.0+ / Mongoose 8.x              | Schema-flexible document store with ACID transactions |
-| **Validation Engine** | Zod 3.x                                  | Schema validation for Body, Query, and Params         |
+| **Database & ODM**    | MongoDB 7.0+ / Mongoose 9.x              | Schema-flexible document store with ACID transactions |
+| **Validation Engine** | Zod 4.x                                  | Schema validation for Body, Query, and Params         |
 | **Security Suite**    | Helmet, CORS, Mongo-Sanitize, Rate-Limit | Multi-layer HTTP and query defense                    |
 | **Authentication**    | JWT (`jsonwebtoken`) & `bcrypt`          | Dual-token authentication with cookie rotation        |
 | **File Storage**      | Multer & Cloudinary                      | Direct memory stream cloud object storage             |
@@ -117,7 +121,7 @@ MongoDB Database Cluster
 ## 📁 Directory Structure
 
 ```text
-backend/
+flat-maintenance-backend/
 ├── docs/
 │   └── BACKEND_TECHNICAL_DOCUMENTATION.md  # Master Technical Blueprint
 ├── src/
@@ -152,7 +156,7 @@ backend/
 
    ```bash
    git clone <repository-url>
-   cd backend
+   cd flat-maintenance-backend
    ```
 
 2. **Install Dependencies**
@@ -181,7 +185,7 @@ backend/
 
 5. **Verify Server Health**
    - Health Check: `GET http://localhost:5000/health`
-   - Readiness Check: `GET http://localhost:5000/ready`
+   - `GET http://localhost:5000/ready` is planned and is not available yet.
 
 ---
 
@@ -193,7 +197,7 @@ PORT=5000
 CORS_ORIGIN=http://localhost:3000
 COOKIE_SECRET=super_secret_cookie_key_min_32_chars
 
-MONGODB_URI=mongodb://localhost:27017/flat_maintenance_db?replicaSet=rs0
+MONGO_URI=mongodb://localhost:27017/flat_maintenance_db?replicaSet=rs0
 
 JWT_ACCESS_SECRET=access_token_secret_key_minimum_32_characters_long
 JWT_ACCESS_EXPIRES_IN=15m
