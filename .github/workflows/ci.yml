@@ -13,19 +13,12 @@ concurrency:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
 jobs:
-  lint-and-test:
+  backend-lint-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./flat-maintenance-backend
 
     steps:
       - name: Checkout code
@@ -36,7 +29,7 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          cache-dependency-path: yarn.lock
+          cache-dependency-path: flat-maintenance-backend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile

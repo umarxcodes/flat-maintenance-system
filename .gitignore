@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-package-lock.json
+.pnp
+.pnp.js
 
 # Environment variables
 .env
@@ -8,10 +9,14 @@ package-lock.json
 .env.*.local
 .env.*.backup
 
-# Build outputs
+# Build & runtime
 dist/
 build/
+coverage/
+.nyc_output/
 *.tgz
+tmp/
+temp/
 
 # Logs
 logs/
@@ -20,18 +25,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-
-# Testing
-coverage/
-.nyc_output/
-
-# Runtime
-tmp/
-temp/
+Thumbs.db

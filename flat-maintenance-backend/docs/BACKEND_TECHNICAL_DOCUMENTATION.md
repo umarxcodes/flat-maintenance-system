@@ -1286,22 +1286,22 @@ sequenceDiagram
 
 This document defines the intended production system; it is not evidence that a feature has shipped. As of this version, the repository contains only the Express application bootstrap, `GET /`, `GET /health`, MongoDB connection helper, Docker assets, and a smoke-test script. No domain routes, persistence models, authentication, RBAC, Cloudinary upload, n8n integration, or production middleware are implemented yet.
 
-| Area | Current repository state | Required before release |
-| :-- | :-- | :-- |
-| HTTP API | Root and health routes only | Versioned router, modules, standard responses and 404/error handlers |
-| Database | Connection helper only | All schemas, indexes, migrations/seeds and transaction boundaries |
-| Identity | Dependency declarations only | Invitation-only accounts, JWT rotation, password and verification flows |
-| Security | Dependency declarations only | Helmet, CORS, rate limits, sanitisation, validation, audit logging |
-| Operations | Docker/CI assets present | Verified readiness, graceful shutdown, metrics, backups and deployment runbook |
+| Area       | Current repository state     | Required before release                                                        |
+| :--------- | :--------------------------- | :----------------------------------------------------------------------------- |
+| HTTP API   | Root and health routes only  | Versioned router, modules, standard responses and 404/error handlers           |
+| Database   | Connection helper only       | All schemas, indexes, migrations/seeds and transaction boundaries              |
+| Identity   | Dependency declarations only | Invitation-only accounts, JWT rotation, password and verification flows        |
+| Security   | Dependency declarations only | Helmet, CORS, rate limits, sanitisation, validation, audit logging             |
+| Operations | Docker/CI assets present     | Verified readiness, graceful shutdown, metrics, backups and deployment runbook |
 
 `package.json`, the running source, and deployed configuration are authoritative for what is currently available. This blueprint is authoritative for new implementation decisions. A completed feature must update this status table, its endpoint row, tests, environment variables, and audit events in the same pull request. “Planned” controls must never be described as enabled to API consumers or auditors.
 
 ### 65.1 Current HTTP contract
 
-| Method | Path | Behaviour today |
-| :-- | :-- | :-- |
-| `GET` | `/` | Returns `{ success: true, message: "API is working fine" }` |
-| `GET` | `/health` | Returns `{ success: true, message: "Backend API is healthy" }` |
+| Method | Path      | Behaviour today                                                |
+| :----- | :-------- | :------------------------------------------------------------- |
+| `GET`  | `/`       | Returns `{ success: true, message: "API is working fine" }`    |
+| `GET`  | `/health` | Returns `{ success: true, message: "Backend API is healthy" }` |
 
 `/ready` and every `/api/v1/*` endpoint are planned, not currently served. The smoke test's permissive unknown-route assertion must be tightened to require `404` when the global not-found handler is introduced.
 
@@ -1327,18 +1327,18 @@ Invitations are single-use, random high-entropy tokens stored only as hashes, ex
 
 ### 66.2 Required authentication endpoints
 
-| Method | Path | Input / result | Rules |
-| :-- | :-- | :-- | :-- |
-| `POST` | `/api/v1/auth/login` | email, password -> access token + refresh cookie | Reject deleted, pending, inactive and suspended accounts; rate limit and audit outcome. |
-| `POST` | `/api/v1/auth/refresh` | refresh cookie -> rotated token pair | One-time token rotation; detected reuse revokes the user's token family. |
-| `POST` | `/api/v1/auth/logout` | refresh cookie | Revoke matching session and clear cookie. |
-| `GET` | `/api/v1/auth/me` | bearer access token -> safe profile | Never return token hashes, password, or security counters. |
-| `POST` | `/api/v1/auth/forgot-password` | email -> accepted response | Always return a non-enumerating response. |
-| `POST` | `/api/v1/auth/reset-password` | reset token, new password | Consume token and revoke all sessions. |
-| `PATCH` | `/api/v1/auth/change-password` | current and new password | Requires access token; revoke all other sessions. |
-| `POST` | `/api/v1/auth/verify-email` | verification token | Idempotently marks email verified. |
-| `POST` | `/api/v1/auth/activate-account` | invitation token, password | One-time invitation onboarding only. |
-| `POST` | `/api/v1/auth/resend-invitation` | invited user identifier | Authorized administrator only; revoke prior invite. |
+| Method  | Path                             | Input / result                                   | Rules                                                                                   |
+| :------ | :------------------------------- | :----------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| `POST`  | `/api/v1/auth/login`             | email, password -> access token + refresh cookie | Reject deleted, pending, inactive and suspended accounts; rate limit and audit outcome. |
+| `POST`  | `/api/v1/auth/refresh`           | refresh cookie -> rotated token pair             | One-time token rotation; detected reuse revokes the user's token family.                |
+| `POST`  | `/api/v1/auth/logout`            | refresh cookie                                   | Revoke matching session and clear cookie.                                               |
+| `GET`   | `/api/v1/auth/me`                | bearer access token -> safe profile              | Never return token hashes, password, or security counters.                              |
+| `POST`  | `/api/v1/auth/forgot-password`   | email -> accepted response                       | Always return a non-enumerating response.                                               |
+| `POST`  | `/api/v1/auth/reset-password`    | reset token, new password                        | Consume token and revoke all sessions.                                                  |
+| `PATCH` | `/api/v1/auth/change-password`   | current and new password                         | Requires access token; revoke all other sessions.                                       |
+| `POST`  | `/api/v1/auth/verify-email`      | verification token                               | Idempotently marks email verified.                                                      |
+| `POST`  | `/api/v1/auth/activate-account`  | invitation token, password                       | One-time invitation onboarding only.                                                    |
+| `POST`  | `/api/v1/auth/resend-invitation` | invited user identifier                          | Authorized administrator only; revoke prior invite.                                     |
 
 ### 66.3 Token and cookie lifecycle
 
@@ -1356,15 +1356,15 @@ The user model must include the fields in section 11 plus invitation, password-r
 
 Authorization is three checks in this order: authenticate identity, verify named permission, then verify resource ownership/building scope. Route middleware supplies the first two; services must make the final resource check before reading or mutating a record. Every scoped collection carries `buildingId` directly, even if it can be derived from a flat, to make safe queries and indexes possible.
 
-| Role | Allowed scope | Examples |
-| :-- | :-- | :-- |
-| `SUPER_ADMIN` | All buildings | Platform setup, system roles, cross-building audit access |
-| `BUILDING_ADMIN` | Explicitly assigned building(s) | Hierarchy, invitations, notices, operational configuration |
-| `ACCOUNTANT` | Explicitly assigned building(s) | Invoices, payments, expenses, finance reports |
-| `SECURITY_STAFF` | Assigned building and shifts | Visitor verification/check-in/out |
-| `MAINTENANCE_STAFF` | Assigned building and work items | View assigned complaints; permitted status updates |
-| `OWNER` | Own active/historical flats as policy permits | Own bills, documents, occupants and complaints |
-| `TENANT` | Current active tenancy/flat | Own notices, visitors, complaints and permitted bills |
+| Role                | Allowed scope                                 | Examples                                                   |
+| :------------------ | :-------------------------------------------- | :--------------------------------------------------------- |
+| `SUPER_ADMIN`       | All buildings                                 | Platform setup, system roles, cross-building audit access  |
+| `BUILDING_ADMIN`    | Explicitly assigned building(s)               | Hierarchy, invitations, notices, operational configuration |
+| `ACCOUNTANT`        | Explicitly assigned building(s)               | Invoices, payments, expenses, finance reports              |
+| `SECURITY_STAFF`    | Assigned building and shifts                  | Visitor verification/check-in/out                          |
+| `MAINTENANCE_STAFF` | Assigned building and work items              | View assigned complaints; permitted status updates         |
+| `OWNER`             | Own active/historical flats as policy permits | Own bills, documents, occupants and complaints             |
+| `TENANT`            | Current active tenancy/flat                   | Own notices, visitors, complaints and permitted bills      |
 
 Use stable permission strings such as `USER_CREATE`, `USER_READ`, `USER_UPDATE`, `USER_DELETE`, `BUILDING_CREATE`, `BUILDING_READ`, `BUILDING_UPDATE`, `BUILDING_DELETE`, `COMPLAINT_CREATE`, `COMPLAINT_ASSIGN`, `COMPLAINT_UPDATE`, `COMPLAINT_RESOLVE`, `INVOICE_CREATE`, `INVOICE_READ`, `PAYMENT_CREATE`, `PAYMENT_READ`, `EXPENSE_CREATE`, `EXPENSE_APPROVE`, and `REPORT_VIEW`. System-role permissions are seeded and versioned; custom role changes require audit records. Never accept `buildingId` from a client without intersecting it with the actor's assignments.
 
@@ -1374,17 +1374,17 @@ Use stable permission strings such as `USER_CREATE`, `USER_READ`, `USER_UPDATE`,
 
 Each module must provide CRUD/list validation, pagination/filtering/sorting, scope checks, audit events, and domain tests in addition to the rules below.
 
-| Domain | Required implementation contract |
-| :-- | :-- |
-| Buildings / blocks / floors / flats | Enforce the `building -> block -> floor -> flat` parent chain on every write. Unique codes/numbers are scoped to their parent. Soft-delete only when no active dependent records or financial obligations exist. |
-| Owners / tenants / staff | Model ownership and tenancy history rather than overwriting it. A flat may have multiple owners but only one active tenancy unless product policy changes. Move-out closes tenancy and recalculates flat status. Staff assignments carry building, category, status and shift. |
-| Maintenance configuration | Version by `effectiveFrom`; only one active configuration per building/date range. Invoice generation snapshots all rates and inputs. |
-| Invoices / payments | Invoice creation is idempotent on `(flatId, billingPeriod)`. Monetary amounts use integer minor units or Decimal128—never JavaScript floating point. Payments, invoice balance/status, receipt and audit event update in one MongoDB transaction; reversals use compensating records, never destructive edits. |
-| Complaints / reviews | Only resident users with the flat scope may create complaints. Assignment validates staff building/category. Enforce the documented transition graph and SLA timestamps. One review per resolved complaint; update staff aggregates atomically. |
-| Notices / notifications | Target recipients by building plus audience, then create per-recipient notification records. Expired notices are hidden from normal reads, not deleted. |
-| Expenses / documents | Expense approval is separate from creation and records approver/time. Files use allow-listed type/size, malware scanning policy, Cloudinary public ID, and authorization before signed delivery/deletion. |
-| Visitors | Pass codes are cryptographically random, expire, and are unique. Check-in/out is restricted to assigned security staff; residents only view their own flat's visitors. |
-| Reports / audit logs | Reports apply the caller's building scope before aggregation/export. Audit logs are append-only; redact secrets/PII and capture actor, action, resource, before/after, IP, user agent and correlation ID. |
+| Domain                              | Required implementation contract                                                                                                                                                                                                                                                                               |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Buildings / blocks / floors / flats | Enforce the `building -> block -> floor -> flat` parent chain on every write. Unique codes/numbers are scoped to their parent. Soft-delete only when no active dependent records or financial obligations exist.                                                                                               |
+| Owners / tenants / staff            | Model ownership and tenancy history rather than overwriting it. A flat may have multiple owners but only one active tenancy unless product policy changes. Move-out closes tenancy and recalculates flat status. Staff assignments carry building, category, status and shift.                                 |
+| Maintenance configuration           | Version by `effectiveFrom`; only one active configuration per building/date range. Invoice generation snapshots all rates and inputs.                                                                                                                                                                          |
+| Invoices / payments                 | Invoice creation is idempotent on `(flatId, billingPeriod)`. Monetary amounts use integer minor units or Decimal128—never JavaScript floating point. Payments, invoice balance/status, receipt and audit event update in one MongoDB transaction; reversals use compensating records, never destructive edits. |
+| Complaints / reviews                | Only resident users with the flat scope may create complaints. Assignment validates staff building/category. Enforce the documented transition graph and SLA timestamps. One review per resolved complaint; update staff aggregates atomically.                                                                |
+| Notices / notifications             | Target recipients by building plus audience, then create per-recipient notification records. Expired notices are hidden from normal reads, not deleted.                                                                                                                                                        |
+| Expenses / documents                | Expense approval is separate from creation and records approver/time. Files use allow-listed type/size, malware scanning policy, Cloudinary public ID, and authorization before signed delivery/deletion.                                                                                                      |
+| Visitors                            | Pass codes are cryptographically random, expire, and are unique. Check-in/out is restricted to assigned security staff; residents only view their own flat's visitors.                                                                                                                                         |
+| Reports / audit logs                | Reports apply the caller's building scope before aggregation/export. Audit logs are append-only; redact secrets/PII and capture actor, action, resource, before/after, IP, user agent and correlation ID.                                                                                                      |
 
 ### 68.1 Required state transitions
 
