@@ -85,6 +85,11 @@
 68. [Domain Delivery Contracts](#68-domain-delivery-contracts)
 69. [n8n Automation & Event Contract](#69-n8n-automation--event-contract)
 70. [Operational Delivery Contract](#70-operational-delivery-contract)
+71. [Current Implementation vs Target Architecture (Gap Analysis)](#71-current-implementation-vs-target-architecture-gap-analysis)
+72. [Architectural Decision Records (ADR-001 to ADR-010)](#72-architectural-decision-records-adr-001-to-adr-010)
+73. [Developer Workflow & Git Conventions](#73-developer-workflow--git-conventions)
+74. [System Architecture Visual Graphs (Mermaid Specifications)](#74-system-architecture-visual-graphs-mermaid-specifications)
+75. [Production Readiness Checklist & Quality Gates](#75-production-readiness-checklist--quality-gates)
 
 ---
 
@@ -146,13 +151,17 @@ Backend REST API
 Database
 ```
 
-### Core Value Proposition & System Personas
+### Core Value Proposition & Complete Stakeholder Personas
 
-The system bridges the operational gap between residential occupants and community management through three primary user personas:
+The system coordinates residential community operations across five distinct organizational personas:
 
-1. **👑 Admin (System & Society Governance):** Exercises overarching control over global system settings, building hierarchies, staff and manager provisioning, financial auditing, and system-wide compliance logs.
-2. **🏗️ Manager (Daily Operations & Facilities):** Oversees day-to-day facility workflows, block and flat inventory, maintenance dispatching, vendor tasks, complaint triage, and community announcements.
-3. **🏠 Resident (Self-Service & Living Experience):** Comprises property owners and tenants who interact with flat services, review automated maintenance dues, submit maintenance tickets, lodge complaints, and verify visitors.
+1. **👑 Admin (System & Society Governance):** Exercises overarching control over global system settings, building hierarchies, role provisioning, financial audit logs, and society compliance.
+2. **🏗️ Manager (Daily Operations & Facilities):** Oversees building and flat inventories, manages occupancy records, triages maintenance complaints, assigns technicians, and publishes community notices.
+3. **💼 Accountant (Financial Management & Billing):** Configures maintenance charge formulas, triggers automated monthly invoice generation, reconciles online/cash payments, tracks vendor expenses, and generates society balance sheets.
+4. **🛠️ Staff (Field Technicians & Gate Security Guards):** 
+   - **Maintenance Technicians (Plumbers, Electricians, Handymen):** Receive assigned repair tickets, update job statuses (`IN_PROGRESS` ➔ `RESOLVED`), and log parts used.
+   - **Security Guards (Gate & Front Desk):** Verify resident digital visitor passes, log incoming guest vehicles, record entry/exit timestamps, and alert residents.
+5. **🏠 Resident (Self-Service & Living Experience):** Comprises property owners and tenants who manage their flat profile, review automated monthly dues, pay invoices online, log maintenance complaints, and submit 1–5 star reviews for staff work.
 
 ---
 
@@ -164,15 +173,17 @@ The system employs a modern **Tri-Tier Architecture** cleanly separating client 
 
 ```mermaid
 graph TD
-    subgraph UsersTier["👥 SYSTEM USERS"]
-        Admin["👑 Admin<br/>System Governance & Configuration"]
-        Manager["🏗️ Manager<br/>Daily Operations & Facility Dispatch"]
-        Resident["🏠 Resident<br/>Flat Services & Maintenance Inquiries"]
+    subgraph UsersTier["👥 SYSTEM USERS & STAKEHOLDERS"]
+        Admin["👑 Admin<br/>Society Governance & Config"]
+        Manager["🏗️ Manager<br/>Operations & Task Dispatch"]
+        Accountant["💼 Accountant<br/>Billing, Invoicing & Ledger"]
+        Staff["🛠️ Staff (Techs & Security)<br/>Work Orders & Gate Logs"]
+        Resident["🏠 Resident<br/>Flat Services, Payments & Inquiries"]
     end
 
     subgraph ClientTier["💻 NEXT.JS CLIENT APPLICATION"]
         Pages["📄 Pages & Layouts (App Router)"]
-        Dashboards["📊 Role-Tailored Dashboards"]
+        Dashboards["📊 Role-Tailored Portals & Workspaces"]
         Components["🧩 Shared UI Components & Forms"]
         ClientState["🧠 Auth State & Client Cache"]
         ApiClient["🔌 API Service Layer (Axios / Fetch)"]
@@ -192,6 +203,8 @@ graph TD
 
     Admin --> Pages
     Manager --> Pages
+    Accountant --> Pages
+    Staff --> Pages
     Resident --> Pages
     Pages --> Dashboards
     Pages --> Components
@@ -217,14 +230,15 @@ graph TD
                          │       USERS         │
                          └──────────┬──────────┘
                                     │
-                  ┌─────────────────┼─────────────────┐
-                  │                 │                 │
-                  ▼                 ▼                 ▼
+       ┌──────────────┬─────────────┼─────────────┬──────────────┐
+       │              │             │             │              │
+       ▼              ▼             ▼             ▼              ▼
 
-             👑 ADMIN          🏗️ MANAGER        🏠 RESIDENT
+  👑 ADMIN       🏗️ MANAGER    💼 ACCOUNTANT   🛠️ STAFF     🏠 RESIDENT
+   (Admin)       (Operations)   (Finances)     (Field/Gate)   (Occupants)
 
-                  │                 │                 │
-                  └─────────────────┼─────────────────┘
+       │              │             │             │              │
+       └──────────────┴─────────────┼─────────────┴──────────────┘
                                     │
                                     ▼
 
@@ -254,9 +268,9 @@ graph TD
 
 #### Architectural Tier Responsibilities
 
-* **Next.js Client Application:** Delivers high-performance server-side rendering (SSR) and reactive client-side components. It handles user interactions, local form validation, and role-based UI presentation while abstracting network requests behind dedicated API services.
-* **Backend REST API:** Implements hardened modular controllers and domain services in Node.js (ESM) and Express 5. It enforces strict request sanitization, authentication, role authorization, and state machines, keeping business rules independent of the presentation layer.
-* **Database (MongoDB):** Provides high-throughput document persistence across 22 normalized domain collections, enforcing data consistency via Mongoose schemas and multi-document ACID transactions for financial and occupancy workflows.
+* **Next.js Client Application:** Delivers high-performance server-side rendering (SSR) and reactive client-side components. It isolates user experiences into 5 purpose-built workspaces (Admin, Manager, Accountant, Staff, Resident) while abstracting network calls behind typed API services.
+* **Backend REST API:** Implements hardened modular controllers and domain services in Node.js (ESM) and Express 5. It enforces strict request sanitization, authentication, role authorization (RBAC + Building Scope), and state machines, keeping business rules independent of the presentation layer.
+* **Database (MongoDB):** Provides high-throughput document persistence across 22 normalized domain collections, enforcing data consistency via Mongoose schemas and multi-document ACID transactions for billing, payment, and lease workflows.
 
 ---
 
@@ -273,12 +287,16 @@ flowchart TD
     SubmitAuth --> VerifyToken["🎫 Server Generates Access JWT & Session Cookie"]
     VerifyToken --> RoleEval{"🛡️ Evaluate User Role"}
 
-    RoleEval -->|"Role: SUPER_ADMIN / ADMIN"| AdminDash["👑 Admin Dashboard (/admin/*)<br/>• Society Hierarchy Management<br/>• Manager & Staff Provisioning<br/>• System-wide Financial Audits<br/>• Global System Settings"]
-    RoleEval -->|"Role: MANAGER"| ManagerDash["🏗️ Manager Dashboard (/manager/*)<br/>• Building & Flat Operations<br/>• Maintenance Ticket Dispatch<br/>• Complaint Triage & SLA Tracking<br/>• Notice & Announcement Publishing"]
-    RoleEval -->|"Role: RESIDENT / OWNER / TENANT"| ResidentDash["🏠 Resident Dashboard (/resident/*)<br/>• My Flat Unit Details<br/>• Create Maintenance Requests<br/>• Track Complaints & Submit Ratings<br/>• View & Pay Invoices Online"]
+    RoleEval -->|"Role: SUPER_ADMIN / ADMIN"| AdminDash["👑 Admin Dashboard (/admin/*)<br/>• Society Hierarchy Management<br/>• User & Role Provisioning<br/>• Global System Audits & Reports"]
+    RoleEval -->|"Role: MANAGER"| ManagerDash["🏗️ Manager Dashboard (/manager/*)<br/>• Building & Flat Allocation<br/>• Maintenance Ticket Dispatch<br/>• Complaint Triage & SLA Tracking<br/>• Community Announcements"]
+    RoleEval -->|"Role: ACCOUNTANT"| AccountantDash["💼 Accountant Portal (/accountant/*)<br/>• Maintenance Charge Configurations<br/>• Batch Monthly Invoicing Engine<br/>• Payment Reconciliations & Ledger<br/>• Society Expense Auditing"]
+    RoleEval -->|"Role: STAFF / SECURITY"| StaffDash["🛠️ Staff Workspace (/staff/*)<br/>• Technician Work Order Queue<br/>• Job Resolution & Status Updates<br/>• Gate Visitor Pass Verification<br/>• Vehicle Entry / Exit Logging"]
+    RoleEval -->|"Role: RESIDENT / OWNER / TENANT"| ResidentDash["🏠 Resident Dashboard (/resident/*)<br/>• My Flat Unit Overview<br/>• Create Maintenance Requests<br/>• View Invoices & Pay Online<br/>• Gate Passes & Service Ratings"]
 
     AdminDash -.->|"Unauthorized Attempt"| Denied["🚫 403 Forbidden Access Guard"]
     ManagerDash -.->|"Unauthorized Attempt"| Denied
+    AccountantDash -.->|"Unauthorized Attempt"| Denied
+    StaffDash -.->|"Unauthorized Attempt"| Denied
     ResidentDash -.->|"Unauthorized Attempt"| Denied
 ```
 
@@ -302,21 +320,27 @@ flowchart TD
                     │   ROLE CHECK     │
                     └────────┬─────────┘
                              │
-             ┌───────────────┼────────────────┐
-             │               │                │
-             ▼               ▼                ▼
-        ┌─────────┐      ┌─────────┐      ┌──────────┐
-        │  ADMIN  │      │ MANAGER │      │ RESIDENT │
-        └────┬────┘      └────┬────┘      └────┬─────┘
-             │                │                │
-             ▼                ▼                ▼
-      Admin Dashboard   Manager Dashboard  Resident Dashboard
+       ┌──────────────┬──────┼─────────────┬──────────────┐
+       │              │      │             │              │
+       ▼              ▼      ▼             ▼              ▼
+  ┌─────────┐    ┌─────────┐ ┌──────────┐ ┌─────────┐  ┌──────────┐
+  │  ADMIN  │    │ MANAGER │ │ACCOUNTANT│ │  STAFF  │  │ RESIDENT │
+  └────┬────┘    └────┬────┘ └────┬─────┘ └────┬────┘  └────┬─────┘
+       │              │           │            │            │
+       ▼              ▼           ▼            ▼            ▼
+  Admin Dash    Manager Dash  Accountant    Staff Hub    Resident
+                              Dashboard     (Tech/Gate)  Dashboard
 ```
 
 #### Key Client Security Principles
 
 * **Protected Route Guards:** The Next.js client encapsulates private views within higher-order route middleware. Any unauthenticated access attempt triggers an immediate redirection to `/login` with return-path preservation.
-* **Granular Role Dashboards:** Each role is directed to a purpose-built workspace. Admins see governance controls; Managers see operational queues and dispatch panels; Residents see flat details, pending dues, and personal tickets.
+* **Granular Role Workspaces:** Each role is directed to a purpose-built workspace:
+  - **Admins** manage global society architecture and user credentials.
+  - **Managers** dispatch maintenance tasks and monitor facility operations.
+  - **Accountants** run invoice engines, log receipts, and reconcile payments.
+  - **Staff** execute assigned physical repair tickets or process gate visitor entries.
+  - **Residents** view their flat status, settle bills, and track requests.
 * **Defense-in-Depth Authorization:** While the frontend provides responsive UX by hiding unauthorized navigation elements, the backend REST API independently authenticates every HTTP request via JWT and authorizes every endpoint through strict RBAC/OBAC middleware.
 
 ---
@@ -339,52 +363,64 @@ NEXT.JS CLIENT APPLICATION
 │   │
 │   ├── 👑 ADMIN AREA
 │   │   ├── Dashboard
-│   │   ├── User Management
-│   │   ├── Building Management
-│   │   ├── Manager Management
-│   │   └── Reports
+│   │   ├── User & Role Management
+│   │   ├── Building Management (Buildings, Blocks, Floors)
+│   │   ├── Manager & Staff Provisioning
+│   │   └── System Audit & Compliance Reports
 │   │
 │   ├── 🏗️ MANAGER AREA
-│   │   ├── Dashboard
-│   │   ├── Buildings
-│   │   ├── Flats
-│   │   ├── Residents
-│   │   ├── Maintenance Requests
-│   │   ├── Complaints
-│   │   ├── Payments
-│   │   └── Announcements
+│   │   ├── Dashboard & Facility Overview
+│   │   ├── Buildings & Flats Inventory
+│   │   ├── Resident Directory (Owners & Tenants)
+│   │   ├── Maintenance Request Triage & Dispatch
+│   │   ├── Complaints Monitoring & SLAs
+│   │   └── Society Announcements & Notices
+│   │
+│   ├── 💼 ACCOUNTANT AREA
+│   │   ├── Financial Dashboard
+│   │   ├── Maintenance Charge Configurations
+│   │   ├── Batch Monthly Invoice Generator
+│   │   ├── Payment Reconciliation & Receipts
+│   │   ├── Society Expense Records
+│   │   └── Financial Statements & Dues Reports
+│   │
+│   ├── 🛠️ STAFF & SECURITY AREA
+│   │   ├── Technician Work Order Queue (Plumber/Electrician/Cleaner)
+│   │   ├── Job Resolution & Proof-of-Work Logging
+│   │   ├── Gate Visitor Pass Verification
+│   │   └── Vehicle Entry/Exit Logging
 │   │
 │   └── 🏠 RESIDENT AREA
-│       ├── Dashboard
-│       ├── My Flat
-│       ├── Maintenance Requests
-│       ├── Complaints
-│       ├── My Payments
-│       ├── Announcements
-│       └── My Profile
+│       ├── Resident Dashboard
+│       ├── My Flat Details
+│       ├── Maintenance Requests (New Ticket, History)
+│       ├── Complaints & Dispute Tracking
+│       ├── Invoices & Online Payments
+│       ├── Visitor Pass Generator
+│       └── Announcements & Bulletins
 │
 ├── 🧩 SHARED UI COMPONENTS
-│   ├── Sidebar
-│   ├── Navbar
-│   ├── Tables
-│   ├── Forms
-│   ├── Modals
-│   └── Reusable UI Components
+│   ├── Sidebar & Top Navigation
+│   ├── Filterable Data Tables & Pagination
+│   ├── Validated Form Controls
+│   ├── Action Modals & Dialogs
+│   ├── Status Badges & Metric Cards
+│   └── Star Rating Controls
 │
 ├── 🔌 API / SERVICE LAYER
-│   ├── Authentication API
-│   ├── User API
-│   ├── Building API
-│   ├── Flat API
-│   ├── Maintenance API
-│   ├── Complaint API
-│   └── Payment API
+│   ├── Authentication API (Login, Refresh, Logout)
+│   ├── User & Staff API
+│   ├── Building Hierarchy API
+│   ├── Maintenance & Complaint API
+│   ├── Billing, Invoice & Payment API
+│   ├── Visitor Management API
+│   └── Expense & Report API
 │
 └── 🧠 CLIENT STATE
-    ├── Authentication State
-    ├── Current User
-    ├── UI State
-    └── Server/API Data
+    ├── Authentication & Session State
+    ├── Active User Profile & Scoped Building
+    ├── UI State (Theme, Navigation Toggle, Modals)
+    └── Server Cache (TanStack Query / SWR)
 ```
 
 #### 📊 Client Module Relationship Map (Mermaid)
@@ -398,9 +434,11 @@ graph LR
     end
 
     subgraph Portals["🔐 ROLE-BASED PORTALS"]
-        AdminPortal["👑 Admin Portal<br/>Users • Buildings • Reports"]
-        MgrPortal["🏗️ Manager Portal<br/>Operations • Requests • Notices"]
-        ResPortal["🏠 Resident Portal<br/>My Flat • Invoices • Complaints"]
+        AdminPortal["👑 Admin Portal<br/>Governance • Users • Audits"]
+        MgrPortal["🏗️ Manager Portal<br/>Operations • Allocation • Notices"]
+        AccPortal["💼 Accountant Portal<br/>Charges • Invoices • Expenses"]
+        StaffPortal["🛠️ Staff Hub<br/>Technician Tasks • Gate Security"]
+        ResPortal["🏠 Resident Portal<br/>My Flat • Payments • Complaints"]
     end
 
     subgraph Shared["🧩 SHARED SYSTEM DESIGN"]
@@ -415,6 +453,7 @@ graph LR
         FacilitySvc["Building & Flat Service"]
         MaintSvc["Maintenance & Complaint Service"]
         BillSvc["Invoices & Payment Service"]
+        StaffSvc["Staff & Visitor Service"]
     end
 
     subgraph StateStore["🧠 CLIENT APPLICATION STATE"]
@@ -432,7 +471,7 @@ graph LR
 #### Client Modular Layer Breakdown
 
 * **Public Area:** Entry-point screens accessible without authentication, handling credentials submission, password resets, and session recovery.
-* **Protected Application Workspaces:** Role-partitioned directories isolating features, forms, and tables relevant only to the authenticated persona.
+* **Protected Application Workspaces:** Role-partitioned directories isolating features, forms, and tables relevant only to the authenticated persona (Admin, Manager, Accountant, Staff, Resident).
 * **Shared UI Components:** Atomic design system elements (data tables, responsive sidebars, accessible form inputs, confirmation modals, status badges) guaranteeing visual and functional consistency across all dashboards.
 * **API / Service Layer:** Centralized HTTP abstraction layer where Axios/Fetch instances attach authentication headers, intercept 401 unauthorized errors for token refreshes, and map backend JSON payloads into strongly typed frontend models.
 * **Client State:** Lightweight reactive store managing active user profile details, layout preferences (e.g., sidebar toggles, theme modes), and cached server responses with automatic background revalidation.
@@ -528,9 +567,9 @@ USER ACTION
 
 ---
 
-### 5. Maintenance Request Example Flow (Real-World Walkthrough)
+### 5. Maintenance Request Example Flow (Real-World Multi-Role Walkthrough)
 
-To understand how all pieces integrate during daily operations, consider a real-world scenario: a **Resident logs a plumbing maintenance request**, which is subsequently processed by the backend and displayed on the **Manager's Operational Dashboard**.
+To understand how all stakeholders coordinate during daily operations, consider a real-world scenario: a **Resident logs a plumbing maintenance request**, the **Manager triages and dispatches** it, the **Maintenance Staff (Technician) resolves** it, and the **Resident rates the service**.
 
 #### 📊 Maintenance Request Operational Flow (Mermaid)
 
@@ -538,96 +577,112 @@ To understand how all pieces integrate during daily operations, consider a real-
 sequenceDiagram
     autonumber
     actor Resident as 🏠 Resident
-    participant ResUI as 📱 Resident UI (/resident/requests)
-    participant ClientAPI as 🔌 Client API Service
-    participant Backend as ⚙️ Backend REST API (/api/v1/complaints)
-    participant Database as 🗄️ MongoDB (Complaints Collection)
+    participant ResUI as 📱 Resident UI
+    participant ClientAPI as 🔌 Client API
+    participant Backend as ⚙️ Backend REST API
+    participant Database as 🗄️ MongoDB Database
     actor Manager as 🏗️ Manager
-    participant MgrUI as 🖥️ Manager UI (/manager/maintenance)
+    participant MgrUI as 🖥️ Manager UI
+    actor Staff as 🛠️ Maintenance Staff
+    participant StaffUI as 📱 Staff Workspace
 
-    Resident->>ResUI: Fills form: Title, Category, Priority, Description
-    Resident->>ResUI: Clicks "Submit Request"
-    ResUI->>ClientAPI: Calls complaintsApi.createRequest(formData)
-    ClientAPI->>Backend: POST /api/v1/complaints (Bearer JWT + Payload)
-    
     rect rgb(240, 255, 240)
-        Note over Backend: 1. Authenticate Resident & Flat Tenancy<br/>2. Validate Zod Schema (Category, Priority)<br/>3. Generate Unique Ticket ID (e.g., TKT-2026-0891)<br/>4. Set Initial Status: OPEN / PENDING_TRIAGE
-        Backend->>Database: Insert new complaint document into collection
-        Database-->>Backend: Document saved with ObjectId & Timestamps
-        Backend-->>ClientAPI: HTTP 201 Created (ApiResponse with ticket details)
+        Note over Resident,Backend: Phase 1: Resident Submits Request
+        Resident->>ResUI: Fills form: "Plumbing - Leak under kitchen sink"
+        Resident->>ResUI: Clicks "Submit Request"
+        ResUI->>ClientAPI: POST /api/v1/complaints
+        ClientAPI->>Backend: Transmit HTTPS Request (Bearer JWT)
+        Backend->>Database: Insert complaint (Status: OPEN, Ticket: #TKT-2026-0891)
+        Database-->>Backend: Confirmed document
+        Backend-->>ResUI: HTTP 201 Created (Ticket Details)
+        ResUI-->>Resident: Displays confirmation & ticket badge
     end
 
-    ClientAPI-->>ResUI: Success response received
-    ResUI-->>Resident: Shows success toast & appends ticket to resident list
-
     rect rgb(255, 250, 240)
-        Note over Manager,MgrUI: Manager Operational Triage
-        Manager->>MgrUI: Opens Maintenance Management Dashboard
-        MgrUI->>ClientAPI: Queries GET /api/v1/complaints?status=OPEN
-        ClientAPI->>Backend: GET /api/v1/complaints (Manager Bearer JWT)
-        Backend->>Database: Query complaints scoped to Manager's assigned building
-        Database-->>Backend: Returns active complaints list
-        Backend-->>MgrUI: HTTP 200 OK with newly created ticket
-        MgrUI-->>Manager: Displays new ticket with "OPEN" badge ready for staff assignment
+        Note over Manager,Backend: Phase 2: Manager Triages & Dispatches
+        Manager->>MgrUI: Reviews open maintenance queue
+        MgrUI->>Backend: GET /api/v1/complaints?status=OPEN
+        Backend-->>MgrUI: Returns active tickets list
+        Manager->>MgrUI: Assigns Ticket #TKT-2026-0891 to "Akram (Plumber)"
+        MgrUI->>Backend: PATCH /api/v1/complaints/:id/assign (staffId: Akram)
+        Backend->>Database: Update status: ASSIGNED, assign staffId
+        Database-->>Backend: Confirmed
+    end
+
+    rect rgb(245, 245, 255)
+        Note over Staff,Backend: Phase 3: Staff Executes & Resolves Work
+        Staff->>StaffUI: Opens mobile task list
+        StaffUI->>Backend: GET /api/v1/staff/tasks
+        Backend-->>StaffUI: Shows assigned ticket #TKT-2026-0891
+        Staff->>StaffUI: Taps "Start Work" (Status: IN_PROGRESS)
+        Staff->>Staff: Repairs kitchen sink pipe
+        Staff->>StaffUI: Taps "Mark Resolved" & logs work notes
+        StaffUI->>Backend: PATCH /api/v1/complaints/:id/status (Status: RESOLVED)
+        Backend->>Database: Persist resolution & timestamp
+    end
+
+    rect rgb(255, 245, 245)
+        Note over Resident,Staff: Phase 4: Resident Service Review
+        Resident->>ResUI: Receives "Work Completed" notification
+        Resident->>ResUI: Submits 5-Star Rating & Review for Akram
+        ResUI->>Backend: POST /api/v1/ratings
+        Backend->>Database: Save rating & update staff performance metrics
+        ResUI-->>Resident: Thank you feedback confirmed
     end
 ```
 
 #### 📊 Maintenance Request Example Flow (ASCII Diagram)
 
 ```text
-🏠 RESIDENT
-     │
-     │ Creates Request
-     ▼
-┌─────────────────────────┐
-│ MAINTENANCE REQUEST UI  │
-│                         │
-│ Title                   │
-│ Description             │
-│ Category                │
-│ Priority                │
-└────────────┬────────────┘
-             │
-             │ Submit
-             ▼
-┌─────────────────────────┐
-│ CLIENT API SERVICE      │
-│                         │
-│ POST /maintenance       │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ BACKEND REST API        │
-│                         │
-│ Validate                │
-│ Authorize               │
-│ Process Request         │
-└────────────┬────────────┘
-             │
-             ▼
-       ┌───────────┐
-       │ DATABASE  │
-       └─────┬─────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ MANAGER DASHBOARD       │
-│                         │
-│ New Maintenance Request │
-└─────────────────────────┘
+🏠 RESIDENT                 🏗️ MANAGER                   🛠️ STAFF (TECH)
+     │                           │                             │
+     │ 1. Creates Request        │                             │
+     ▼                           │                             │
+┌─────────────────────────┐      │                             │
+│ MAINTENANCE REQUEST UI  │      │                             │
+│ (Title, Details, Prio)  │      │                             │
+└────────────┬────────────┘      │                             │
+             │                   │                             │
+             │ POST /complaints  │                             │
+             ▼                   │                             │
+┌─────────────────────────┐      │                             │
+│    BACKEND REST API     │      │                             │
+│ (Validate & Save OPEN)  │      │                             │
+└────────────┬────────────┘      │                             │
+             │                   │                             │
+             ▼                   ▼                             │
+       ┌───────────┐      ┌───────────────┐                    │
+       │ DATABASE  │─────▶│  MANAGER UI   │                    │
+       │ (TKT-101) │      │ (Triage Queue)│                    │
+       └─────┬─────┘      └───────┬───────┘                    │
+             │                    │                            │
+             │                    │ 2. Assigns Technician      │
+             │                    ▼                            │
+             │             ┌─────────────┐                     │
+             │             │ BACKEND API │                     │
+             │             │ (ASSIGNED)  │                     │
+             │             └──────┬──────┘                     │
+             │                    │                            │
+             ▼                    ▼                            ▼
+       ┌───────────┐      Notification                  ┌─────────────┐
+       │ DATABASE  │───────────────────────────────────▶│  STAFF HUB  │
+       │           │                                    │ (Work Order)│
+       │           │◀───────────────────────────────────│ (RESOLVED)  │
+       └───────────┘          3. Fixes & Resolves       └─────────────┘
+             │                                                 │
+             │                                                 │
+             ▼                                                 │
+      Resident Rates                                           │
+      Staff Service ⭐⭐⭐⭐⭐ ────────────────────────────────────┘
 ```
 
 #### Step-by-Step Scenario Breakdown
 
-1. **Resident Submission:** A resident navigates to their maintenance portal, specifies the issue category (e.g., *Plumbing*), selects urgency priority (*High*), writes a description, and clicks submit.
-2. **Client API Dispatch:** The Next.js client invokes `complaintsApi.create()`, sending a `POST /api/v1/complaints` request carrying the resident's JWT authorization header.
-3. **Backend Validation & Business Rules:**
-   * The backend validates the user's active residency against the flat in question.
-   * Zod enforces required field presence and enumerated category/priority values.
-   * The complaint service generates a tracking ticket identifier, sets the status machine to `OPEN`, logs an audit entry, and records the initial SLA timestamp.
-4. **Database Insertion:** The document is written to MongoDB with indexed references linking the complaint to the Resident, Flat, Building, and Block.
-5. **Manager Operational Visibility:** When the building manager opens their maintenance operations dashboard, the client issues a scoped query (`GET /api/v1/complaints?buildingId=...&status=OPEN`). The newly created ticket appears with an urgent indicator, enabling the manager to assign a specialized technician with a single click.
+1. **Resident Submission:** A resident navigates to their maintenance portal, specifies the issue category (*Plumbing*), selects urgency priority (*High*), writes a description, and clicks submit.
+2. **Client API Dispatch & Validation:** The Next.js client invokes `complaintsApi.create()`, sending a `POST /api/v1/complaints` request carrying the resident's JWT authorization header. The backend validates tenancy, assigns ticket number `#TKT-2026-0891`, and saves the status as `OPEN`.
+3. **Manager Triage & Technician Dispatch:** The manager's dashboard receives the ticket in real time. The manager reviews the plumbing issue and dispatches an available maintenance technician (Staff).
+4. **Staff Execution & Resolution:** The technician views the work order on their mobile staff workspace, arrives at the flat, completes the repair, and marks the ticket `RESOLVED` with proof-of-work notes.
+5. **Resident Rating & Staff Metrics:** The resident receives an in-app resolution alert and submits a 1–5 star performance review, which directly feeds into the staff member's quarterly performance analytics.
 
 ---
 
@@ -1925,3 +1980,312 @@ Validate configuration at startup with Zod. The canonical connection variable is
 ### 70.2 Security, quality and release gates
 
 Apply Helmet, explicit credentialed CORS origin allow-list, body-size limits, rate limits (especially auth/invitation/reset), Zod validation, safe Mongo query handling, secure cookies, request IDs and structured redacted logs before exposing authenticated routes. Use `node --test` plus Supertest for route tests; add unit tests for services and integration tests against a replica set for financial transactions. CI must run install, lint, format check, tests, dependency audit and Docker build. A release requires a passing smoke test, environment validation, backup/restore exercise, alerting ownership, and a rollback-tested deployment runbook.
+
+---
+
+## 71. CURRENT IMPLEMENTATION VS TARGET ARCHITECTURE (GAP ANALYSIS)
+
+As defined in the project baseline, the checked-in repository currently provides the foundational container, connection, and health-check skeleton. The table below provides an uncompromising architectural gap analysis comparing the **Current Repository State** against the **Target Architecture Blueprint**, categorized by delivery priority:
+
+* **P0 (Critical):** Core foundational infrastructure, security boundaries, and data models required before serving live users.
+* **P1 (High):** Operational workflows, media storage, and state machines necessary for society day-to-day operations.
+* **P2 (Medium):** Event streaming, outbox integrations, and auxiliary notification automation.
+* **P3 (Low):** Distributed job queues and horizontal caching for high-scale multi-cluster growth.
+
+| Area | Current Repository State | Target Architecture Specification | Gap Description | Priority |
+| :--- | :--- | :--- | :--- | :--- |
+| **HTTP Routing & API Gateway** | Root (`GET /`) and Health (`GET /health`) implemented in `src/app.js`. | Versioned `/api/v1` router organizing all 22 domain modules with deterministic `ApiResponse` and `ApiError` handlers. | Domain routes, API router registration, centralized 404 handler, and error serialization middleware missing. | **P0 Critical** |
+| **Identity & Authentication** | Dependencies declared in `package.json` (`jsonwebtoken`, `bcrypt`). Variables in `.env.example`. | Dual JWT system (15m Bearer Access Token + 7d HttpOnly Refresh Cookie) with token rotation, reuse detection, and invite-only onboarding. | Authentication module (`src/modules/auth`), session rotation service, and password pre-save bcrypt hooks not yet implemented. | **P0 Critical** |
+| **Authorization & RBAC/OBAC** | Role enums and permission rules specified in architecture specification. | 7-role RBAC (`SUPER_ADMIN`, `BUILDING_ADMIN`, `ACCOUNTANT`, `SECURITY_STAFF`, `MAINTENANCE_STAFF`, `OWNER`, `TENANT`) combined with building/flat scoping. | Authorization middleware (`authorize.middleware.js`), permission string registry, and tenant/building object boundary checks missing. | **P0 Critical** |
+| **Data Models & Collections** | MongoDB connection helper in `src/config/db.config.js`. Docker Mongo service defined. | Complete 22 Mongoose collection schemas with compound indexes, soft delete filters, and transaction support. | Schema files (`*.model.js`) across all 22 modules need to be implemented in `src/modules/*`. | **P0 Critical** |
+| **Input Validation Engine** | Zod v4 dependency installed in `package.json`. | Zero-trust Zod schema validation intercepting `body`, `query`, and `params` prior to controller invocation. | Validation middleware (`validate.middleware.js`) and module schemas (`*.validation.js`) need to be written. | **P0 Critical** |
+| **Financial Transactions & ACID** | Architectural specification defined in Sections 11, 23, 24, 31, 32, 40. | Multi-document ACID transactions (`session.startTransaction()`) for invoice generation, payment processing, and ledger consistency. | Payment service, invoice balance calculations, and transaction orchestration need implementation. | **P0 Critical** |
+| **File Storage & CDN Integration** | Cloudinary and Multer dependencies declared in `package.json`. | Direct memory stream pipeline to Cloudinary CDN (`/flat-maintenance/documents/`) with mime-type and size guards. | Multer memory storage configuration and Cloudinary upload streaming utility missing in `src/utils/`. | **P1 High** |
+| **Operational State Machines** | Complaint and Visitor state machines specified in Sections 48 and 68. | Enforced state transitions (`OPEN` ➔ `ASSIGNED` ➔ `RESOLVED`, `EXPECTED` ➔ `CHECKED_IN` ➔ `CHECKED_OUT`) with SLA timestamping. | State validation logic and transition guard services need implementation. | **P1 High** |
+| **Automation & Outbox Webhooks** | n8n event and webhook specification defined in Section 69. | Outbox pattern dispatching HMAC SHA-256 signed webhooks to n8n for email, WhatsApp, and push notifications. | `src/modules/automations/` outbox collection and signed webhook worker need implementation. | **P2 Medium** |
+| **Background Queues & Workers** | BullMQ and Redis architecture planned in Section 52. | Redis-backed BullMQ workers executing asynchronous PDF receipt rendering, batch invoice runs, and report exports. | Redis connection and dedicated worker processes deferred to scale phase. | **P3 Low** |
+
+---
+
+## 72. ARCHITECTURAL DECISION RECORDS (ADR-001 TO ADR-010)
+
+This section formally records the rationale, architectural tradeoffs, and operational consequences for the key foundational decisions governing the Flat Maintenance Management System.
+
+### ADR-001: Modular Monolith vs Premature Microservices
+* **Status:** Accepted
+* **Context:** The system manages complex domain entities (buildings, residents, invoices, payments, complaints, visitors) with shared database transaction requirements.
+* **Decision:** Implement the backend as a single deployable Express.js unit structured into strictly isolated domain modules (`src/modules/<module-name>/`).
+* **Consequences:** Eliminates distributed tracing overhead, network latency, distributed transaction complexity, and multi-repo operational costs. Preserves a direct, low-friction extraction path to independent microservices when individual domain traffic demands it.
+
+### ADR-002: MongoDB Document Store Selection
+* **Status:** Accepted
+* **Context:** Real estate management involves deeply nested, polymorphic structures (invoice line items, complaint work logs, guest vehicle details, audit metadata) that evolve across different building types.
+* **Decision:** Standardize on MongoDB 7.0+ with Mongoose 9.x as the primary persistence engine.
+* **Consequences:** Delivers schema flexibility for nested entities while enforcing structural integrity via Mongoose schemas. Supports multi-document ACID transactions across collections while enabling horizontal read/write scaling via MongoDB Atlas replica sets.
+
+### ADR-003: JWT Dual-Token Authentication Strategy
+* **Status:** Accepted
+* **Context:** The system must support modern web clients (Next.js) and future mobile applications with stateless horizontal scalability and strict session revocation.
+* **Decision:** Implement short-lived Access Tokens (15 minutes, passed in `Authorization: Bearer <token>`) paired with long-lived Refresh Tokens (7 days, stored in secure `HttpOnly`, `SameSite=Strict` cookies).
+* **Consequences:** Prevents Cross-Site Scripting (XSS) token theft via secure cookies while eliminating database lookup overhead on high-frequency API calls.
+
+### ADR-004: Refresh Token Rotation & Reuse Detection
+* **Status:** Accepted
+* **Context:** Long-lived refresh tokens present a security risk if intercepted over public Wi-Fi or compromised devices.
+* **Decision:** Enforce single-use refresh token rotation. Each refresh request issues a new token pair and revokes the old refresh token. If a previously used token is presented, the system treats it as token theft, invalidates the entire token family, and terminates all active sessions.
+* **Consequences:** Provides automatic defense against token replay attacks and guarantees that compromised sessions are immediately revoked.
+
+### ADR-005: Hybrid RBAC + OBAC (Building-Scope) Authorization
+* **Status:** Accepted
+* **Context:** Coarse-grained roles (`BUILDING_ADMIN`, `ACCOUNTANT`, `RESIDENT`) are insufficient because users must be strictly confined to their specific assigned building, block, or flat.
+* **Decision:** Combine Role-Based Access Control (RBAC verified at route gates) with Object-Based Access Control (OBAC verified within domain services). Every scoped collection stores `buildingId` directly.
+* **Consequences:** Guarantees that a Building Admin or Accountant in Tower A cannot view or manipulate flats, invoices, or resident records in Tower B.
+
+### ADR-006: Mandatory MongoDB Multi-Document ACID Transactions
+* **Status:** Accepted
+* **Context:** Payment settlements, flat ownership transfers, and tenant lease onboarding mutate multiple collections simultaneously. Partial failures result in corrupted financial ledgers.
+* **Decision:** Mandate `session.startTransaction()` for all multi-collection write workflows. Local development must run on a MongoDB replica set (`rs0`).
+* **Consequences:** Guarantees total financial consistency and eliminates race conditions. Requires that development and production MongoDB environments run with replica-set clustering enabled.
+
+### ADR-007: Cloudinary Direct Memory Stream Uploads
+* **Status:** Accepted
+* **Context:** Users upload proof-of-work photos, lease agreements, and payment receipts. Local disk storage complicates container autoscaling and poses disk-exhaustion risks.
+* **Decision:** Utilize Multer memory storage coupled with Cloudinary CDN streaming. Files are streamed directly from RAM to Cloudinary without writing temporary files to the container filesystem.
+* **Consequences:** Ensures complete container statelessness, accelerates media delivery via global CDN edge caches, and enables instant image resizing and format optimization.
+
+### ADR-008: Multi-Stage Docker Containerization
+* **Status:** Accepted
+* **Context:** Production containers must be minimal, lightweight, secure, and devoid of development dependencies or compiler tools.
+* **Decision:** Implement a multi-stage `Dockerfile` using `node:22-alpine`. The build stage installs dev dependencies; the production runner stage copies only production assets and executes under an unprivileged `node` user.
+* **Consequences:** Reduces container image size from >1GB to <180MB, shrinks the security attack surface, and speeds up CI/CD container build and deployment times.
+
+### ADR-009: Outbox Pattern & Background Workers
+* **Status:** Accepted
+* **Context:** External automations (email alerts, WhatsApp visitor notifications, invoice PDF generation) must not block synchronous HTTP API request cycles or cause API failures when external providers experience outages.
+* **Decision:** Persist events to an internal transactional Outbox collection, then dispatch HMAC-signed events to n8n webhooks and Redis/BullMQ worker queues.
+* **Consequences:** Guarantees sub-100ms API response latencies, provides automatic retry mechanisms for failed external deliveries, and protects core business operations from third-party downtimes.
+
+### ADR-010: Deferred Selective Microservices Extraction
+* **Status:** Accepted
+* **Context:** Premature microservices architecture introduces excessive network serialization, distributed failure modes, and developer friction during the initial product build.
+* **Decision:** Maintain a strict Modular Monolith during initial rollout phases. Defer microservices extraction until telemetry proves that specific high-throughput domains (e.g., Notification delivery or Visitor gate scanning) bottleneck the central cluster.
+* **Consequences:** Maximizes initial development velocity and system cohesion while preserving clean module boundaries that can be extracted into standalone containers when traffic scale demands it.
+
+---
+
+## 73. DEVELOPER WORKFLOW & GIT CONVENTIONS
+
+To ensure codebase maintainability, predictable deployments, and strict adherence to architectural contracts, all engineering contributions must follow the standardized workflows below.
+
+### 73.1 Standard Feature Implementation Lifecycle
+
+Developers must never start by blindly writing controllers. Every new module or endpoint implementation must execute strictly in this sequential order:
+
+```text
+1. Requirement Analysis & Business Rules Confirmation
+               │
+               ▼
+2. Database Schema Modeling (Mongoose & Indexes)
+               │
+               ▼
+3. Zero-Trust Payload Validation (Zod Schemas)
+               │
+               ▼
+4. Domain Service Layer (Business Logic & ACID Transactions)
+               │
+               ▼
+5. Controller Layer (Pure HTTP Adapter & Standard ApiResponse)
+               │
+               ▼
+6. Routing Layer & Middleware Attachment (Auth, RBAC, Upload)
+               │
+               ▼
+7. Automated Tests (node --test & supertest Integration)
+               │
+               ▼
+8. Security & OBAC Building-Scope Review
+               │
+               ▼
+9. Technical Documentation Synchronization
+```
+
+### 73.2 Git Branching Strategy
+
+The repository follows a structured Git branching model:
+
+* `main`: Protected production branch. Represents production-deployed code. Merges occur exclusively via Pull Requests from `development` after passing automated CI checks and release gates.
+* `development`: Active integration branch. All feature branches branch off and merge back into `development`.
+* `feature/<module-name>`: Feature development branches (e.g., `feature/auth-module`, `feature/invoice-billing`).
+* `fix/<issue-name>`: Bug fixes resolving defects in development.
+* `hotfix/<critical-issue>`: Emergency production patches branched directly from `main` and back-ported into `development`.
+
+### 73.3 Conventional Commit Standards
+
+All commit messages are strictly validated by `@commitlint` and must adhere to the Conventional Commits specification:
+
+```text
+<type>(<optional scope>): <short description in imperative mood>
+
+[optional body explaining rationale]
+
+[optional footer referencing issue/ticket]
+```
+
+* `feat:` New user-facing or API feature (e.g., `feat(auth): implement refresh token rotation`).
+* `fix:` Bug fix (e.g., `fix(invoice): resolve late fee calculation rounding error`).
+* `refactor:` Code restructuring without functional behavior changes (e.g., `refactor(db): extract transaction session wrapper`).
+* `docs:` Documentation additions or updates (e.g., `docs: add high-level system and client overview`).
+* `test:` Adding or updating unit/integration test suites (e.g., `test(payment): add concurrent payment conflict tests`).
+* `chore:` Build scripts, dependency bumps, or tool configurations (e.g., `chore: upgrade express-rate-limit to v8.6`).
+* `perf:` Performance optimizations (e.g., `perf(flat): add compound index for flat number lookup`).
+* `security:` Security hardening or vulnerability mitigations (e.g., `security(auth): enforce password login lock counter`).
+
+---
+
+## 74. SYSTEM ARCHITECTURE VISUAL GRAPHS (MERMAID SPECIFICATIONS)
+
+This section provides visual architectural specifications illustrating physical topology, cloud hosting, CI/CD pipelines, and security hierarchies.
+
+### 74.1 Docker Local Development Architecture (Replica Set `rs0`)
+
+```mermaid
+graph TD
+    subgraph Host["💻 DEVELOPER WORKSTATION"]
+        Browser["🌐 Web Client (Next.js :3000)"]
+        Postman["🧪 API Client / Supertest"]
+    end
+
+    subgraph DockerCompose["🐳 DOCKER COMPOSE NETWORK (flat-maintenance-net)"]
+        BackendContainer["⚙️ flat-maintenance-backend (Container)<br/>Node.js 22 LTS (ESM) :5000<br/>Healthcheck: GET /health"]
+        MongoContainer[("🍃 flat-maintenance-mongo (Container)<br/>MongoDB 7.0 (Replica Set: rs0) :27017<br/>Healthcheck: mongosh ping")]
+        MongoVolume["💾 Docker Volume (mongo-data)<br/>Persistent Database Storage"]
+    end
+
+    subgraph ExternalCloud["☁️ EXTERNAL CLOUD SERVICES"]
+        CloudinaryCDN["🖼️ Cloudinary CDN (Media & Docs)"]
+        n8nWebhook["⚡ n8n Workflow Automation Engine"]
+    end
+
+    Browser -->|HTTP :5000| BackendContainer
+    Postman -->|HTTP :5000| BackendContainer
+    BackendContainer -->|MONGO_URI replicaSet=rs0| MongoContainer
+    MongoContainer --> MongoVolume
+    BackendContainer -.->|Direct Stream Upload| CloudinaryCDN
+    BackendContainer -.->|HMAC SHA-256 Webhook| n8nWebhook
+```
+
+### 74.2 AWS Production Cloud Deployment Architecture
+
+```mermaid
+graph TD
+    Users["👥 End Users (Web & Mobile)"] --> Route53["🌐 AWS Route 53 (DNS)"]
+    Route53 --> ALB["⚖️ AWS Application Load Balancer (ALB)<br/>SSL / TLS Termination (ACM Certificate)"]
+
+    subgraph VPC["🔒 AWS VPC (Multi-AZ Production Environment)"]
+        subgraph PublicSubnets["Public Subnets (AZ-1 & AZ-2)"]
+            NAT["NAT Gateway"]
+        end
+
+        subgraph PrivateSubnets["Private Subnets (Isolated Compute)"]
+            ECSCluster["🚢 AWS ECS Fargate Cluster"]
+            Container1["Node.js Express 5 Task (AZ-1)"]
+            Container2["Node.js Express 5 Task (AZ-2)"]
+        end
+    end
+
+    subgraph ManagedCloud["☁️ MANAGED DATABASE & ASSETS"]
+        AtlasCluster[("🍃 MongoDB Atlas Dedicated Cluster<br/>Multi-AZ Replica Set (Primary + Secondaries)")]
+        Cloudinary["🖼️ Cloudinary CDN (Document Vault)"]
+        SecretsManager["🔑 AWS Secrets Manager (Production .env)"]
+        CloudWatch["📈 AWS CloudWatch (Logs & Metrics)"]
+    end
+
+    ALB --> Container1
+    ALB --> Container2
+    ECSCluster --> Container1
+    ECSCluster --> Container2
+    Container1 --> AtlasCluster
+    Container2 --> AtlasCluster
+    Container1 -.-> Cloudinary
+    Container2 -.-> Cloudinary
+    Container1 -.-> SecretsManager
+    Container2 -.-> SecretsManager
+    Container1 --> CloudWatch
+    Container2 --> CloudWatch
+```
+
+### 74.3 GitHub Actions CI/CD Automated Pipeline
+
+```mermaid
+flowchart TD
+    Push["🚀 Push / Pull Request to development or main"] --> LintJob["🔍 Job 1: Lint & Code Quality<br/>eslint . && prettier --check ."]
+    LintJob --> SecAudit["🛡️ Job 2: Dependency Security Audit<br/>yarn audit / npm audit"]
+    SecAudit --> UnitTests["🧪 Job 3: Unit & Integration Tests<br/>node --test (Smoke & Integration)"]
+    UnitTests --> DockerBuild["🐳 Job 4: Multi-Stage Docker Build<br/>Build & Smoke-test Container"]
+    
+    DockerBuild --> DeployGate{"🌿 Target Branch Check"}
+    DeployGate -->|"Branch: development"| StagingDeploy["📦 Deploy to Staging (AWS ECS Staging)"]
+    DeployGate -->|"Branch: main"| ProdDeploy["🚀 Deploy to Production (AWS ECS Production)"]
+```
+
+### 74.4 RBAC & Building-Scope Hierarchy Diagram
+
+```mermaid
+graph TD
+    SuperAdmin["👑 SUPER_ADMIN<br/>Global Access across all Societies & Buildings"]
+    BuildingAdmin["🏗️ BUILDING_ADMIN<br/>Scoped strictly to assigned Building A & B"]
+    Accountant["💼 ACCOUNTANT<br/>Financial Operations in assigned Building"]
+    SecurityStaff["🛡️ SECURITY_STAFF<br/>Gate Access & Visitor Logs in assigned Building"]
+    MaintenanceStaff["🛠️ MAINTENANCE_STAFF<br/>Assigned repair tickets in assigned Building"]
+    Owner["🏠 FLAT OWNER<br/>Access restricted to owned Flat Units"]
+    Tenant["🏠 TENANT<br/>Access restricted to currently leased Flat Unit"]
+
+    SuperAdmin --> BuildingAdmin
+    BuildingAdmin --> Accountant
+    BuildingAdmin --> SecurityStaff
+    BuildingAdmin --> MaintenanceStaff
+    BuildingAdmin --> Owner
+    BuildingAdmin --> Tenant
+```
+
+---
+
+## 75. PRODUCTION READINESS CHECKLIST & QUALITY GATES
+
+Before tagging a production release or handing over modules to frontend integration, the system must satisfy the verification quality gates below:
+
+### 75.1 Master Production Readiness Audit
+
+| Category | Checklist Item | Status | Verification Criteria |
+| :--- | :--- | :--- | :--- |
+| **Architecture** | Modular Monolith boundaries enforced | `[READY]` | Domains live in `src/modules/*`; controllers have zero DB queries. |
+| **Architecture** | Express 5 Promise Rejection handling | `[READY]` | Async route errors propagate automatically to error middleware. |
+| **Database** | 22 Collection Schemas defined | `[PARTIAL]` | Schemas specified in blueprint; implementation queued in Phase 1-21. |
+| **Database** | Compound & Unique Indexes defined | `[READY]` | Partial unique indexes on email, flat numbers, and pass codes specified. |
+| **Database** | Multi-Document ACID Transactions | `[READY]` | Transaction session boundaries enforced for billing and payments. |
+| **Authentication** | Dual-Token JWT with Token Rotation | `[READY]` | 15m access token + 7d HttpOnly refresh cookie rotation blueprint ready. |
+| **Authentication** | Invite-Only Admin Onboarding | `[READY]` | Public self-registration of privileged administrative roles strictly prohibited. |
+| **Authorization** | RBAC Route Middleware | `[READY]` | Route gates enforce named permissions (`authorize('BUILDING_CREATE')`). |
+| **Authorization** | OBAC Building-Scope Validation | `[READY]` | Domain services verify user-to-building and user-to-flat data boundaries. |
+| **Security** | Security Headers & Sanitization | `[READY]` | Helmet, CORS allow-list, rate limits, and MongoDB query sanitizers declared. |
+| **Validation** | Zero-Trust Zod Schema Engine | `[READY]` | Body, query, and path params validated prior to controller execution. |
+| **Error Handling** | Centralized `ApiError` Middleware | `[READY]` | Standardized JSON error response without exposing stack traces in production. |
+| **Testing** | Automated Smoke & Route Tests | `[READY]` | `npm test` verified with native Node runner; supertest integration ready. |
+| **Container** | Multi-Stage Production Dockerfile | `[READY]` | Alpine-based multi-stage container executing under non-root `node` user. |
+| **DevOps** | GitHub Actions CI Automation | `[READY]` | Lint, audit, test, and Docker container build pipeline configured. |
+| **Disaster Recovery**| Continuous Backups & RPO/RTO | `[READY]` | MongoDB Atlas continuous snapshots with RPO < 5 min, RTO < 1 hour. |
+
+### 75.2 Principal Architect Verification Gates (The 10 Quality Gates)
+
+A senior engineer or auditor must be able to answer **YES** to all 10 questions before approving an implementation milestone:
+
+1. **Self-Contained Logic:** Can a developer implement a new module without writing business logic inside the controller? *(YES: Controllers are pure HTTP adapters; 100% of business logic lives in Services).*
+2. **Deterministic Validation:** Can invalid client inputs reach database queries? *(NO: Zod middleware rejects malformed body, query, or path parameters at the route gate).*
+3. **Privileged Escalation Prevention:** Can an attacker register themselves as an Admin or Accountant? *(NO: Registration of privileged roles is impossible; accounts require cryptographic admin invitations).*
+4. **Data Isolation (Multi-Building Safety):** Can a Building Admin in Tower A see finances or tenants of Tower B? *(NO: OBAC building-scope filtering is enforced at the database query layer).*
+5. **Financial Safety:** Can a network glitch during checkout cause partial payment recording or balance mismatch? *(NO: All financial writes execute within ACID MongoDB transaction sessions).*
+6. **Token Theft Mitigation:** Can a stolen refresh token be used indefinitely? *(NO: Automatic rotation and reuse detection invalidates the entire token family upon duplicate presentation).*
+7. **Stateless Scalability:** Can the backend containers scale from 1 instance to 10 instances on AWS ECS without breaking sessions? *(YES: Containers are 100% stateless; sessions reside in JWTs and client cookies).*
+8. **Media Security:** Can malicious files compromise server storage? *(NO: File uploads stream directly from memory to Cloudinary with strict mime-type and size limits).*
+9. **Traceability:** Can an administrator secretly alter past maintenance fees or tenant records without a trace? *(NO: The immutable, append-only Audit Log collection records actor, timestamp, IP, and before/after values).*
+10. **Blueprint Consistency:** Does the codebase diverge from the approved 22-module single source of truth? *(NO: This document serves as the absolute, non-negotiable architectural blueprint).*
