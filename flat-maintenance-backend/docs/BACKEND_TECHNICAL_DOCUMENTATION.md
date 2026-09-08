@@ -15,6 +15,7 @@
 ## TABLE OF CONTENTS
 
 1. [Executive Summary & Project Overview](#1-executive-summary--project-overview)
+   - [🌟 High-Level System & Client Overview](#high-level-system--client-overview)
 2. [Technology Stack & Library Justifications](#2-technology-stack--library-justifications)
 3. [Backend Architecture & Layered Design](#3-backend-architecture--layered-design)
 4. [Project Directory Structure](#4-project-directory-structure)
@@ -123,6 +124,510 @@ The **Flat Maintenance Management System Backend** serves as the central adminis
 ### 1.5 Architecture Model: Modular Monolith
 
 The application is intentionally designed as a **Modular Monolith**. Rather than introducing premature microservices complexity (network latency, distributed tracing overhead, saga orchestrations), the backend isolates each domain within self-contained modules (`src/modules/<module-name>`). Each module owns its schema definitions, services, controllers, and validation rules while remaining in a single deployable Express.js unit. This guarantees high cohesion, low coupling, simple local developer workflows, and a direct path to domain extraction into microservices when traffic scale demands it.
+
+---
+
+## HIGH-LEVEL SYSTEM & CLIENT OVERVIEW
+
+The **Flat Maintenance Management System** is a unified digital operations platform built to streamline residential community living, property oversight, maintenance dispatch, financial accounting, and community governance. 
+
+Before diving into granular technical specifications and backend modules, this section provides developers, engineering leads, product stakeholders, and clients with an executive, big-picture architectural map of the entire system.
+
+```text
+Users
+  │
+  ▼
+Next.js Client Application
+  │
+  ▼
+Backend REST API
+  │
+  ▼
+Database
+```
+
+### Core Value Proposition & System Personas
+
+The system bridges the operational gap between residential occupants and community management through three primary user personas:
+
+1. **👑 Admin (System & Society Governance):** Exercises overarching control over global system settings, building hierarchies, staff and manager provisioning, financial auditing, and system-wide compliance logs.
+2. **🏗️ Manager (Daily Operations & Facilities):** Oversees day-to-day facility workflows, block and flat inventory, maintenance dispatching, vendor tasks, complaint triage, and community announcements.
+3. **🏠 Resident (Self-Service & Living Experience):** Comprises property owners and tenants who interact with flat services, review automated maintenance dues, submit maintenance tickets, lodge complaints, and verify visitors.
+
+---
+
+### 1. Complete System High-Level Overview
+
+The system employs a modern **Tri-Tier Architecture** cleanly separating client presentation, backend API business logic, and persistent document storage. The Next.js frontend delivers responsive, role-tailored interfaces that communicate over secure HTTPS JSON REST endpoints with the modular Node.js/Express backend, which orchestrates transactions across MongoDB collections.
+
+#### 📊 System Architecture Graph (Mermaid)
+
+```mermaid
+graph TD
+    subgraph UsersTier["👥 SYSTEM USERS"]
+        Admin["👑 Admin<br/>System Governance & Configuration"]
+        Manager["🏗️ Manager<br/>Daily Operations & Facility Dispatch"]
+        Resident["🏠 Resident<br/>Flat Services & Maintenance Inquiries"]
+    end
+
+    subgraph ClientTier["💻 NEXT.JS CLIENT APPLICATION"]
+        Pages["📄 Pages & Layouts (App Router)"]
+        Dashboards["📊 Role-Tailored Dashboards"]
+        Components["🧩 Shared UI Components & Forms"]
+        ClientState["🧠 Auth State & Client Cache"]
+        ApiClient["🔌 API Service Layer (Axios / Fetch)"]
+    end
+
+    subgraph BackendTier["⚙️ BACKEND REST API (NODE.JS & EXPRESS 5)"]
+        Gateways["🛡️ Security Gateway (Helmet, CORS, Rate Limit)"]
+        AuthModule["🔐 Auth & RBAC Middleware (JWT / Cookies)"]
+        Validation["📐 Validation Engine (Zod Schemas)"]
+        Controllers["🕹️ HTTP Controllers & Routing"]
+        BusinessLogic["🏢 Modular Domain Services (22 Modules)"]
+    end
+
+    subgraph DataTier["🗄️ DATABASE (MONGODB)"]
+        MongoDb[("🍃 MongoDB Dedicated Cluster<br/>22 Schemas & ACID Transactions")]
+    end
+
+    Admin --> Pages
+    Manager --> Pages
+    Resident --> Pages
+    Pages --> Dashboards
+    Pages --> Components
+    Dashboards --> ApiClient
+    Components --> ApiClient
+    ApiClient -->|"HTTPS / REST API (JWT Bearer)"| Gateways
+    Gateways --> AuthModule
+    AuthModule --> Validation
+    Validation --> Controllers
+    Controllers --> BusinessLogic
+    BusinessLogic -->|"Mongoose ODM Queries / Sessions"| MongoDb
+```
+
+#### 📊 Complete System Architecture (ASCII Diagram)
+
+```text
+                         🏢 FLAT MAINTENANCE SYSTEM
+
+                                      │
+                                      ▼
+
+                         ┌─────────────────────┐
+                         │       USERS         │
+                         └──────────┬──────────┘
+                                    │
+                  ┌─────────────────┼─────────────────┐
+                  │                 │                 │
+                  ▼                 ▼                 ▼
+
+             👑 ADMIN          🏗️ MANAGER        🏠 RESIDENT
+
+                  │                 │                 │
+                  └─────────────────┼─────────────────┘
+                                    │
+                                    ▼
+
+                      ┌──────────────────────────┐
+                      │   NEXT.JS CLIENT APP     │
+                      │                          │
+                      │  Pages • Components      │
+                      │  Dashboards • Forms      │
+                      └────────────┬─────────────┘
+                                   │
+                                   │ HTTPS / REST API
+                                   ▼
+                      ┌──────────────────────────┐
+                      │     BACKEND REST API     │
+                      │                          │
+                      │ Auth • Business Logic    │
+                      │ Validation • Security    │
+                      └────────────┬─────────────┘
+                                   │
+                                   ▼
+                      ┌──────────────────────────┐
+                      │        DATABASE          │
+                      │                          │
+                      │   Application Data       │
+                      └──────────────────────────┘
+```
+
+#### Architectural Tier Responsibilities
+
+* **Next.js Client Application:** Delivers high-performance server-side rendering (SSR) and reactive client-side components. It handles user interactions, local form validation, and role-based UI presentation while abstracting network requests behind dedicated API services.
+* **Backend REST API:** Implements hardened modular controllers and domain services in Node.js (ESM) and Express 5. It enforces strict request sanitization, authentication, role authorization, and state machines, keeping business rules independent of the presentation layer.
+* **Database (MongoDB):** Provides high-throughput document persistence across 22 normalized domain collections, enforcing data consistency via Mongoose schemas and multi-document ACID transactions for financial and occupancy workflows.
+
+---
+
+### 2. Role-Based Client Overview & Protected Routing
+
+Security and usability require that users experience interfaces strictly aligned with their organizational responsibilities. The client application implements **Role-Based Access Control (RBAC)** at the routing layer: after authenticating, the client decodes the user's role and grants access exclusively to authorized views and actions.
+
+#### 📊 Role-Based Routing Graph (Mermaid)
+
+```mermaid
+flowchart TD
+    User(["👤 Authenticating User"]) --> Login["🔑 Login Page (/login)"]
+    Login --> SubmitAuth["🔐 POST /api/v1/auth/login"]
+    SubmitAuth --> VerifyToken["🎫 Server Generates Access JWT & Session Cookie"]
+    VerifyToken --> RoleEval{"🛡️ Evaluate User Role"}
+
+    RoleEval -->|"Role: SUPER_ADMIN / ADMIN"| AdminDash["👑 Admin Dashboard (/admin/*)<br/>• Society Hierarchy Management<br/>• Manager & Staff Provisioning<br/>• System-wide Financial Audits<br/>• Global System Settings"]
+    RoleEval -->|"Role: MANAGER"| ManagerDash["🏗️ Manager Dashboard (/manager/*)<br/>• Building & Flat Operations<br/>• Maintenance Ticket Dispatch<br/>• Complaint Triage & SLA Tracking<br/>• Notice & Announcement Publishing"]
+    RoleEval -->|"Role: RESIDENT / OWNER / TENANT"| ResidentDash["🏠 Resident Dashboard (/resident/*)<br/>• My Flat Unit Details<br/>• Create Maintenance Requests<br/>• Track Complaints & Submit Ratings<br/>• View & Pay Invoices Online"]
+
+    AdminDash -.->|"Unauthorized Attempt"| Denied["🚫 403 Forbidden Access Guard"]
+    ManagerDash -.->|"Unauthorized Attempt"| Denied
+    ResidentDash -.->|"Unauthorized Attempt"| Denied
+```
+
+#### 📊 Role-Based Client Overview (ASCII Diagram)
+
+```text
+                            USER
+                              │
+                              ▼
+                         ┌──────────┐
+                         │  LOGIN   │
+                         └────┬─────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │ AUTHENTICATION   │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │   ROLE CHECK     │
+                    └────────┬─────────┘
+                             │
+             ┌───────────────┼────────────────┐
+             │               │                │
+             ▼               ▼                ▼
+        ┌─────────┐      ┌─────────┐      ┌──────────┐
+        │  ADMIN  │      │ MANAGER │      │ RESIDENT │
+        └────┬────┘      └────┬────┘      └────┬─────┘
+             │                │                │
+             ▼                ▼                ▼
+      Admin Dashboard   Manager Dashboard  Resident Dashboard
+```
+
+#### Key Client Security Principles
+
+* **Protected Route Guards:** The Next.js client encapsulates private views within higher-order route middleware. Any unauthenticated access attempt triggers an immediate redirection to `/login` with return-path preservation.
+* **Granular Role Dashboards:** Each role is directed to a purpose-built workspace. Admins see governance controls; Managers see operational queues and dispatch panels; Residents see flat details, pending dues, and personal tickets.
+* **Defense-in-Depth Authorization:** While the frontend provides responsive UX by hiding unauthorized navigation elements, the backend REST API independently authenticates every HTTP request via JWT and authorizes every endpoint through strict RBAC/OBAC middleware.
+
+---
+
+### 3. Client Application Module Overview
+
+The Next.js client application is structured modularly into public entry points, role-segregated workspaces, reusable visual components, an abstracted API communication layer, and centralized client state.
+
+#### 📊 Client Application Architecture Tree
+
+```text
+NEXT.JS CLIENT APPLICATION
+│
+├── 🌐 PUBLIC AREA
+│   ├── Login
+│   ├── Forgot Password
+│   └── Reset Password
+│
+├── 🔐 PROTECTED APPLICATION
+│   │
+│   ├── 👑 ADMIN AREA
+│   │   ├── Dashboard
+│   │   ├── User Management
+│   │   ├── Building Management
+│   │   ├── Manager Management
+│   │   └── Reports
+│   │
+│   ├── 🏗️ MANAGER AREA
+│   │   ├── Dashboard
+│   │   ├── Buildings
+│   │   ├── Flats
+│   │   ├── Residents
+│   │   ├── Maintenance Requests
+│   │   ├── Complaints
+│   │   ├── Payments
+│   │   └── Announcements
+│   │
+│   └── 🏠 RESIDENT AREA
+│       ├── Dashboard
+│       ├── My Flat
+│       ├── Maintenance Requests
+│       ├── Complaints
+│       ├── My Payments
+│       ├── Announcements
+│       └── My Profile
+│
+├── 🧩 SHARED UI COMPONENTS
+│   ├── Sidebar
+│   ├── Navbar
+│   ├── Tables
+│   ├── Forms
+│   ├── Modals
+│   └── Reusable UI Components
+│
+├── 🔌 API / SERVICE LAYER
+│   ├── Authentication API
+│   ├── User API
+│   ├── Building API
+│   ├── Flat API
+│   ├── Maintenance API
+│   ├── Complaint API
+│   └── Payment API
+│
+└── 🧠 CLIENT STATE
+    ├── Authentication State
+    ├── Current User
+    ├── UI State
+    └── Server/API Data
+```
+
+#### 📊 Client Module Relationship Map (Mermaid)
+
+```mermaid
+graph LR
+    subgraph Public["🌐 PUBLIC PAGES"]
+        Login["Login Page"]
+        Forgot["Forgot Password"]
+        Reset["Reset Password"]
+    end
+
+    subgraph Portals["🔐 ROLE-BASED PORTALS"]
+        AdminPortal["👑 Admin Portal<br/>Users • Buildings • Reports"]
+        MgrPortal["🏗️ Manager Portal<br/>Operations • Requests • Notices"]
+        ResPortal["🏠 Resident Portal<br/>My Flat • Invoices • Complaints"]
+    end
+
+    subgraph Shared["🧩 SHARED SYSTEM DESIGN"]
+        Nav["Sidebar & Navbar"]
+        DataTables["Data Tables & Filters"]
+        ModalForms["Modals & Form Controls"]
+        StatusBadges["Status Indicators & Cards"]
+    end
+
+    subgraph ServiceLayer["🔌 CLIENT API / SERVICES"]
+        AuthSvc["Auth Service"]
+        FacilitySvc["Building & Flat Service"]
+        MaintSvc["Maintenance & Complaint Service"]
+        BillSvc["Invoices & Payment Service"]
+    end
+
+    subgraph StateStore["🧠 CLIENT APPLICATION STATE"]
+        AuthStore["Auth & Session Store"]
+        UIStore["Theme & Modal UI Store"]
+        QueryCache["Server Cache (TanStack Query / SWR)"]
+    end
+
+    Public -.->|"On Authentication"| Portals
+    Portals --> Shared
+    Portals --> ServiceLayer
+    ServiceLayer --> StateStore
+```
+
+#### Client Modular Layer Breakdown
+
+* **Public Area:** Entry-point screens accessible without authentication, handling credentials submission, password resets, and session recovery.
+* **Protected Application Workspaces:** Role-partitioned directories isolating features, forms, and tables relevant only to the authenticated persona.
+* **Shared UI Components:** Atomic design system elements (data tables, responsive sidebars, accessible form inputs, confirmation modals, status badges) guaranteeing visual and functional consistency across all dashboards.
+* **API / Service Layer:** Centralized HTTP abstraction layer where Axios/Fetch instances attach authentication headers, intercept 401 unauthorized errors for token refreshes, and map backend JSON payloads into strongly typed frontend models.
+* **Client State:** Lightweight reactive store managing active user profile details, layout preferences (e.g., sidebar toggles, theme modes), and cached server responses with automatic background revalidation.
+
+---
+
+### 4. Complete End-to-End Data Flow Lifecycle
+
+Every user interaction follows a deterministic request-response lifecycle traversing the frontend UI, client-side services, network transport, backend middleware, business domain services, and the database.
+
+#### 📊 End-to-End Data Flow Sequence (Mermaid)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User Action
+    participant Page as 💻 Next.js Page / UI
+    participant Component as 📝 Component / Form
+    participant Service as 🔌 API / Service Layer
+    participant Backend as ⚙️ Backend REST API
+    participant Database as 🗄️ MongoDB Database
+
+    User->>Page: Initiates action (clicks button, enters data)
+    Page->>Component: Captures input state and triggers handler
+    Component->>Component: Validates input client-side (Zod / Form Hook)
+    Component->>Service: Invokes API service method (e.g. submitRequest)
+    Service->>Backend: Dispatches HTTPS Request (JSON payload + Bearer JWT)
+    
+    rect rgb(240, 245, 255)
+        Note over Backend: Middleware Pipeline:<br/>1. Helmet / CORS / Rate Limiter<br/>2. Authenticate JWT & Verify User Status<br/>3. RBAC / Building-Scope Authorization<br/>4. Zod Schema Validation & Sanitization
+        Backend->>Backend: Controller extracts parameters and delegates to Service
+        Backend->>Database: Service executes business logic / ACID query
+        Database-->>Backend: MongoDB returns updated document / result
+        Backend-->>Service: Standardized JSON ApiResponse (Status 200/201)
+    end
+
+    Service-->>Component: Resolves Promise with typed payload
+    Component-->>Page: Updates local state (cache invalidation, toast notification)
+    Page-->>User: Interface updates dynamically (re-renders views, closes modals)
+```
+
+#### 📊 Complete Data Flow (ASCII Diagram)
+
+```text
+USER ACTION
+     │
+     ▼
+┌─────────────────────┐
+│ NEXT.JS PAGE / UI   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ COMPONENT / FORM    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ API / SERVICE LAYER │
+└──────────┬──────────┘
+           │
+           │ HTTP REQUEST
+           ▼
+┌─────────────────────┐
+│   BACKEND REST API  │
+└──────────┬──────────┘
+           │
+           │ Business Logic
+           ▼
+┌─────────────────────┐
+│      DATABASE       │
+└──────────┬──────────┘
+           │
+           │ Response
+           ▼
+┌─────────────────────┐
+│ UPDATE CLIENT UI    │
+└─────────────────────┘
+```
+
+#### Lifecycle Stage Walkthrough
+
+1. **User Action:** The user performs an operation (e.g., submitting a form, clicking a status filter, or initiating a bill payment).
+2. **Next.js Page & Form Component:** React state captures form inputs; client-side validation executes immediately to give instant visual feedback on missing or malformed inputs without consuming network bandwidth.
+3. **API / Service Layer:** The component calls an isolated service function. The service serializes the payload, attaches the JWT Bearer authorization token, and handles cross-cutting concerns like request timeouts and cancellation tokens.
+4. **Backend REST API Processing:**
+   * **Security Middleware:** Validates CORS origins, applies Helmet security headers, checks rate limits, and sanitizes input.
+   * **Authentication & RBAC:** Verifies token validity, extracts user ID and role, and checks endpoint permissions.
+   * **Validation Engine:** Zod verifies query params, path params, and body structure against schema contracts.
+   * **Controller & Service Layer:** The controller delegates execution to domain services where business rules and multi-collection database operations occur.
+5. **Database Persistence:** The service executes optimized Mongoose queries or ACID transactions against MongoDB.
+6. **Client UI Hydration:** The server returns a standardized `ApiResponse` (`{ success: true, statusCode: 200, data: {...} }`). The client service resolves the response, updates client caches (e.g., TanStack Query), triggers feedback notifications (toast alerts), and smoothly updates the user interface.
+
+---
+
+### 5. Maintenance Request Example Flow (Real-World Walkthrough)
+
+To understand how all pieces integrate during daily operations, consider a real-world scenario: a **Resident logs a plumbing maintenance request**, which is subsequently processed by the backend and displayed on the **Manager's Operational Dashboard**.
+
+#### 📊 Maintenance Request Operational Flow (Mermaid)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Resident as 🏠 Resident
+    participant ResUI as 📱 Resident UI (/resident/requests)
+    participant ClientAPI as 🔌 Client API Service
+    participant Backend as ⚙️ Backend REST API (/api/v1/complaints)
+    participant Database as 🗄️ MongoDB (Complaints Collection)
+    actor Manager as 🏗️ Manager
+    participant MgrUI as 🖥️ Manager UI (/manager/maintenance)
+
+    Resident->>ResUI: Fills form: Title, Category, Priority, Description
+    Resident->>ResUI: Clicks "Submit Request"
+    ResUI->>ClientAPI: Calls complaintsApi.createRequest(formData)
+    ClientAPI->>Backend: POST /api/v1/complaints (Bearer JWT + Payload)
+    
+    rect rgb(240, 255, 240)
+        Note over Backend: 1. Authenticate Resident & Flat Tenancy<br/>2. Validate Zod Schema (Category, Priority)<br/>3. Generate Unique Ticket ID (e.g., TKT-2026-0891)<br/>4. Set Initial Status: OPEN / PENDING_TRIAGE
+        Backend->>Database: Insert new complaint document into collection
+        Database-->>Backend: Document saved with ObjectId & Timestamps
+        Backend-->>ClientAPI: HTTP 201 Created (ApiResponse with ticket details)
+    end
+
+    ClientAPI-->>ResUI: Success response received
+    ResUI-->>Resident: Shows success toast & appends ticket to resident list
+
+    rect rgb(255, 250, 240)
+        Note over Manager,MgrUI: Manager Operational Triage
+        Manager->>MgrUI: Opens Maintenance Management Dashboard
+        MgrUI->>ClientAPI: Queries GET /api/v1/complaints?status=OPEN
+        ClientAPI->>Backend: GET /api/v1/complaints (Manager Bearer JWT)
+        Backend->>Database: Query complaints scoped to Manager's assigned building
+        Database-->>Backend: Returns active complaints list
+        Backend-->>MgrUI: HTTP 200 OK with newly created ticket
+        MgrUI-->>Manager: Displays new ticket with "OPEN" badge ready for staff assignment
+    end
+```
+
+#### 📊 Maintenance Request Example Flow (ASCII Diagram)
+
+```text
+🏠 RESIDENT
+     │
+     │ Creates Request
+     ▼
+┌─────────────────────────┐
+│ MAINTENANCE REQUEST UI  │
+│                         │
+│ Title                   │
+│ Description             │
+│ Category                │
+│ Priority                │
+└────────────┬────────────┘
+             │
+             │ Submit
+             ▼
+┌─────────────────────────┐
+│ CLIENT API SERVICE      │
+│                         │
+│ POST /maintenance       │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ BACKEND REST API        │
+│                         │
+│ Validate                │
+│ Authorize               │
+│ Process Request         │
+└────────────┬────────────┘
+             │
+             ▼
+       ┌───────────┐
+       │ DATABASE  │
+       └─────┬─────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ MANAGER DASHBOARD       │
+│                         │
+│ New Maintenance Request │
+└─────────────────────────┘
+```
+
+#### Step-by-Step Scenario Breakdown
+
+1. **Resident Submission:** A resident navigates to their maintenance portal, specifies the issue category (e.g., *Plumbing*), selects urgency priority (*High*), writes a description, and clicks submit.
+2. **Client API Dispatch:** The Next.js client invokes `complaintsApi.create()`, sending a `POST /api/v1/complaints` request carrying the resident's JWT authorization header.
+3. **Backend Validation & Business Rules:**
+   * The backend validates the user's active residency against the flat in question.
+   * Zod enforces required field presence and enumerated category/priority values.
+   * The complaint service generates a tracking ticket identifier, sets the status machine to `OPEN`, logs an audit entry, and records the initial SLA timestamp.
+4. **Database Insertion:** The document is written to MongoDB with indexed references linking the complaint to the Resident, Flat, Building, and Block.
+5. **Manager Operational Visibility:** When the building manager opens their maintenance operations dashboard, the client issues a scoped query (`GET /api/v1/complaints?buildingId=...&status=OPEN`). The newly created ticket appears with an urgent indicator, enabling the manager to assign a specialized technician with a single click.
 
 ---
 
