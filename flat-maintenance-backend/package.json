@@ -31,6 +31,8 @@
     "build": "node --check src/app.js && node --check src/server.js && node --check src/config/db.config.js",
     "test": "node src/scripts/api-smoke-test.js",
     "test:smoke": "node src/scripts/api-smoke-test.js",
+    "test:auth": "node --test --env-file=.env src/modules/auth/auth.test.js",
+    "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "prepare": "husky"
   },
   "lint-staged": {
