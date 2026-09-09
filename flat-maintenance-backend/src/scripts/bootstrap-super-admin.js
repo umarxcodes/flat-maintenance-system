@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.config.js";
 import { User } from "../models/user.model.js";
+import { Role } from "../models/role.model.js";
 import { ROLES } from "../constants/roles.constant.js";
 import { ACCOUNT_STATUS } from "../constants/status.constant.js";
 import { logger } from "../utils/logger.util.js";
@@ -49,6 +50,8 @@ const bootstrapSuperAdmin = async () => {
       process.exit(1);
     }
 
+    const superAdminRole = await Role.findOne({ name: ROLES.SUPER_ADMIN });
+
     const superAdmin = new User({
       firstName,
       lastName,
@@ -56,6 +59,7 @@ const bootstrapSuperAdmin = async () => {
       password,
       phone,
       role: ROLES.SUPER_ADMIN,
+      roleId: superAdminRole ? superAdminRole._id : null,
       status: ACCOUNT_STATUS.ACTIVE,
       assignedBuildingIds: [],
     });
