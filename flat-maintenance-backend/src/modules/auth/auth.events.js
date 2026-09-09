@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { logger } from "../../utils/logger.util.js";
 
+// =====================  SECURITY AUDIT EVENTS  ==============
 /**
  * Enumeration of security-relevant audit event types.
  */
@@ -16,6 +18,7 @@ export const AUTH_SECURITY_EVENTS = Object.freeze({
   AUTH_ACCOUNT_ACTIVATED: "AUTH_ACCOUNT_ACTIVATED",
 });
 
+// =====================  EVENT EMITTER  =====================
 /**
  * Emits an authentication security event.
  *

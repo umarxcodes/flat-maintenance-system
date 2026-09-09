@@ -1,9 +1,11 @@
+// =====================  IMPORTS  ==========================
 import { verifyAccessToken } from "../utils/token.util.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 import { ACCOUNT_STATUS } from "../constants/status.constant.js";
 
+// =====================  AUTHENTICATION MIDDLEWARE  ========
 /**
  * Authentication Gatekeeper Middleware.
  *

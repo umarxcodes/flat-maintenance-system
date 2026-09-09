@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { logger } from "../../utils/logger.util.js";
 
+// =====================  SECURITY AUDIT EVENTS  ==============
 /**
  * Security-relevant user lifecycle event constants.
  */
@@ -10,6 +12,7 @@ export const USER_SECURITY_EVENTS = Object.freeze({
   USER_DELETED: "USER_DELETED",
 });
 
+// =====================  EVENT EMITTER  =====================
 /**
  * Emits a user lifecycle security audit event.
  *

@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -8,9 +9,10 @@ import { ApiError } from "./utils/ApiError.js";
 import { ERROR_CODES } from "./constants/error-codes.constant.js";
 import apiV1Router from "./routes/index.js";
 
+// =====================  APPLICATION SETUP  =================
 const app = express();
 
-// Security HTTP Headers
+// =====================  SECURITY MIDDLEWARE  ==============
 app.use(
   helmet({
     contentSecurityPolicy:
@@ -18,7 +20,6 @@ app.use(
   })
 );
 
-// Strict CORS Configuration
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
@@ -26,15 +27,13 @@ app.use(
   })
 );
 
-// Response compression
+// =====================  PARSING & COMPRESSION  ============
 app.use(compression());
-
-// Body & Cookie Parsers
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser);
 
-// Public Root & Health Check Endpoints (Preserved for infrastructure smoke tests)
+// =====================  INFRASTRUCTURE ENDPOINTS  =========
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -49,10 +48,10 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Centralized Domain Gateway Routing
+// =====================  ROUTING  ===========================
 app.use("/api/v1", apiV1Router);
 
-// 404 Route Not Found Handler
+// =====================  ERROR HANDLING  ====================
 app.use((req, res, next) => {
   next(
     new ApiError(
@@ -64,7 +63,7 @@ app.use((req, res, next) => {
   );
 });
 
-// Centralized Global Error Handler
 app.use(errorHandler);
 
+// =====================  EXPORTS  ===========================
 export default app;

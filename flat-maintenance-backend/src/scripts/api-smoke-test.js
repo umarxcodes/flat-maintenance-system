@@ -1,6 +1,8 @@
+// =====================  IMPORTS  ==========================
 import http from "node:http";
 import app from "../app.js";
 
+// =====================  COLOR HELPERS  =====================
 // ANSI Color Helpers for Terminal Output
 const colors = {
   reset: "\x1b[0m",
@@ -14,6 +16,7 @@ const colors = {
   bgRed: "\x1b[41m\x1b[37m",
 };
 
+// =====================  TEST SERVER HELPERS  ==============
 let server;
 let port;
 let totalPassed = 0;
@@ -81,22 +84,23 @@ const assertTest = (name, condition, details = "") => {
   if (condition) {
     totalPassed++;
     console.log(
-      `  ${colors.green}✔ PASS${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
+      `  ${colors.green}[PASS]${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
     );
   } else {
     totalFailed++;
     console.log(
-      `  ${colors.red}✖ FAIL${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
+      `  ${colors.red}[FAIL]${colors.reset} - ${name} ${colors.dim}(${details})${colors.reset}`
     );
   }
 };
 
+// =====================  TEST RUNNER  =======================
 const runSmokeTest = async () => {
   console.log(
     "\n" +
       colors.bright +
       colors.cyan +
-      "🚀 STARTING AUTOMATED API SMOKE TEST..." +
+      "STARTING AUTOMATED API SMOKE TEST..." +
       colors.reset +
       "\n"
   );
@@ -105,7 +109,7 @@ const runSmokeTest = async () => {
   try {
     await startServer();
     console.log(
-      `${colors.dim}► Test server running on http://127.0.0.1:${port}${colors.reset}\n`
+      `${colors.dim}Test server running on http://127.0.0.1:${port}${colors.reset}\n`
     );
 
     // 1. Root Endpoint Test
@@ -172,9 +176,7 @@ const runSmokeTest = async () => {
         "----------------------------------------" +
         colors.reset
     );
-    console.log(
-      colors.bright + "📊 API SMOKE TEST SUMMARY REPORT" + colors.reset
-    );
+    console.log(colors.bright + "API SMOKE TEST SUMMARY REPORT" + colors.reset);
     console.log(
       colors.bright + "----------------------------------------" + colors.reset
     );
@@ -201,4 +203,5 @@ const runSmokeTest = async () => {
   }
 };
 
+// =====================  EXECUTION  ========================
 runSmokeTest();

@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { Role } from "../../models/role.model.js";
 import { ROLES } from "../../constants/roles.constant.js";
 import { ROLE_PERMISSIONS } from "../../constants/permissions.constant.js";
@@ -6,6 +7,7 @@ import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
 import { logger } from "../../utils/logger.util.js";
 
+// =====================  SERVICES  ===========================
 /**
  * Principal Roles Domain Service.
  *
@@ -132,5 +134,6 @@ class RolesService {
   }
 }
 
+// =====================  EXPORTS  ============================
 export const rolesService = new RolesService();
 export default rolesService;

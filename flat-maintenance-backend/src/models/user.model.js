@@ -1,9 +1,11 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { ROLES } from "../constants/roles.constant.js";
 import { ACCOUNT_STATUS } from "../constants/status.constant.js";
 import { AUTH_CONSTANTS } from "../modules/auth/auth.constants.js";
 
+// =====================  SUBDOCUMENT SCHEMAS  ==============
 /**
  * Subdocument schema representing an issued Refresh Token session.
  *
@@ -43,6 +45,7 @@ const refreshTokenSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// =====================  USER SCHEMA DEFINITION  ===========
 /**
  * User Identity and Authentication Model Schema.
  *
@@ -162,6 +165,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// =====================  INDEXES  ===========================
 // Compound partial unique index: enforce unique emails only among non-deleted accounts
 userSchema.index(
   { email: 1 },
@@ -177,6 +181,7 @@ userSchema.index({ "refreshTokens.familyId": 1 });
 userSchema.index({ assignedBuildingIds: 1, role: 1, status: 1, isDeleted: 1 });
 userSchema.index({ firstName: "text", lastName: "text", email: "text" });
 
+// =====================  LIFECYCLE HOOKS  ==================
 /**
  * Pre-save Mongoose Hook for Bcrypt Password Hashing.
  *
@@ -195,6 +200,7 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, saltRounds);
 });
 
+// =====================  INSTANCE METHODS  ==================
 /**
  * Compares a candidate plaintext password against the stored bcrypt hash.
  *
@@ -247,5 +253,6 @@ userSchema.methods.toSafeUser = function () {
   };
 };
 
+// =====================  MODEL & EXPORTS  ===================
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;

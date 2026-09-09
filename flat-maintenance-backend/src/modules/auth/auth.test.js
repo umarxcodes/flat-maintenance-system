@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -13,6 +14,7 @@ import { AUTH_CONSTANTS } from "./auth.constants.js";
 
 dotenv.config();
 
+// =====================  TEST HELPERS & FIXTURES  ==========
 let server;
 let baseUrl;
 
@@ -101,9 +103,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     await mongoose.disconnect();
   });
 
-  // ========================================================
-  // 1. LOGIN TESTS
-  // ========================================================
+  // =====================  1. LOGIN TESTS  ==================
   describe("1. Login (POST /api/v1/auth/login)", () => {
     const validEmail = `user.login.${testRunId}@test.local`;
     const validPassword = "SecurePassword123!";
@@ -286,9 +286,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 2. REFRESH & TOKEN ROTATION TESTS
-  // ========================================================
+  // =====================  2. REFRESH & TOKEN ROTATION  =====
   describe("2. Refresh & Token Rotation (POST /api/v1/auth/refresh)", () => {
     const refreshEmail = `refresh.${testRunId}@test.local`;
     const refreshPassword = "SecurePassword123!";
@@ -398,9 +396,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 3. CONCURRENCY SAFETY TEST
-  // ========================================================
+  // =====================  3. CONCURRENCY SAFETY  ============
   describe("3. Concurrency Safety: Simultaneous Refresh Requests", () => {
     test("Two simultaneous refresh requests with the same token: exactly one succeeds", async () => {
       const raceEmail = `race.${testRunId}@test.local`;
@@ -452,9 +448,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 4. LOGOUT & CURRENT USER (ME) TESTS
-  // ========================================================
+  // =====================  4. LOGOUT & PROFILE  ==============
   describe("4. Logout & Current User Profile", () => {
     const meEmail = `me.${testRunId}@test.local`;
     const mePassword = "SecurePassword123!";
@@ -518,9 +512,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 5. PASSWORD MANAGEMENT TESTS
-  // ========================================================
+  // =====================  5. PASSWORD MANAGEMENT  ==========
   describe("5. Password Change, Forgot & Reset Flows", () => {
     const pwdEmail = `password.flow.${testRunId}@test.local`;
     const initialPassword = "OldPassword123!";
@@ -625,9 +617,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 6. ACCOUNT ACTIVATION TESTS (FR-AUTH-04)
-  // ========================================================
+  // =====================  6. ACCOUNT ACTIVATION  ===========
   describe("6. Account Activation (POST /api/v1/auth/activate-account)", () => {
     test("Activates invited user, verifies SHA-256 token, and prevents client role escalation", async () => {
       const inviteEmail = `invitee.${testRunId}@test.local`;
@@ -695,9 +685,7 @@ describe("Authentication & Session Module (Module 1)", () => {
     });
   });
 
-  // ========================================================
-  // 7. TEST SECURITY INVARIANTS
-  // ========================================================
+  // =====================  7. SECURITY INVARIANTS  ==========
   describe("7. Security Invariants Verification", () => {
     test("Invariant 1 & 2: Passwords and Refresh Tokens are NEVER in plaintext in MongoDB", async () => {
       const invariantEmail = `invariant.${testRunId}@test.local`;

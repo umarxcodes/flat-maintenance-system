@@ -1,3 +1,4 @@
+// =====================  EXPORTS  ===========================
 /**
  * Users module model export.
  * Re-exports the authoritative User model from models/user.model.js.

@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -13,6 +14,7 @@ import { hashToken } from "../../utils/crypto.util.js";
 
 dotenv.config();
 
+// =====================  TEST HELPERS & FIXTURES  ==========
 let server;
 let baseUrl;
 
@@ -160,9 +162,7 @@ describe("Users Domain Module (Module 2)", () => {
     await mongoose.disconnect();
   });
 
-  // ========================================================
-  // 1. INVITATION TESTS (POST /api/v1/users/invite)
-  // ========================================================
+  // =====================  1. USER INVITATION  ===============
   describe("1. User Invitation (POST /api/v1/users/invite)", () => {
     test("Building Admin successfully invites a Manager within authorized building scope", async () => {
       const inviteEmail = `invited.manager.${testRunId}@test.local`;
@@ -343,9 +343,7 @@ describe("Users Domain Module (Module 2)", () => {
     });
   });
 
-  // ========================================================
-  // 2. DIRECTORY LISTING (GET /api/v1/users)
-  // ========================================================
+  // =====================  2. USER DIRECTORY  ================
   describe("2. User Directory (GET /api/v1/users)", () => {
     test("Super Admin can view global directory with pagination", async () => {
       const res = await apiRequest("/api/v1/users?page=1&limit=10", {
@@ -440,9 +438,7 @@ describe("Users Domain Module (Module 2)", () => {
     });
   });
 
-  // ========================================================
-  // 3. USER DETAILS (GET /api/v1/users/:id)
-  // ========================================================
+  // =====================  3. USER DETAILS  ==================
   describe("3. User Details (GET /api/v1/users/:id)", () => {
     test("Super Admin can view details of any user", async () => {
       const res = await apiRequest(`/api/v1/users/${tenantId}`, {
@@ -513,9 +509,7 @@ describe("Users Domain Module (Module 2)", () => {
     });
   });
 
-  // ========================================================
-  // 4. STATUS UPDATES (PATCH /api/v1/users/:id/status)
-  // ========================================================
+  // =====================  4. STATUS MANAGEMENT  =============
   describe("4. Status Management (PATCH /api/v1/users/:id/status)", () => {
     test("Super Admin can suspend an active user and revokes their active sessions", async () => {
       // Create user with active refresh session
@@ -590,9 +584,7 @@ describe("Users Domain Module (Module 2)", () => {
     });
   });
 
-  // ========================================================
-  // 5. SELF-SERVICE PROFILE (GET & PATCH /api/v1/users/profile)
-  // ========================================================
+  // =====================  5. SELF-SERVICE PROFILE  ==========
   describe("5. Self-Service Profile (/api/v1/users/profile)", () => {
     test("GET /api/v1/users/profile returns authenticated user's profile", async () => {
       const res = await apiRequest("/api/v1/users/profile", {
@@ -653,9 +645,7 @@ describe("Users Domain Module (Module 2)", () => {
     });
   });
 
-  // ========================================================
-  // 6. SECURITY INVARIANTS
-  // ========================================================
+  // =====================  6. SECURITY INVARIANTS  ==========
   describe("6. Security Invariants Verification", () => {
     test("Active email addresses remain unique via partial index", async () => {
       const uniqueEmail = `unique.index.${testRunId}@test.local`;

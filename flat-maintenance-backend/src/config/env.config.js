@@ -1,8 +1,11 @@
+// =====================  IMPORTS  ==========================
 import { z } from "zod";
 import dotenv from "dotenv";
 
+// =====================  CONFIGURATION  =====================
 dotenv.config();
 
+// =====================  VALIDATION SCHEMA  =================
 /**
  * Strict Environment Configuration Schema.
  *
@@ -30,14 +33,16 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
 });
 
+// =====================  SCHEMA PARSING  ====================
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error(
-    "❌ FATAL: Invalid environment variables configuration:\n",
+    "FATAL: Invalid environment variables configuration:\n",
     JSON.stringify(parsed.error.format(), null, 2)
   );
   process.exit(1);
 }
 
+// =====================  EXPORTS  ===========================
 export const env = parsed.data;

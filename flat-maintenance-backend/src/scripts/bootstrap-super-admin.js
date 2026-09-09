@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.config.js";
@@ -7,8 +8,10 @@ import { ROLES } from "../constants/roles.constant.js";
 import { ACCOUNT_STATUS } from "../constants/status.constant.js";
 import { logger } from "../utils/logger.util.js";
 
+// =====================  CONFIGURATION  =====================
 dotenv.config();
 
+// =====================  BOOTSTRAP LOGIC  ==================
 /**
  * CLI Command: Provisions the initial Platform Super Admin account.
  *
@@ -35,7 +38,7 @@ const bootstrapSuperAdmin = async () => {
 
     if (password.length < 8) {
       console.error(
-        "❌ FATAL: SUPER_ADMIN_PASSWORD must be at least 8 characters long."
+        "[ERROR] FATAL: SUPER_ADMIN_PASSWORD must be at least 8 characters long."
       );
       process.exit(1);
     }
@@ -66,7 +69,7 @@ const bootstrapSuperAdmin = async () => {
         role: superAdmin.role,
       });
 
-      console.log(`✅ Super Admin updated successfully: ${targetEmail}`);
+      console.log(`[SUCCESS] Super Admin updated successfully: ${targetEmail}`);
       process.exit(0);
     }
 
@@ -93,7 +96,7 @@ const bootstrapSuperAdmin = async () => {
         role: placeholderAdmin.role,
       });
 
-      console.log(`✅ Super Admin account migrated to: ${targetEmail}`);
+      console.log(`[SUCCESS] Super Admin account migrated to: ${targetEmail}`);
       process.exit(0);
     }
 
@@ -118,14 +121,17 @@ const bootstrapSuperAdmin = async () => {
       role: superAdmin.role,
     });
 
-    console.log(`✅ Super Admin provisioned successfully: ${email}`);
+    console.log(
+      `[SUCCESS] Super Admin provisioned successfully: ${targetEmail}`
+    );
     process.exit(0);
   } catch (error) {
-    console.error("❌ Failed to bootstrap Super Admin:", error);
+    console.error("[ERROR] Failed to bootstrap Super Admin:", error);
     process.exit(1);
   } finally {
     await mongoose.disconnect();
   }
 };
 
+// =====================  EXECUTION  ========================
 bootstrapSuperAdmin();

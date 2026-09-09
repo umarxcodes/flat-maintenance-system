@@ -1,3 +1,4 @@
+// =====================  API RESPONSE  ======================
 /**
  * Standardized success response envelope for all HTTP controllers.
  *
@@ -24,3 +25,6 @@ export class ApiResponse {
     this.meta = meta;
   }
 }
+
+// =====================  EXPORTS  ===========================
+export default ApiResponse;

@@ -1,7 +1,9 @@
+// =====================  IMPORTS  ==========================
 import jwt from "jsonwebtoken";
 import { ApiError } from "./ApiError.js";
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 
+// =====================  TOKEN GENERATION  ==================
 /**
  * Signs a short-lived Bearer Access Token (15-minute validity window).
  *
@@ -67,6 +69,7 @@ export const generateRefreshToken = ({ sub, familyId, jti }) => {
   });
 };
 
+// =====================  TOKEN VERIFICATION  ================
 /**
  * Verifies an Access JWT signature and expiration.
  *

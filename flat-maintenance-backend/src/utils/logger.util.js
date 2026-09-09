@@ -1,3 +1,4 @@
+// =====================  CONFIGURATION  =====================
 /**
  * Structured Security Logger.
  *
@@ -9,7 +10,6 @@
  * - Plaintext or hashed invitation tokens
  * - Sensitive cookie headers
  */
-
 const SENSITIVE_KEYS = new Set([
   "password",
   "passwordhash",
@@ -27,6 +27,7 @@ const SENSITIVE_KEYS = new Set([
   "authorization",
 ]);
 
+// =====================  HELPERS  ============================
 /**
  * Recursively redacts sensitive keys from log payloads.
  *
@@ -53,6 +54,7 @@ const sanitizeLogData = (data) => {
   return sanitized;
 };
 
+// =====================  LOGGING SERVICE  ===================
 export const logger = {
   info: (message, meta = {}) => {
     console.log(
@@ -104,3 +106,6 @@ export const logger = {
     );
   },
 };
+
+// =====================  EXPORTS  ===========================
+export default logger;

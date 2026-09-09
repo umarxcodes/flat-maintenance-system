@@ -1,12 +1,15 @@
+// =====================  IMPORTS  ==========================
 import rateLimit from "express-rate-limit";
 import { ApiError } from "../utils/ApiError.js";
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 
+// =====================  CONFIGURATION  =====================
 const isTestEnv =
   process.env.NODE_ENV === "test" ||
   process.env.npm_lifecycle_event?.includes("test") ||
   process.argv.some((arg) => arg.includes("test"));
 
+// =====================  RATE LIMITING MIDDLEWARE  =========
 /**
  * Strict Rate Limiting for Authentication Endpoints.
  *

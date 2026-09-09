@@ -1,7 +1,9 @@
+// =====================  IMPORTS  ==========================
 import asyncHandler from "express-async-handler";
 import { usersService } from "./users.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 
+// =====================  ADMINISTRATIVE CONTROLLERS  =======
 /**
  * Controller: Dispatches an invitation token for a new user account.
  * POST /api/v1/users/invite
@@ -40,6 +42,7 @@ export const listUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, users, "Users retrieved successfully", meta));
 });
 
+// =====================  SELF-SERVICE PROFILE  ==============
 /**
  * Controller: Retrieves profile details of the authenticated principal.
  * GET /api/v1/users/profile
@@ -69,6 +72,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Profile updated successfully"));
 });
 
+// =====================  USER DETAIL & STATUS  ==============
 /**
  * Controller: Retrieves profile details for a specific user ID.
  * GET /api/v1/users/:id

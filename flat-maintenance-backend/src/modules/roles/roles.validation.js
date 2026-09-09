@@ -1,7 +1,10 @@
+// =====================  IMPORTS  ==========================
 import { z } from "zod";
 
+// =====================  CONSTANTS  =========================
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 
+// =====================  VALIDATION SCHEMAS  ===============
 /**
  * Validation schema for GET /api/v1/roles
  *

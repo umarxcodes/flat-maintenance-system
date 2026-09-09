@@ -1,8 +1,10 @@
+// =====================  IMPORTS  ==========================
 import { ZodError } from "zod";
 import { ApiError } from "../utils/ApiError.js";
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 import { logger } from "../utils/logger.util.js";
 
+// =====================  ERROR HANDLING MIDDLEWARE  ========
 /**
  * Centralized Global Error Handling Middleware.
  *

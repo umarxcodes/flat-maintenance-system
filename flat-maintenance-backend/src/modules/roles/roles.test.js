@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -13,12 +14,14 @@ import { generateAccessToken } from "../../utils/token.util.js";
 import { rolesService } from "./roles.service.js";
 import { ROLE_ORDER } from "./roles.constants.js";
 
+// =====================  TEST FIXTURES & HELPERS  ==========
 dotenv.config();
 
 let server;
 let baseUrl;
 
 // Test fixture user IDs and tokens
+
 const TEST_SUPER_ADMIN_ID = new mongoose.Types.ObjectId().toString();
 const TEST_TENANT_ID = new mongoose.Types.ObjectId().toString();
 let superAdminToken;
@@ -74,6 +77,7 @@ const apiRequest = (
   });
 };
 
+// =====================  TEST SUITE  =======================
 describe("Roles Domain Module (Module 3)", () => {
   before(async () => {
     await connectDB();
@@ -151,9 +155,7 @@ describe("Roles Domain Module (Module 3)", () => {
     await mongoose.disconnect();
   });
 
-  // =========================================================================
-  // 1. Role Database Model Invariants
-  // =========================================================================
+  // =====================  1. ROLE DATABASE MODEL INVARIANTS  =====================
   describe("1. Role Database Model Invariants", () => {
     it("Enforces role name requirement", async () => {
       const role = new Role({
@@ -264,9 +266,7 @@ describe("Roles Domain Module (Module 3)", () => {
     });
   });
 
-  // =========================================================================
-  // 2. GET /api/v1/roles (List System Roles)
-  // =========================================================================
+  // =====================  2. GET /API/V1/ROLES (LIST SYSTEM ROLES)  ==============
   describe("2. GET /api/v1/roles (List System Roles)", () => {
     it("Rejects unauthenticated request with 401 Unauthorized", async () => {
       const res = await apiRequest("/api/v1/roles");
@@ -323,9 +323,7 @@ describe("Roles Domain Module (Module 3)", () => {
     });
   });
 
-  // =========================================================================
-  // 3. GET /api/v1/roles/:id (Retrieve Single Role)
-  // =========================================================================
+  // =====================  3. GET /API/V1/ROLES/:ID (RETRIEVE SINGLE ROLE)  =========
   describe("3. GET /api/v1/roles/:id (Retrieve Single Role)", () => {
     it("Rejects unauthenticated request with 401 Unauthorized", async () => {
       const someId = new mongoose.Types.ObjectId().toString();
@@ -373,9 +371,7 @@ describe("Roles Domain Module (Module 3)", () => {
     });
   });
 
-  // =========================================================================
-  // 4. Security Invariants & Read-Only Integrity
-  // =========================================================================
+  // =====================  4. SECURITY INVARIANTS & READ-ONLY INTEGRITY  =========
   describe("4. Security Invariants & Read-Only Integrity", () => {
     it("Read-Only: POST /api/v1/roles returns 404 (endpoint not defined)", async () => {
       const res = await apiRequest("/api/v1/roles", {
@@ -426,9 +422,7 @@ describe("Roles Domain Module (Module 3)", () => {
     });
   });
 
-  // =========================================================================
-  // 5. User Integration & Idempotent Seeding
-  // =========================================================================
+  // =====================  5. USER INTEGRATION & IDEMPOTENT SEEDING  ==============
   describe("5. User Integration & Idempotent Seeding", () => {
     it("User document can reference a Role via User.roleId", async () => {
       const tenantRole = await Role.findOne({ name: ROLES.TENANT });

@@ -1,3 +1,4 @@
+// =====================  SYSTEM ROLES  ======================
 /**
  * Canonical 6-tier operational roles + resident personas.
  *
@@ -16,6 +17,7 @@ export const ROLES = Object.freeze({
   TENANT: "TENANT",
 });
 
+// =====================  PRIVILEGED ROLES  ==================
 /**
  * Roles classified as privileged administrative personnel.
  * Invariant: Privileged roles are prohibited from public self-registration.

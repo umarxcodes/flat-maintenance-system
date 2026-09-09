@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { ROLES } from "../../constants/roles.constant.js";
 
+// =====================  ROLE DESCRIPTIONS  ================
 /**
  * Canonical system persona descriptions.
  * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 10.
@@ -23,6 +25,7 @@ export const ROLE_DESCRIPTIONS = Object.freeze({
     "Lawful resident occupying a flat unit with access to bill viewing, digital payments, and maintenance complaint submissions.",
 });
 
+// =====================  ROLE ORDER  =======================
 /**
  * Deterministic presentation order for system roles.
  * Ranked by organizational authority hierarchy.

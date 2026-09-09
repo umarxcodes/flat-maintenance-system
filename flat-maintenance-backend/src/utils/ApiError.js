@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 
+// =====================  ERROR HANDLING  ====================
 /**
  * Standardized operational error class for all HTTP and domain failures.
  *
@@ -43,3 +45,6 @@ export class ApiError extends Error {
     }
   }
 }
+
+// =====================  EXPORTS  ===========================
+export default ApiError;

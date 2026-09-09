@@ -1,3 +1,4 @@
+// =====================  ACCOUNT STATUS  ====================
 /**
  * Standard entity status lifecycle states for user accounts.
  *

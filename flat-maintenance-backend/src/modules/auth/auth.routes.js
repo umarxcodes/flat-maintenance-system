@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { Router } from "express";
 import {
   login,
@@ -20,11 +21,10 @@ import {
   resetPasswordSchema,
 } from "./auth.validation.js";
 
+// =====================  ROUTER SETUP  ======================
 const router = Router();
 
-/**
- * Public Authentication Routes (with Rate Limiting)
- */
+// =====================  PUBLIC AUTHENTICATION ROUTES  ======
 router.post("/login", authRateLimiter, validate(loginSchema), login);
 router.post("/refresh", authRateLimiter, refreshToken);
 router.post(
@@ -46,9 +46,7 @@ router.post(
   resetPassword
 );
 
-/**
- * Protected Identity & Session Routes (Requires Valid Bearer Access Token)
- */
+// =====================  PROTECTED SESSION ROUTES  ==========
 router.post("/logout", authenticate, logout);
 router.get("/me", authenticate, getMe);
 router.patch(
@@ -58,4 +56,5 @@ router.patch(
   changePassword
 );
 
+// =====================  EXPORTS  ===========================
 export default router;

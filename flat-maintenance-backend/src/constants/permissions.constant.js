@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { ROLES } from "./roles.constant.js";
 
+// =====================  CANONICAL PERMISSIONS  ============
 /**
  * Canonical platform permission string tokens.
  * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 12.
@@ -62,6 +64,7 @@ export const PERMISSIONS = Object.freeze({
   DOCUMENT_READ: "DOCUMENT_READ",
 });
 
+// =====================  ROLE HIERARCHY LEVELS  ============
 /**
  * 6-Tier Organizational Hierarchy Levels.
  * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 9 & 17.
@@ -80,6 +83,7 @@ export const ROLE_HIERARCHY_LEVEL = Object.freeze({
   [ROLES.TENANT]: 6,
 });
 
+// =====================  ROLE-PERMISSION MATRIX  ===========
 /**
  * Canonical Role-Permission Matrix.
  * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 14.
@@ -210,6 +214,7 @@ export const ROLE_PERMISSIONS = Object.freeze({
   ],
 });
 
+// =====================  AUTHORITY HELPERS  =================
 /**
  * Checks if an inviter possesses the authority to grant a target role.
  *
