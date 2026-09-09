@@ -22,19 +22,9 @@ const bootstrapSuperAdmin = async () => {
   try {
     await connectDB();
 
-    const existingSuperAdmin = await User.findOne({
-      role: ROLES.SUPER_ADMIN,
-      isDeleted: false,
-    });
-
-    if (existingSuperAdmin) {
-      console.log(
-        `ℹ️ Super Admin account already exists (${existingSuperAdmin.email}). Skipping bootstrap.`
-      );
-      process.exit(0);
-    }
-
-    const email = (process.env.SUPER_ADMIN_EMAIL || "superadmin@society.local")
+    const targetEmail = (
+      process.env.SUPER_ADMIN_EMAIL || "superadmin@society.local"
+    )
       .toLowerCase()
       .trim();
     const password =
@@ -52,10 +42,66 @@ const bootstrapSuperAdmin = async () => {
 
     const superAdminRole = await Role.findOne({ name: ROLES.SUPER_ADMIN });
 
-    const superAdmin = new User({
+    // 1. Check if user with target email already exists
+    let superAdmin = await User.findOne({
+      email: targetEmail,
+      isDeleted: false,
+    });
+
+    if (superAdmin) {
+      superAdmin.firstName = firstName;
+      superAdmin.lastName = lastName;
+      superAdmin.password = password;
+      superAdmin.phone = phone;
+      superAdmin.role = ROLES.SUPER_ADMIN;
+      superAdmin.status = ACCOUNT_STATUS.ACTIVE;
+      if (superAdminRole) {
+        superAdmin.roleId = superAdminRole._id;
+      }
+      await superAdmin.save();
+
+      logger.info("Super Admin updated successfully", {
+        userId: superAdmin._id.toString(),
+        email: superAdmin.email,
+        role: superAdmin.role,
+      });
+
+      console.log(`✅ Super Admin updated successfully: ${targetEmail}`);
+      process.exit(0);
+    }
+
+    // 2. Check if a placeholder Super Admin exists (e.g. default placeholder)
+    const placeholderAdmin = await User.findOne({
+      role: ROLES.SUPER_ADMIN,
+      isDeleted: false,
+    });
+
+    if (placeholderAdmin && placeholderAdmin.email !== targetEmail) {
+      placeholderAdmin.firstName = firstName;
+      placeholderAdmin.lastName = lastName;
+      placeholderAdmin.email = targetEmail;
+      placeholderAdmin.password = password;
+      placeholderAdmin.phone = phone;
+      if (superAdminRole) {
+        placeholderAdmin.roleId = superAdminRole._id;
+      }
+      await placeholderAdmin.save();
+
+      logger.info("Placeholder Super Admin migrated to personal account", {
+        userId: placeholderAdmin._id.toString(),
+        email: placeholderAdmin.email,
+        role: placeholderAdmin.role,
+      });
+
+      console.log(`✅ Super Admin account migrated to: ${targetEmail}`);
+      process.exit(0);
+    }
+
+    // 3. Provision new Super Admin
+    superAdmin = new User({
       firstName,
       lastName,
-      email,
+      email: targetEmail,
       password,
       phone,
       role: ROLES.SUPER_ADMIN,
