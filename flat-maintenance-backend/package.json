@@ -32,6 +32,7 @@
     "test": "node src/scripts/api-smoke-test.js",
     "test:smoke": "node src/scripts/api-smoke-test.js",
     "test:auth": "node --test --env-file=.env src/modules/auth/auth.test.js",
+    "test:users": "node --test --env-file=.env src/modules/users/users.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "prepare": "husky"
   },

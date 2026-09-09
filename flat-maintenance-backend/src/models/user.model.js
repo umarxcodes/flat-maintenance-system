@@ -78,9 +78,16 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    avatarUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function () {
+        return this.status !== ACCOUNT_STATUS.PENDING;
+      },
       select: false,
     },
     role: {
@@ -88,6 +95,12 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(ROLES),
       default: ROLES.TENANT,
       required: true,
+      index: true,
+    },
+    roleId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      default: null,
       index: true,
     },
     assignedBuildingIds: [
@@ -160,6 +173,10 @@ userSchema.index({ "refreshTokens.jti": 1 });
 userSchema.index({ "refreshTokens.tokenHash": 1 });
 userSchema.index({ "refreshTokens.familyId": 1 });
 
+// Directory query optimization indexes
+userSchema.index({ assignedBuildingIds: 1, role: 1, status: 1, isDeleted: 1 });
+userSchema.index({ firstName: "text", lastName: "text", email: "text" });
+
 /**
  * Pre-save Mongoose Hook for Bcrypt Password Hashing.
  *
@@ -217,11 +234,16 @@ userSchema.methods.toSafeUser = function () {
     firstName: this.firstName,
     lastName: this.lastName,
     email: this.email,
+    phone: this.phone || null,
     role: this.role,
+    roleId: this.roleId ? this.roleId.toString() : undefined,
     assignedBuildingIds: (this.assignedBuildingIds || []).map((id) =>
       id.toString()
     ),
     status: this.status,
+    avatarUrl: this.avatarUrl || null,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
   };
 };
 
