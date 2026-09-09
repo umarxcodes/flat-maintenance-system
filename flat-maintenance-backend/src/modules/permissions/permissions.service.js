@@ -1,7 +1,9 @@
+// =====================  IMPORTS  ==========================
 import { Permission } from "../../models/permission.model.js";
 import { CANONICAL_PERMISSIONS_REGISTRY } from "./permissions.constants.js";
 import { logger } from "../../utils/logger.util.js";
 
+// =====================  SERVICES  ===========================
 /**
  * Principal Permissions Domain Service.
  *
@@ -140,5 +142,6 @@ class PermissionsService {
   }
 }
 
+// =====================  EXPORTS  ============================
 export const permissionsService = new PermissionsService();
 export default permissionsService;

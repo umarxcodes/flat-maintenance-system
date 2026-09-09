@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { z } from "zod";
 
+// =====================  VALIDATION SCHEMAS  ===============
 /**
  * Validation schema for GET /api/v1/permissions
  *

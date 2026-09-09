@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { User } from "../../models/user.model.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
@@ -12,6 +13,7 @@ import { USERS_CONSTANTS } from "./users.constants.js";
 import { hashToken, generateCryptoToken } from "../../utils/crypto.util.js";
 import { USER_SECURITY_EVENTS, emitUserSecurityEvent } from "./users.events.js";
 
+// =====================  USER SERVICE  ======================
 /**
  * Principal Users Domain Service.
  *
@@ -508,5 +510,6 @@ class UsersService {
   }
 }
 
+// =====================  EXPORTS  ===========================
 export const usersService = new UsersService();
 export default usersService;

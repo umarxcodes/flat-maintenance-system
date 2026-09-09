@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { Router } from "express";
 import {
   inviteUser,
@@ -19,11 +20,13 @@ import {
   updateProfileSchema,
 } from "./users.validation.js";
 
+// =====================  ROUTER SETUP  ======================
 const router = Router();
 
 // All user domain routes mandate an active authenticated identity
 router.use(authenticate);
 
+// =====================  USER PROVISIONING & DIRECTORY  =====
 /**
  * Administrative User Provisioning
  * POST /api/v1/users/invite
@@ -46,6 +49,7 @@ router.get(
   listUsers
 );
 
+// =====================  SELF-SERVICE PROFILE  ==============
 /**
  * Self-Service Profile Management
  * Invariant: Registered BEFORE /:id to prevent route shadowing
@@ -55,6 +59,7 @@ router.get(
 router.get("/profile", getProfile);
 router.patch("/profile", validate(updateProfileSchema), updateProfile);
 
+// =====================  STATUS & DETAIL ROUTES  ============
 /**
  * Specific User Profile & State Operations
  * GET /api/v1/users/:id
@@ -74,4 +79,5 @@ router.patch(
   updateUserStatus
 );
 
+// =====================  EXPORTS  ===========================
 export default router;

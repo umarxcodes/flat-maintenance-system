@@ -1,6 +1,8 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import { ROLES } from "../constants/roles.constant.js";
 
+// =====================  SCHEMA DEFINITION  ================
 /**
  * Role-Based Access Control (RBAC) Role Definition Schema.
  *
@@ -51,6 +53,7 @@ const roleSchema = new mongoose.Schema(
   }
 );
 
+// =====================  LIFECYCLE HOOKS  ==================
 /**
  * Normalizes and deduplicates assigned permission tokens before saving.
  */
@@ -62,6 +65,7 @@ roleSchema.pre("save", function () {
   }
 });
 
+// =====================  INSTANCE METHODS  ==================
 /**
  * Transforms Mongoose role document into safe client-facing serialization.
  * Excludes internal Mongoose metadata (__v).
@@ -80,5 +84,6 @@ roleSchema.methods.toSafeRole = function () {
   };
 };
 
+// =====================  MODEL & EXPORTS  ===================
 export const Role = mongoose.model("Role", roleSchema);
 export default Role;

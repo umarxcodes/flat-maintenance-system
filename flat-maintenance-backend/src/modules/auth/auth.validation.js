@@ -1,11 +1,14 @@
+// =====================  IMPORTS  ==========================
 import { z } from "zod";
 
+// =====================  VALIDATION CONSTANTS  ==============
 const STRONG_PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 const PASSWORD_REQUIREMENTS_MESSAGE =
   "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)";
 
+// =====================  VALIDATION SCHEMAS  =================
 /**
  * Validation schema for POST /api/v1/auth/login
  */

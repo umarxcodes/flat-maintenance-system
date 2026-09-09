@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -17,6 +18,7 @@ import {
   CANONICAL_PERMISSIONS_REGISTRY,
 } from "./permissions.constants.js";
 
+// =====================  TEST FIXTURES & HELPERS  ==========
 dotenv.config();
 
 let server;
@@ -81,6 +83,7 @@ const apiRequest = (
   });
 };
 
+// =====================  TEST SUITE  =======================
 describe("Permissions Domain Module (Module 4)", () => {
   before(async () => {
     await connectDB();
@@ -181,9 +184,7 @@ describe("Permissions Domain Module (Module 4)", () => {
     await mongoose.disconnect();
   });
 
-  // =========================================================================
-  // 1. Permission Database Model Invariants
-  // =========================================================================
+  // =====================  1. PERMISSION DATABASE MODEL INVARIANTS  ==============
   describe("1. Permission Database Model Invariants", () => {
     it("Enforces permission code requirement", async () => {
       const doc = new Permission({
@@ -283,9 +284,7 @@ describe("Permissions Domain Module (Module 4)", () => {
     });
   });
 
-  // =========================================================================
-  // 2. GET /api/v1/permissions Endpoint
-  // =========================================================================
+  // =====================  2. GET /API/V1/PERMISSIONS ENDPOINT  =================
   describe("2. GET /api/v1/permissions (List Platform Permissions)", () => {
     it("Rejects unauthenticated request with 401 Unauthorized", async () => {
       const res = await apiRequest("/api/v1/permissions");
@@ -379,9 +378,7 @@ describe("Permissions Domain Module (Module 4)", () => {
     });
   });
 
-  // =========================================================================
-  // 3. Security Invariants & Read-Only API
-  // =========================================================================
+  // =====================  3. SECURITY INVARIANTS & READ-ONLY API  ==============
   describe("3. Security Invariants & Read-Only API", () => {
     it("Read-Only: POST /api/v1/permissions returns 404 (endpoint not defined)", async () => {
       const res = await apiRequest("/api/v1/permissions", {
@@ -423,9 +420,7 @@ describe("Permissions Domain Module (Module 4)", () => {
     });
   });
 
-  // =========================================================================
-  // 4. Seeding & Service Utilities
-  // =========================================================================
+  // =====================  4. SEEDING & SERVICE UTILITIES  ======================
   describe("4. Seeding & Service Utilities", () => {
     it("Idempotent seeding: calling seedPermissions repeatedly never duplicates permissions", async () => {
       const initialCount = await Permission.countDocuments();

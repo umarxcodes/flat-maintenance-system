@@ -1,10 +1,13 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.config.js";
 import { permissionsService } from "../modules/permissions/permissions.service.js";
 
+// =====================  CONFIGURATION  =====================
 dotenv.config();
 
+// =====================  SEED LOGIC  =======================
 /**
  * CLI Command: Idempotently seeds and synchronizes the 44 canonical platform permissions.
  *
@@ -20,19 +23,20 @@ const seedPermissions = async () => {
   try {
     await connectDB();
 
-    console.log("🌱 Synchronizing canonical platform permissions...");
+    console.log("[INFO] Synchronizing canonical platform permissions...");
     const result = await permissionsService.seedPermissions();
 
     console.log(
-      `✅ Platform permissions synchronized successfully: ${result.created} created, ${result.updated} updated, ${result.total} total in database.`
+      `[SUCCESS] Platform permissions synchronized successfully: ${result.created} created, ${result.updated} updated, ${result.total} total in database.`
     );
     process.exit(0);
   } catch (error) {
-    console.error("❌ Failed to seed platform permissions:", error);
+    console.error("[ERROR] Failed to seed platform permissions:", error);
     process.exit(1);
   } finally {
     await mongoose.disconnect();
   }
 };
 
+// =====================  EXECUTION  ========================
 seedPermissions();

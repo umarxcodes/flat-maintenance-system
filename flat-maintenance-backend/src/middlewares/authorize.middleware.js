@@ -1,8 +1,10 @@
+// =====================  IMPORTS  ==========================
 import { ApiError } from "../utils/ApiError.js";
 import { ERROR_CODES } from "../constants/error-codes.constant.js";
 import { ROLES } from "../constants/roles.constant.js";
 import { ROLE_PERMISSIONS } from "../constants/permissions.constant.js";
 
+// =====================  AUTHORIZATION MIDDLEWARE  =========
 /**
  * Gate 2: RBAC Permission Authorization Middleware.
  *

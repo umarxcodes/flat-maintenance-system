@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { Router } from "express";
 import { getPermissions } from "./permissions.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
@@ -6,11 +7,13 @@ import { validate } from "../../middlewares/validate.middleware.js";
 import { getPermissionsQuerySchema } from "./permissions.validation.js";
 import { PERMISSIONS } from "../../constants/permissions.constant.js";
 
+// =====================  ROUTER CONFIGURATION  =============
 const router = Router();
 
 // All permission endpoints mandate active authentication (Gate 1)
 router.use(authenticate);
 
+// =====================  PERMISSION ROUTES  ================
 /**
  * Platform Permissions Registry
  * GET /api/v1/permissions
@@ -26,4 +29,5 @@ router.get(
   getPermissions
 );
 
+// =====================  EXPORTS  ============================
 export default router;

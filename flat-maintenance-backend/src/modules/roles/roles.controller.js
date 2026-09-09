@@ -1,7 +1,9 @@
+// =====================  IMPORTS  ==========================
 import asyncHandler from "express-async-handler";
 import { rolesService } from "./roles.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 
+// =====================  ROLE CONTROLLERS  =================
 /**
  * Controller: Retrieves the system role directory.
  * GET /api/v1/roles

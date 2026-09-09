@@ -1,11 +1,14 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.config.js";
 import { rolesService } from "../modules/roles/roles.service.js";
 import { permissionsService } from "../modules/permissions/permissions.service.js";
 
+// =====================  CONFIGURATION  =====================
 dotenv.config();
 
+// =====================  SEED LOGIC  =======================
 /**
  * CLI Command: Idempotently seeds and synchronizes canonical permissions and system roles.
  *
@@ -22,22 +25,23 @@ const seedRoles = async () => {
   try {
     await connectDB();
 
-    console.log("🌱 Synchronizing canonical platform permissions...");
+    console.log("[INFO] Synchronizing canonical platform permissions...");
     await permissionsService.seedPermissions();
 
-    console.log("🌱 Synchronizing canonical system roles...");
+    console.log("[INFO] Synchronizing canonical system roles...");
     const result = await rolesService.seedSystemRoles();
 
     console.log(
-      `✅ System roles synchronized successfully: ${result.created} created, ${result.updated} updated, ${result.total} total in database.`
+      `[SUCCESS] System roles synchronized successfully: ${result.created} created, ${result.updated} updated, ${result.total} total in database.`
     );
     process.exit(0);
   } catch (error) {
-    console.error("❌ Failed to seed system roles:", error);
+    console.error("[ERROR] Failed to seed system roles:", error);
     process.exit(1);
   } finally {
     await mongoose.disconnect();
   }
 };
 
+// =====================  EXECUTION  ========================
 seedRoles();

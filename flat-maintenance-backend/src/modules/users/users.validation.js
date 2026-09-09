@@ -1,11 +1,14 @@
+// =====================  IMPORTS  ==========================
 import { z } from "zod";
 import { ROLES } from "../../constants/roles.constant.js";
 import { ACCOUNT_STATUS } from "../../constants/status.constant.js";
 import { USERS_CONSTANTS } from "./users.constants.js";
 
+// =====================  VALIDATION REGEX  ==================
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const E164_PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
 
+// =====================  VALIDATION SCHEMAS  =================
 /**
  * Validation schema for POST /api/v1/users/invite
  */

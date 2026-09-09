@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import { PERMISSIONS } from "../../constants/permissions.constant.js";
 
+// =====================  PERMISSION MODULES  ===============
 /**
  * Canonical Domain Modules Enum.
  *
@@ -33,6 +35,7 @@ export const PERMISSION_MODULES = Object.freeze({
   AUDIT_LOGS: "AUDIT_LOGS",
 });
 
+// =====================  CANONICAL REGISTRY  ===============
 /**
  * Authoritative Canonical Permission Definitions.
  * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 12.

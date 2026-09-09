@@ -1,7 +1,9 @@
+// =====================  IMPORTS  ==========================
 import asyncHandler from "express-async-handler";
 import { permissionsService } from "./permissions.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 
+// =====================  CONTROLLERS  ======================
 /**
  * Controller: Returns the canonical platform permission registry.
  * GET /api/v1/permissions

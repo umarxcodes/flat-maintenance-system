@@ -1,8 +1,10 @@
+// =====================  IMPORTS  ==========================
 import asyncHandler from "express-async-handler";
 import { authService } from "./auth.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { AUTH_CONSTANTS, getRefreshCookieOptions } from "./auth.constants.js";
 
+// =====================  AUTHENTICATION CONTROLLERS  =======
 /**
  * Controller: Authenticates user credentials and sets HttpOnly refresh cookie.
  * POST /api/v1/auth/login
@@ -74,6 +76,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
   }
 });
 
+// =====================  SESSION CONTROLLERS  ==============
 /**
  * Controller: Revokes active refresh session and clears cookie.
  * POST /api/v1/auth/logout
@@ -112,6 +115,7 @@ export const getMe = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Current user identity retrieved"));
 });
 
+// =====================  PASSWORD MANAGEMENT  ==============
 /**
  * Controller: Updates password and revokes previous sessions.
  * PATCH /api/v1/auth/change-password
@@ -191,6 +195,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     );
 });
 
+// =====================  ACCOUNT ACTIVATION  ===============
 /**
  * Controller: Activates an invited account with single-use invitation token (FR-AUTH-04).
  * POST /api/v1/auth/activate-account

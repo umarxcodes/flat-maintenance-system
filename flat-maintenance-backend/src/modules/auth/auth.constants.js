@@ -1,3 +1,4 @@
+// =====================  CONFIGURATION  =====================
 /**
  * Authentication and Session Domain Constants.
  *
@@ -20,6 +21,7 @@ export const AUTH_CONSTANTS = Object.freeze({
   BCRYPT_SALT_ROUNDS: 12,
 });
 
+// =====================  COOKIE OPTIONS  ====================
 /**
  * Generates deterministic cookie configuration options based on environment.
  *

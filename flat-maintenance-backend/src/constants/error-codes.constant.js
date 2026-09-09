@@ -1,3 +1,4 @@
+// =====================  ERROR CODES  =======================
 /**
  * Machine-readable error codes for deterministic client-side handling.
  */

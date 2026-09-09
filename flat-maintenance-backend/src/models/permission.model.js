@@ -1,6 +1,8 @@
+// =====================  IMPORTS  ==========================
 import mongoose from "mongoose";
 import { PERMISSION_MODULES } from "../modules/permissions/permissions.constants.js";
 
+// =====================  SCHEMA DEFINITION  ================
 /**
  * Canonical Platform Permission Definition Schema.
  *
@@ -46,6 +48,7 @@ const permissionSchema = new mongoose.Schema(
   }
 );
 
+// =====================  LIFECYCLE HOOKS  ==================
 /**
  * Pre-save normalization hook.
  * Guarantees uppercase and trimmed format for machine-readable codes and module enums.
@@ -62,6 +65,7 @@ permissionSchema.pre("save", function () {
   }
 });
 
+// =====================  INSTANCE METHODS  ==================
 /**
  * Transforms Mongoose permission document into safe client-facing serialization.
  * Returns only documented public permission fields (id, code, module, description).
@@ -78,5 +82,6 @@ permissionSchema.methods.toSafePermission = function () {
   };
 };
 
+// =====================  MODEL & EXPORTS  ===================
 export const Permission = mongoose.model("Permission", permissionSchema);
 export default Permission;

@@ -1,3 +1,4 @@
+// =====================  IMPORTS  ==========================
 import { User } from "./auth.model.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
@@ -15,6 +16,7 @@ import {
 } from "../../utils/crypto.util.js";
 import { AUTH_SECURITY_EVENTS, emitAuthSecurityEvent } from "./auth.events.js";
 
+// =====================  AUTHENTICATION SERVICE  =============
 /**
  * Principal Authentication and Session Domain Service.
  *
@@ -626,5 +628,6 @@ class AuthService {
   }
 }
 
+// =====================  EXPORTS  ===========================
 export const authService = new AuthService();
 export default authService;

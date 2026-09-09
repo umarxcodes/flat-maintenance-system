@@ -1,5 +1,7 @@
+// =====================  IMPORTS  ==========================
 import crypto from "node:crypto";
 
+// =====================  CRYPTOGRAPHIC UTILITIES  ===========
 /**
  * Computes a deterministic SHA-256 cryptographic digest of a token string.
  *
