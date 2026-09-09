@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import app from "../../app.js";
 import connectDB from "../../config/db.config.js";
-import { Block } from "../../models/block.model.js";
+import { Block } from "./blocks.model.js";
 import { Building } from "../../models/building.model.js";
 import { User } from "../../models/user.model.js";
 import { ROLES } from "../../constants/roles.constant.js";
@@ -287,6 +287,7 @@ describe("Blocks Domain Module (Module 6)", () => {
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
+    await mongoose.disconnect();
   });
 
   // ========================================================

@@ -1,5 +1,5 @@
 // =====================  IMPORTS  ==========================
-import { Block } from "../../models/block.model.js";
+import { Block } from "./blocks.model.js";
 import { Building } from "../../models/building.model.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
