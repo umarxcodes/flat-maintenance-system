@@ -34,8 +34,10 @@
     "test:auth": "node --test --env-file=.env src/modules/auth/auth.test.js",
     "test:users": "node --test --env-file=.env src/modules/users/users.test.js",
     "test:roles": "node --test --env-file=.env src/modules/roles/roles.test.js",
+    "test:permissions": "node --test --env-file=.env src/modules/permissions/permissions.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
+    "seed:permissions": "node src/scripts/seed-permissions.js",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -118,7 +118,7 @@ const bootstrapSuperAdmin = async () => {
       role: superAdmin.role,
     });
 
-    console.log(`✅ Super Admin provisioned successfully: ${email}`);
+    console.log(`✅ Super Admin provisioned successfully: ${targetEmail}`);
     process.exit(0);
   } catch (error) {
     console.error("❌ Failed to bootstrap Super Admin:", error);
