@@ -44,6 +44,8 @@
     "test:maintenance-configurations": "node --test --env-file=.env src/modules/maintenance-configurations/maintenance-configuration.test.js",
     "test:maintenance-requests": "node --test --env-file=.env src/modules/maintenance-requests/maintenance-requests.test.js",
     "test:invoices": "node --test --env-file=.env src/modules/invoices/invoices.test.js",
+    "test:complaints": "node --test --env-file=.env src/modules/complaints/complaints.test.js",
+    "test:reviews": "node --test --env-file=.env src/modules/reviews/reviews.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",

@@ -13,6 +13,8 @@ import staffRoutes from "../modules/staff/staff.routes.js";
 import maintenanceConfigurationRoutes from "../modules/maintenance-configurations/maintenance-configuration.routes.js";
 import maintenanceRequestRoutes from "../modules/maintenance-requests/maintenance-requests.routes.js";
 import invoiceRoutes from "../modules/invoices/invoices.routes.js";
+import complaintRoutes from "../modules/complaints/complaints.routes.js";
+import reviewRoutes from "../modules/reviews/reviews.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -57,5 +59,12 @@ apiV1Router.use("/maintenance-requests", maintenanceRequestRoutes);
 // Module 14: Invoices & Batch Billing Engine
 apiV1Router.use("/invoices", invoiceRoutes);
 
+// Module 16: Complaints & SLA Ticket Management
+apiV1Router.use("/complaints", complaintRoutes);
+
+// Module 17: Ratings & Service Reviews
+apiV1Router.use("/reviews", reviewRoutes);
+
 // =====================  EXPORTS  ===========================
+export { apiV1Router };
 export default apiV1Router;
