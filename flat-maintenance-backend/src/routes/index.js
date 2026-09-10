@@ -11,6 +11,7 @@ import ownersRoutes from "../modules/owners/owners.routes.js";
 import tenantsRoutes from "../modules/tenants/tenants.routes.js";
 import staffRoutes from "../modules/staff/staff.routes.js";
 import maintenanceConfigurationRoutes from "../modules/maintenance-configurations/maintenance-configuration.routes.js";
+import maintenanceRequestRoutes from "../modules/maintenance-requests/maintenance-requests.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -48,6 +49,9 @@ apiV1Router.use("/staff", staffRoutes);
 
 // Module 12: Maintenance Configurations
 apiV1Router.use("/maintenance-configurations", maintenanceConfigurationRoutes);
+
+// Module 13: Maintenance Requests / Work Orders
+apiV1Router.use("/maintenance-requests", maintenanceRequestRoutes);
 
 // =====================  EXPORTS  ===========================
 export default apiV1Router;

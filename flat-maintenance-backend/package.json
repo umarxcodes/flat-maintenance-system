@@ -42,6 +42,7 @@
     "test:tenants": "node --test --env-file=.env src/modules/tenants/tenants.test.js",
     "test:staff": "node --test --env-file=.env src/modules/staff/staff.test.js",
     "test:maintenance-configurations": "node --test --env-file=.env src/modules/maintenance-configurations/maintenance-configuration.test.js",
+    "test:maintenance-requests": "node --test --env-file=.env src/modules/maintenance-requests/maintenance-requests.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",

@@ -71,6 +71,7 @@ export const authenticate = async (req, res, next) => {
     // Attach authenticated identity context
     req.user = {
       id: user._id.toString(),
+      _id: user._id,
       email: user.email,
       role: user.role,
       assignedBuildingIds: (user.assignedBuildingIds || []).map((id) =>
