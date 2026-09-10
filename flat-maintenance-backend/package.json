@@ -40,6 +40,7 @@
     "test:floors": "node --test --env-file=.env src/modules/floors/floors.test.js",
     "test:owners": "node --test --env-file=.env src/modules/owners/owners.test.js",
     "test:tenants": "node --test --env-file=.env src/modules/tenants/tenants.test.js",
+    "test:staff": "node --test --env-file=.env src/modules/staff/staff.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",

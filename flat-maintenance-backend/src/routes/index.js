@@ -9,6 +9,7 @@ import blocksRoutes from "../modules/blocks/blocks.routes.js";
 import floorsRoutes from "../modules/floors/floors.routes.js";
 import ownersRoutes from "../modules/owners/owners.routes.js";
 import tenantsRoutes from "../modules/tenants/tenants.routes.js";
+import staffRoutes from "../modules/staff/staff.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -40,6 +41,9 @@ apiV1Router.use("/owners", ownersRoutes);
 
 // Module 10: Tenants
 apiV1Router.use("/tenants", tenantsRoutes);
+
+// Module 11: Staff
+apiV1Router.use("/staff", staffRoutes);
 
 // =====================  EXPORTS  ===========================
 export default apiV1Router;
