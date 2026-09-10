@@ -12,6 +12,7 @@ import tenantsRoutes from "../modules/tenants/tenants.routes.js";
 import staffRoutes from "../modules/staff/staff.routes.js";
 import maintenanceConfigurationRoutes from "../modules/maintenance-configurations/maintenance-configuration.routes.js";
 import maintenanceRequestRoutes from "../modules/maintenance-requests/maintenance-requests.routes.js";
+import invoiceRoutes from "../modules/invoices/invoices.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -52,6 +53,9 @@ apiV1Router.use("/maintenance-configurations", maintenanceConfigurationRoutes);
 
 // Module 13: Maintenance Requests / Work Orders
 apiV1Router.use("/maintenance-requests", maintenanceRequestRoutes);
+
+// Module 14: Invoices & Batch Billing Engine
+apiV1Router.use("/invoices", invoiceRoutes);
 
 // =====================  EXPORTS  ===========================
 export default apiV1Router;
