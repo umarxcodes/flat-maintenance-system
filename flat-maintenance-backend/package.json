@@ -38,6 +38,7 @@
     "test:buildings": "node --test --env-file=.env src/modules/buildings/buildings.test.js",
     "test:blocks": "node --test --env-file=.env src/modules/blocks/blocks.test.js",
     "test:floors": "node --test --env-file=.env src/modules/floors/floors.test.js",
+    "test:owners": "node --test --env-file=.env src/modules/owners/owners.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",

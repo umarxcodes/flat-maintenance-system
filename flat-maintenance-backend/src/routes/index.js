@@ -7,6 +7,7 @@ import permissionsRoutes from "../modules/permissions/permissions.routes.js";
 import buildingsRoutes from "../modules/buildings/buildings.routes.js";
 import blocksRoutes from "../modules/blocks/blocks.routes.js";
 import floorsRoutes from "../modules/floors/floors.routes.js";
+import ownersRoutes from "../modules/owners/owners.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -32,6 +33,9 @@ apiV1Router.use("/blocks", blocksRoutes);
 
 // Module 7: Floors / Levels
 apiV1Router.use("/floors", floorsRoutes);
+
+// Module 9: Owners
+apiV1Router.use("/owners", ownersRoutes);
 
 // =====================  EXPORTS  ===========================
 export default apiV1Router;
