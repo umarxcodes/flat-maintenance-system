@@ -19,6 +19,7 @@ import noticeRoutes from "../modules/notices/notices.routes.js";
 import notificationRoutes from "../modules/notifications/notifications.routes.js";
 import expenseRoutes from "../modules/expenses/expenses.routes.js";
 import visitorRoutes from "../modules/visitors/visitors.routes.js";
+import documentRoutes from "../modules/documents/documents.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -80,6 +81,9 @@ apiV1Router.use("/expenses", expenseRoutes);
 
 // Module 21: Visitors & Digital Gate Passes
 apiV1Router.use("/visitors", visitorRoutes);
+
+// Module 22: Documents Repository & Access Control
+apiV1Router.use("/documents", documentRoutes);
 
 // =====================  EXPORTS  ===========================
 export { apiV1Router };
