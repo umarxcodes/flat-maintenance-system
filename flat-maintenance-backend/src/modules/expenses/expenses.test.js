@@ -7,10 +7,7 @@ import dotenv from "dotenv";
 import app from "../../app.js";
 import connectDB from "../../config/db.config.js";
 import { Expense } from "./expenses.model.js";
-import {
-  EXPENSE_CATEGORY,
-  EXPENSE_STATUS,
-} from "./expenses.constants.js";
+import { EXPENSE_CATEGORY, EXPENSE_STATUS } from "./expenses.constants.js";
 import { Building } from "../../models/building.model.js";
 import { User } from "../../models/user.model.js";
 import { ROLES } from "../../constants/roles.constant.js";

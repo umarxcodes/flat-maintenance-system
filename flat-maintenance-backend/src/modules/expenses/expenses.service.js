@@ -2,10 +2,7 @@
 import crypto from "node:crypto";
 import { Expense } from "./expenses.model.js";
 import { Building } from "../../models/building.model.js";
-import {
-  EXPENSE_STATUS,
-  EXPENSE_PAGINATION,
-} from "./expenses.constants.js";
+import { EXPENSE_STATUS, EXPENSE_PAGINATION } from "./expenses.constants.js";
 import {
   EXPENSE_SECURITY_EVENTS,
   emitExpenseSecurityEvent,

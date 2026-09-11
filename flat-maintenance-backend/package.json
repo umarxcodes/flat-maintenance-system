@@ -49,6 +49,7 @@
     "test:notices": "node --test --env-file=.env src/modules/notices/notices.test.js",
     "test:notifications": "node --test --env-file=.env src/modules/notifications/notifications.test.js",
     "test:expenses": "node --test --env-file=.env src/modules/expenses/expenses.test.js",
+    "test:visitors": "node --test --env-file=.env src/modules/visitors/visitors.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",
