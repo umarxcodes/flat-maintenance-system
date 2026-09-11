@@ -16,6 +16,7 @@ import invoiceRoutes from "../modules/invoices/invoices.routes.js";
 import complaintRoutes from "../modules/complaints/complaints.routes.js";
 import reviewRoutes from "../modules/reviews/reviews.routes.js";
 import noticeRoutes from "../modules/notices/notices.routes.js";
+import notificationRoutes from "../modules/notifications/notifications.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -68,6 +69,9 @@ apiV1Router.use("/reviews", reviewRoutes);
 
 // Module 18: Society Notices & Announcements
 apiV1Router.use("/notices", noticeRoutes);
+
+// Module 19: In-App Notifications
+apiV1Router.use("/notifications", notificationRoutes);
 
 // =====================  EXPORTS  ===========================
 export { apiV1Router };
