@@ -52,6 +52,7 @@
     "test:visitors": "node --test --env-file=.env src/modules/visitors/visitors.test.js",
     "test:documents": "node --test --env-file=.env src/modules/documents/documents.test.js",
     "test:reports": "node --test --env-file=.env src/modules/reports/reports.test.js",
+    "test:audit-logs": "node --test --env-file=.env src/modules/audit-logs/audit-logs.test.js",
     "bootstrap:super-admin": "node src/scripts/bootstrap-super-admin.js",
     "seed:roles": "node src/scripts/seed-roles.js",
     "seed:permissions": "node src/scripts/seed-permissions.js",

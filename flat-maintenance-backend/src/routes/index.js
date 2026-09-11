@@ -21,6 +21,7 @@ import expenseRoutes from "../modules/expenses/expenses.routes.js";
 import visitorRoutes from "../modules/visitors/visitors.routes.js";
 import documentRoutes from "../modules/documents/documents.routes.js";
 import reportRoutes from "../modules/reports/reports.routes.js";
+import auditLogRoutes from "../modules/audit-logs/audit-logs.routes.js";
 
 // =====================  ROUTER SETUP  ======================
 const apiV1Router = Router();
@@ -88,6 +89,9 @@ apiV1Router.use("/documents", documentRoutes);
 
 // Module 23: Reports & Analytics Engine
 apiV1Router.use("/reports", reportRoutes);
+
+// Module 24: Audit Logs & Append-Only Event Trail
+apiV1Router.use("/audit-logs", auditLogRoutes);
 
 // =====================  EXPORTS  ===========================
 export { apiV1Router };

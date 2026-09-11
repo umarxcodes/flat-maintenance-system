@@ -12,6 +12,11 @@ import { AUTH_CONSTANTS } from "../auth/auth.constants.js";
 import { USERS_CONSTANTS } from "./users.constants.js";
 import { hashToken, generateCryptoToken } from "../../utils/crypto.util.js";
 import { USER_SECURITY_EVENTS, emitUserSecurityEvent } from "./users.events.js";
+import { auditLogService } from "../audit-logs/audit-logs.service.js";
+import {
+  AUDIT_ACTIONS,
+  AUDIT_RESOURCE_TYPES,
+} from "../audit-logs/audit-logs.constants.js";
 
 // =====================  USER SERVICE  ======================
 /**
@@ -439,14 +444,32 @@ class UsersService {
       });
     }
 
+    const beforeState = targetUser.toObject();
+
     targetUser.status = status;
     await targetUser.save();
+
+    const afterState = targetUser.toObject();
 
     emitUserSecurityEvent(USER_SECURITY_EVENTS.USER_STATUS_UPDATED, {
       actorId: actor.id,
       targetUserId: targetUser._id.toString(),
       newStatus: status,
       ...context,
+    });
+
+    await auditLogService.appendAuditLog({
+      action: AUDIT_ACTIONS.USER_STATUS_UPDATED,
+      actorUserId: actor.id || actor._id,
+      actorRole: actor.role,
+      buildingId: targetUser.assignedBuildingIds?.[0] || null,
+      resourceType: AUDIT_RESOURCE_TYPES.USER,
+      resourceId: targetUser._id,
+      beforeState,
+      afterState,
+      ipAddress: context.ipAddress || null,
+      userAgent: context.userAgent || null,
+      correlationId: context.correlationId || null,
     });
 
     return targetUser.toSafeUser();

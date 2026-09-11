@@ -25,6 +25,11 @@ import {
 } from "./invoices.events.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
+import { auditLogService } from "../audit-logs/audit-logs.service.js";
+import {
+  AUDIT_ACTIONS,
+  AUDIT_RESOURCE_TYPES,
+} from "../audit-logs/audit-logs.constants.js";
 
 // =====================  DOMAIN SERVICE  ====================
 /**
@@ -498,8 +503,12 @@ export class InvoiceService {
     validateInvoiceTransition(invoice.status, INVOICE_STATUS.VOID, actor.role);
 
     // Apply Mutation
+    const beforeState = invoice.toObject();
+
     invoice.status = INVOICE_STATUS.VOID;
     await invoice.save();
+
+    const afterState = invoice.toObject();
 
     // Security Audit Telemetry
     emitInvoiceSecurityEvent(INVOICE_SECURITY_EVENTS.INVOICE_VOIDED, {
@@ -508,6 +517,17 @@ export class InvoiceService {
       buildingId: invoice.buildingId.toString(),
       actorId: actorUserId.toString(),
       actorRole: actor.role,
+    });
+
+    await auditLogService.appendAuditLog({
+      action: AUDIT_ACTIONS.INVOICE_VOIDED,
+      actorUserId,
+      actorRole: actor.role,
+      buildingId: invoice.buildingId,
+      resourceType: AUDIT_RESOURCE_TYPES.INVOICE,
+      resourceId: invoice._id,
+      beforeState,
+      afterState,
     });
 
     return invoice.toSafeInvoice();
