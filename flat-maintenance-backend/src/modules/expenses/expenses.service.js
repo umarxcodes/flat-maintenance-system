@@ -10,6 +10,11 @@ import {
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../constants/error-codes.constant.js";
 import { ROLES } from "../../constants/roles.constant.js";
+import { auditLogService } from "../audit-logs/audit-logs.service.js";
+import {
+  AUDIT_ACTIONS,
+  AUDIT_RESOURCE_TYPES,
+} from "../audit-logs/audit-logs.constants.js";
 
 // =====================  EXPENSES SERVICE  ==================
 export class ExpensesService {
@@ -351,6 +356,17 @@ export class ExpensesService {
       approverRole: actor.role,
       amount: updated.amount,
       category: updated.category,
+    });
+
+    await auditLogService.appendAuditLog({
+      action: AUDIT_ACTIONS.EXPENSE_APPROVED,
+      actorUserId,
+      actorRole: actor.role,
+      buildingId: updated.buildingId,
+      resourceType: AUDIT_RESOURCE_TYPES.EXPENSE,
+      resourceId: updated._id,
+      beforeState: expense.toObject(),
+      afterState: updated.toObject(),
     });
 
     return updated.toSafeExpense();
