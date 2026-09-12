@@ -7,12 +7,14 @@ import permissionsRoutes from "../modules/permissions/permissions.routes.js";
 import buildingsRoutes from "../modules/buildings/buildings.routes.js";
 import blocksRoutes from "../modules/blocks/blocks.routes.js";
 import floorsRoutes from "../modules/floors/floors.routes.js";
+import flatsRoutes from "../modules/flats/flats.routes.js";
 import ownersRoutes from "../modules/owners/owners.routes.js";
 import tenantsRoutes from "../modules/tenants/tenants.routes.js";
 import staffRoutes from "../modules/staff/staff.routes.js";
 import maintenanceConfigurationRoutes from "../modules/maintenance-configurations/maintenance-configuration.routes.js";
 import maintenanceRequestRoutes from "../modules/maintenance-requests/maintenance-requests.routes.js";
 import invoiceRoutes from "../modules/invoices/invoices.routes.js";
+import paymentRoutes from "../modules/payments/payments.routes.js";
 import complaintRoutes from "../modules/complaints/complaints.routes.js";
 import reviewRoutes from "../modules/reviews/reviews.routes.js";
 import noticeRoutes from "../modules/notices/notices.routes.js";
@@ -48,6 +50,9 @@ apiV1Router.use("/blocks", blocksRoutes);
 // Module 7: Floors / Levels
 apiV1Router.use("/floors", floorsRoutes);
 
+// Module 8: Flats / Units
+apiV1Router.use("/flats", flatsRoutes);
+
 // Module 9: Owners
 apiV1Router.use("/owners", ownersRoutes);
 
@@ -65,6 +70,9 @@ apiV1Router.use("/maintenance-requests", maintenanceRequestRoutes);
 
 // Module 14: Invoices & Batch Billing Engine
 apiV1Router.use("/invoices", invoiceRoutes);
+
+// Module 15: Payments & ACID Financial Transactions
+apiV1Router.use("/payments", paymentRoutes);
 
 // Module 16: Complaints & SLA Ticket Management
 apiV1Router.use("/complaints", complaintRoutes);

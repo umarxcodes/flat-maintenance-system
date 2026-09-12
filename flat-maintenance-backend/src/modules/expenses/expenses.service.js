@@ -312,7 +312,20 @@ export class ExpensesService {
       }
     }
 
-    // 3. Verify PENDING_APPROVAL Precondition
+    // 3. Maker-Checker Segregation of Duties: Creator cannot approve their own expense
+    if (
+      actor.role !== ROLES.SUPER_ADMIN &&
+      expense.createdById.toString() === actorUserId.toString()
+    ) {
+      throw new ApiError(
+        403,
+        "Access forbidden: separation of duties prohibits the expense creator from approving their own expense voucher",
+        [],
+        ERROR_CODES.FORBIDDEN
+      );
+    }
+
+    // 4. Verify PENDING_APPROVAL Precondition
     if (expense.status !== EXPENSE_STATUS.PENDING_APPROVAL) {
       throw new ApiError(
         409,
