@@ -1,0 +1,77 @@
+// =====================  PAGE HEADER COMPONENT  ===============
+import React from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Link from "@mui/material/Link";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { Link as RouterLink } from "react-router-dom";
+
+export const PageHeader = ({
+  title,
+  subtitle,
+  breadcrumbs = [],
+  action = null,
+}) => {
+  return (
+    <Box sx={{ mb: 3 }}>
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" sx={{ color: "text.disabled" }} />}
+          aria-label="breadcrumb"
+          sx={{ mb: 1 }}
+        >
+          {breadcrumbs.map((crumb, index) => {
+            const isLast = index === breadcrumbs.length - 1;
+            return isLast ? (
+              <Typography
+                key={crumb.label}
+                variant="caption"
+                color="text.primary"
+                sx={{ fontWeight: 600 }}
+              >
+                {crumb.label}
+              </Typography>
+            ) : (
+              <Link
+                key={crumb.label}
+                component={RouterLink}
+                to={crumb.href || "#"}
+                underline="hover"
+                color="text.secondary"
+                variant="caption"
+              >
+                {crumb.label}
+              </Link>
+            );
+          })}
+        </Breadcrumbs>
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+
+        {action && <Box sx={{ flexShrink: 0 }}>{action}</Box>}
+      </Box>
+    </Box>
+  );
+};
+
+export default PageHeader;
