@@ -1,4 +1,5 @@
 // =====================  IMPORTS  ==========================
+import mongoose from "mongoose";
 import { Tenant } from "./tenants.model.js";
 import { User } from "../../models/user.model.js";
 import { Building } from "../../models/building.model.js";
@@ -228,23 +229,53 @@ class TenantsService {
       }
     }
 
-    // 11. Safe Tenant Document Construction (Mass-assignment protection)
+    // 11. Transactional Tenant Creation & Occupancy Synchronization
     let createdTenant;
+    const session = await mongoose.startSession();
     try {
-      createdTenant = await Tenant.create({
-        userId,
-        buildingId,
-        flatId,
-        ownerId,
-        leaseStartDate,
-        leaseEndDate,
-        rentAmount,
-        securityDeposit: securityDeposit || 0,
-        emergencyContact: emergencyContact || null,
-        policeVerificationStatus:
-          policeVerificationStatus ||
-          TENANTS_CONSTANTS.POLICE_VERIFICATION_STATUS.PENDING,
-        status: targetStatus,
+      await session.withTransaction(async () => {
+        const [newTenant] = await Tenant.create(
+          [
+            {
+              userId,
+              buildingId,
+              flatId,
+              ownerId,
+              leaseStartDate,
+              leaseEndDate,
+              rentAmount,
+              securityDeposit: securityDeposit || 0,
+              emergencyContact: emergencyContact || null,
+              policeVerificationStatus:
+                policeVerificationStatus ||
+                TENANTS_CONSTANTS.POLICE_VERIFICATION_STATUS.PENDING,
+              status: targetStatus,
+            },
+          ],
+          { session }
+        );
+        createdTenant = newTenant;
+
+        // 12. Atomic Flat Occupancy Update
+        if (targetStatus === TENANTS_CONSTANTS.TENANT_STATUS.ACTIVE) {
+          await Flat.updateOne(
+            { _id: flatId },
+            {
+              $set: {
+                currentTenantId: createdTenant._id,
+                status: FLAT_STATUS.OCCUPIED,
+              },
+            },
+            { session }
+          );
+        }
+
+        // 13. Synchronize User's assignedBuildingIds
+        await User.updateOne(
+          { _id: userId },
+          { $addToSet: { assignedBuildingIds: buildingId } },
+          { session }
+        );
       });
     } catch (err) {
       if (err.code === 11000) {
@@ -256,26 +287,9 @@ class TenantsService {
         );
       }
       throw err;
+    } finally {
+      await session.endSession();
     }
-
-    // 12. Atomic Flat Occupancy Update
-    if (targetStatus === TENANTS_CONSTANTS.TENANT_STATUS.ACTIVE) {
-      await Flat.updateOne(
-        { _id: flatId },
-        {
-          $set: {
-            currentTenantId: createdTenant._id,
-            status: FLAT_STATUS.OCCUPIED,
-          },
-        }
-      );
-    }
-
-    // 13. Synchronize User's assignedBuildingIds
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { assignedBuildingIds: buildingId } }
-    );
 
     // 14. Security Audit Logging
     logger.security("TENANT_ONBOARDED", {
@@ -472,20 +486,28 @@ class TenantsService {
     // 4. Resolve Move-Out Date
     const moveOutDate = input.moveOutDate || new Date();
 
-    // 5. Atomic Tenant Transition & Flat Release
-    tenant.status = TENANTS_CONSTANTS.TENANT_STATUS.MOVED_OUT;
-    tenant.moveOutDate = moveOutDate;
-    await tenant.save();
+    // 5. Transactional Tenant Transition & Flat Release
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        tenant.status = TENANTS_CONSTANTS.TENANT_STATUS.MOVED_OUT;
+        tenant.moveOutDate = moveOutDate;
+        await tenant.save({ session });
 
-    await Flat.updateOne(
-      { _id: tenant.flatId },
-      {
-        $set: {
-          currentTenantId: null,
-          status: FLAT_STATUS.VACANT,
-        },
-      }
-    );
+        await Flat.updateOne(
+          { _id: tenant.flatId },
+          {
+            $set: {
+              currentTenantId: null,
+              status: FLAT_STATUS.VACANT,
+            },
+          },
+          { session }
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
 
     // 6. Security Audit Logging
     logger.security("TENANT_MOVED_OUT", {

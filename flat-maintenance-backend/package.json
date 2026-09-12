@@ -38,6 +38,7 @@
     "test:buildings": "node --test --env-file=.env src/modules/buildings/buildings.test.js",
     "test:blocks": "node --test --env-file=.env src/modules/blocks/blocks.test.js",
     "test:floors": "node --test --env-file=.env src/modules/floors/floors.test.js",
+    "test:flats": "node --test --env-file=.env src/modules/flats/flats.test.js",
     "test:owners": "node --test --env-file=.env src/modules/owners/owners.test.js",
     "test:tenants": "node --test --env-file=.env src/modules/tenants/tenants.test.js",
     "test:staff": "node --test --env-file=.env src/modules/staff/staff.test.js",

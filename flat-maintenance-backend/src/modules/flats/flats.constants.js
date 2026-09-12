@@ -1,0 +1,25 @@
+// =====================  IMPORTS & CONSTANTS  ================
+import { FLAT_TYPES, FLAT_STATUS } from "../../models/flat.model.js";
+
+/**
+ * Flats domain constants, validation rules, and lifecycle configurations.
+ * Sourced directly from BACKEND_TECHNICAL_DOCUMENTATION.md Section 38 (Module 8: Flats).
+ */
+export const FLATS_CONSTANTS = Object.freeze({
+  FLAT_NUMBER_MIN_LENGTH: 1,
+  FLAT_NUMBER_MAX_LENGTH: 32,
+  MIN_AREA_SQFT: 1,
+  MAX_AREA_SQFT: 100000,
+  FLAT_TYPES,
+  FLAT_STATUS,
+  ALLOWED_STATUS_TRANSITIONS: Object.freeze({
+    [FLAT_STATUS.VACANT]: [
+      FLAT_STATUS.OCCUPIED,
+      FLAT_STATUS.UNDER_MAINTENANCE,
+      FLAT_STATUS.INACTIVE,
+    ],
+    [FLAT_STATUS.OCCUPIED]: [FLAT_STATUS.VACANT, FLAT_STATUS.UNDER_MAINTENANCE],
+    [FLAT_STATUS.UNDER_MAINTENANCE]: [FLAT_STATUS.VACANT, FLAT_STATUS.INACTIVE],
+    [FLAT_STATUS.INACTIVE]: [FLAT_STATUS.VACANT, FLAT_STATUS.UNDER_MAINTENANCE],
+  }),
+});
