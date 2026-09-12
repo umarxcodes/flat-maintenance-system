@@ -1,15 +1,24 @@
-// =====================  STATUS CHIP COMPONENT  ===============
+// =====================  STATUS CHIP COMPONENT (SECTION 41 & APPENDIX §A.1)  ===============
 import React from "react";
 import Chip from "@mui/material/Chip";
-import { STATUS_COLOR_MAP } from "../../lib/constants/statuses.js";
+import { useTheme } from "@mui/material/styles";
+import {
+  STATUS_TO_SEMANTIC_MAP,
+  SEMANTIC_CATEGORIES,
+  SEMANTIC_STYLES,
+} from "../../lib/constants/status-map.js";
 
 /**
- * Enterprise status chip with uniform casing and semantic palette mapping
+ * Reusable StatusChip component driven by canonical 5-category semantic map (Appendix §A.1)
+ * Guarantees color is never the only signal by always pairing with descriptive text label.
  */
-export const StatusChip = ({ status, size = "small", variant = "filled" }) => {
+export const StatusChip = ({ status, size = "small" }) => {
+  const theme = useTheme();
   if (!status) return null;
 
-  const color = STATUS_COLOR_MAP[status] || "default";
+  const mode = theme.palette.mode === "dark" ? "dark" : "light";
+  const category = STATUS_TO_SEMANTIC_MAP[status] || SEMANTIC_CATEGORIES.NEUTRAL_PENDING;
+  const style = SEMANTIC_STYLES[mode][category];
 
   // Format status string: "UNDER_MAINTENANCE" -> "Under Maintenance"
   const formattedLabel = String(status)
@@ -21,12 +30,19 @@ export const StatusChip = ({ status, size = "small", variant = "filled" }) => {
   return (
     <Chip
       label={formattedLabel}
-      color={color}
       size={size}
-      variant={variant}
       sx={{
         fontWeight: 600,
-        fontSize: size === "small" ? "0.75rem" : "0.8125rem",
+        fontSize: "0.75rem",
+        height: size === "small" ? 24 : 28,
+        borderRadius: "4px", // 4px on small inline chips per Appendix §A.3
+        color: style.color,
+        backgroundColor: style.backgroundColor,
+        border: style.border,
+        "& .MuiChip-label": {
+          px: 1.25,
+          letterSpacing: "0.01em",
+        },
       }}
     />
   );

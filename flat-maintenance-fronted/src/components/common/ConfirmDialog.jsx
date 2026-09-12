@@ -12,7 +12,7 @@ export const ConfirmDialog = ({
   open,
   title,
   description,
-  confirmLabel = "Confirm",
+  confirmLabel = "Proceed",
   cancelLabel = "Cancel",
   confirmColor = "primary",
   isLoading = false,
@@ -27,7 +27,14 @@ export const ConfirmDialog = ({
       fullWidth
       aria-labelledby="confirm-dialog-title"
     >
-      <DialogTitle id="confirm-dialog-title" sx={{ fontWeight: 600 }}>
+      <DialogTitle
+        id="confirm-dialog-title"
+        sx={{
+          fontFamily: "Fraunces, serif",
+          fontSize: "1.25rem",
+          fontWeight: 500,
+        }}
+      >
         {title}
       </DialogTitle>
       <DialogContent>

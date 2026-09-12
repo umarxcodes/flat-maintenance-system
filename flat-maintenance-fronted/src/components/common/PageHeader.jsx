@@ -58,11 +58,20 @@ export const PageHeader = ({
         }}
       >
         <Box>
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant="h1"
+            component="h1"
+            sx={{
+              fontSize: { xs: "1.625rem", sm: "2rem" },
+              lineHeight: { xs: 1.25, sm: 1.25 },
+              fontWeight: 500,
+              color: "text.primary",
+            }}
+          >
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, maxWidth: 640 }}>
               {subtitle}
             </Typography>
           )}

@@ -1,4 +1,4 @@
-// =====================  AUTH CENTRIC LAYOUT  =================
+// =====================  AUTH CENTRIC LAYOUT (APPENDIX §A.1 & §A.2)  =================
 import React from "react";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -6,6 +6,8 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import { Outlet } from "react-router-dom";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { FONT_DISPLAY, FONT_UI } from "../../theme/typography.js";
 
 export const AuthLayout = () => {
   return (
@@ -28,22 +30,38 @@ export const AuthLayout = () => {
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 52,
-              height: 52,
-              borderRadius: 3,
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
+              width: 48,
+              height: 48,
+              borderRadius: "10px",
+              bgcolor: DESIGN_TOKENS.ink[900],
+              color: "#FFFFFF",
               mb: 1.5,
-              boxShadow: "0 4px 12px rgba(2, 132, 199, 0.35)",
+              border: "1px solid",
+              borderColor: DESIGN_TOKENS.line[200],
             }}
           >
-            <ApartmentIcon fontSize="large" />
+            <ApartmentIcon />
           </Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Flat Maintenance Portal
+          <Typography
+            variant="h1"
+            sx={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: "1.5rem",
+              fontWeight: 500,
+              color: "text.primary",
+              mb: 0.5,
+            }}
+          >
+            Flat Maintenance
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Enterprise Residential Operations Management
+          <Typography
+            variant="body2"
+            sx={{
+              fontFamily: FONT_UI,
+              color: "text.secondary",
+            }}
+          >
+            Digital Lobby & Residential Operations
           </Typography>
         </Box>
 
@@ -52,8 +70,9 @@ export const AuthLayout = () => {
           variant="outlined"
           sx={{
             p: { xs: 3, sm: 4 },
-            borderRadius: 3,
+            borderRadius: "10px", // 10px on cards per Appendix §A.3
             bgcolor: "background.paper",
+            borderColor: DESIGN_TOKENS.line[200],
           }}
         >
           <Outlet />

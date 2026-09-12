@@ -1,4 +1,4 @@
-// =====================  ENTERPRISE SIDEBAR COMPONENT  ========
+// =====================  ENTERPRISE SIDEBAR COMPONENT (APPENDIX §A.1)  ========
 import React from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -38,6 +38,8 @@ import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../providers/auth-provider.jsx";
 import { NAVIGATION_CONFIG } from "../../lib/constants/navigation.config.js";
 import { hasPermission } from "../../lib/permissions/rbac.util.js";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { FONT_DISPLAY, FONT_UI } from "../../theme/typography.js";
 
 const DRAWER_WIDTH = 260;
 
@@ -72,7 +74,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Filter navigation items by authenticated user's permissions
+  // Filter navigation items by authorized permissions
   const authorizedNavigation = NAVIGATION_CONFIG.map((section) => ({
     ...section,
     items: section.items.filter((item) => {
@@ -82,7 +84,15 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
   })).filter((section) => section.items.length > 0);
 
   const drawerContent = (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        bgcolor: DESIGN_TOKENS.ink[900],
+        color: "#F6F4EF",
+      }}
+    >
       {/* Brand Header */}
       <Box
         sx={{
@@ -90,8 +100,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           alignItems: "center",
           gap: 1.5,
           p: 2.5,
-          borderBottom: 1,
-          borderColor: "divider",
+          borderBottom: "1px solid rgba(228, 224, 214, 0.12)",
         }}
       >
         <Box
@@ -102,24 +111,39 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             width: 36,
             height: 36,
             borderRadius: 2,
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
+            bgcolor: DESIGN_TOKENS.evergreen[600],
+            color: "#FFFFFF",
           }}
         >
           <ApartmentIcon />
         </Box>
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+          <Typography
+            sx={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: "1.125rem",
+              fontWeight: 500,
+              lineHeight: 1.2,
+              color: "#FFFFFF",
+            }}
+          >
             Flat Maintenance
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Management System
+          <Typography
+            variant="caption"
+            sx={{
+              fontFamily: FONT_UI,
+              color: "rgba(246, 244, 239, 0.65)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            Residential Operations
           </Typography>
         </Box>
       </Box>
 
       {/* Navigation List */}
-      <Box sx={{ flex: 1, overflowY: "auto", py: 1 }}>
+      <Box sx={{ flex: 1, overflowY: "auto", py: 1.5 }}>
         {authorizedNavigation.map((section) => (
           <List
             key={section.category}
@@ -129,13 +153,14 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                 disableSticky
                 sx={{
                   bgcolor: "transparent",
-                  fontSize: "0.6875rem",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "text.disabled",
-                  lineHeight: "28px",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  textTransform: "none", // Never ALL CAPS per Appendix §A.2
+                  color: "rgba(246, 244, 239, 0.45)",
+                  lineHeight: "26px",
                   px: 2.5,
+                  mt: 1,
+                  fontFamily: FONT_UI,
                 }}
               >
                 {section.category}
@@ -149,38 +174,41 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                   : location.pathname.startsWith(item.href);
 
               return (
-                <ListItem key={item.href} disablePadding sx={{ px: 1.5, mb: 0.5 }}>
+                <ListItem key={item.href} disablePadding sx={{ px: 1.5, mb: 0.25 }}>
                   <ListItemButton
                     component={RouterLink}
                     to={item.href}
                     onClick={onMobileClose}
                     selected={isActive}
                     sx={{
-                      borderRadius: 2,
+                      borderRadius: "8px", // 8px on buttons & pills per Appendix §A.3
                       py: 0.85,
                       px: 1.5,
-                      color: isActive ? "primary.main" : "text.secondary",
-                      bgcolor: isActive ? "action.selected" : "transparent",
+                      color: isActive ? "#FFFFFF" : "rgba(246, 244, 239, 0.75)",
+                      bgcolor: isActive ? DESIGN_TOKENS.evergreen[600] : "transparent",
                       "&.Mui-selected": {
-                        bgcolor: "primary.main",
-                        color: "primary.contrastText",
+                        bgcolor: DESIGN_TOKENS.evergreen[600],
+                        color: "#FFFFFF",
                         "&:hover": {
-                          bgcolor: "primary.dark",
+                          bgcolor: "#24664A",
                         },
                         "& .MuiListItemIcon-root": {
-                          color: "inherit",
+                          color: "#FFFFFF",
                         },
                       },
                       "&:hover": {
-                        bgcolor: "action.hover",
-                        color: "text.primary",
+                        bgcolor: DESIGN_TOKENS.ink[700],
+                        color: "#FFFFFF",
+                        "& .MuiListItemIcon-root": {
+                          color: "#FFFFFF",
+                        },
                       },
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         minWidth: 32,
-                        color: isActive ? "inherit" : "text.secondary",
+                        color: isActive ? "#FFFFFF" : "rgba(246, 244, 239, 0.6)",
                       }}
                     >
                       {ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
@@ -190,6 +218,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                       slotProps={{
                         primary: {
                           sx: {
+                            fontFamily: FONT_UI,
                             fontSize: "0.8125rem",
                             fontWeight: isActive ? 600 : 500,
                           },
@@ -205,12 +234,19 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
       </Box>
 
       {/* Footer / Scope info */}
-      <Divider />
-      <Box sx={{ p: 2, bgcolor: "action.hover" }}>
-        <Typography variant="caption" color="text.secondary" display="block">
-          Logged in as:
+      <Divider sx={{ borderColor: "rgba(228, 224, 214, 0.12)" }} />
+      <Box sx={{ p: 2, bgcolor: "rgba(0, 0, 0, 0.15)" }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "rgba(246, 244, 239, 0.55)", display: "block", fontFamily: FONT_UI }}
+        >
+          Logged in as
         </Typography>
-        <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, color: "#FFFFFF", fontFamily: FONT_UI }}
+          noWrap
+        >
           {user?.firstName} {user?.lastName}
         </Typography>
       </Box>
@@ -230,7 +266,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            bgcolor: "background.paper",
+            bgcolor: DESIGN_TOKENS.ink[900],
+            borderRight: "1px solid rgba(228, 224, 214, 0.15)",
             backgroundImage: "none",
           },
         }}
@@ -248,9 +285,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            borderRight: 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            borderRight: "1px solid rgba(228, 224, 214, 0.15)",
+            bgcolor: DESIGN_TOKENS.ink[900],
             backgroundImage: "none",
           },
         }}

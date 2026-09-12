@@ -33,14 +33,22 @@ export const EmptyState = ({
         {icon || <InboxOutlinedIcon />}
       </Box>
 
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "text.primary" }}>
+      <Typography
+        variant="h3"
+        sx={{
+          fontSize: "1.25rem",
+          fontWeight: 500,
+          color: "text.primary",
+          mb: 0.5,
+        }}
+      >
         {title}
       </Typography>
 
       <Typography
-        variant="body2"
+        variant="body1"
         color="text.secondary"
-        sx={{ mt: 0.5, mb: action ? 3 : 0, maxWidth: 420 }}
+        sx={{ mt: 0.5, mb: action ? 3 : 0, maxWidth: 440 }}
       >
         {description}
       </Typography>

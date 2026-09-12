@@ -56,11 +56,19 @@ export const LoginPage = () => {
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          Sign In
+        <Typography
+          variant="h2"
+          sx={{
+            fontFamily: "Fraunces, serif",
+            fontSize: "1.375rem",
+            fontWeight: 500,
+            mb: 0.5,
+          }}
+        >
+          Resident & Staff Sign In
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Enter your authorized credentials to access your dashboard
+          Enter your registered credentials to access your portal
         </Typography>
       </Box>
 
@@ -142,7 +150,7 @@ export const LoginPage = () => {
           startIcon={loginMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null}
           sx={{ py: 1.25, fontWeight: 700 }}
         >
-          {loginMutation.isPending ? "Signing in..." : "Sign In"}
+          {loginMutation.isPending ? "Signing in..." : "Sign in to digital lobby"}
         </Button>
       </Stack>
     </Box>

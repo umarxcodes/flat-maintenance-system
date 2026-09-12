@@ -8,6 +8,7 @@ export const createAppTheme = (mode = "light") => {
   return createTheme({
     palette: mode === "light" ? lightPalette : darkPalette,
     typography,
+    spacing: 8,
     shape: {
       borderRadius: 8,
     },
