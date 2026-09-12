@@ -7,6 +7,7 @@ import permissionsRoutes from "../modules/permissions/permissions.routes.js";
 import buildingsRoutes from "../modules/buildings/buildings.routes.js";
 import blocksRoutes from "../modules/blocks/blocks.routes.js";
 import floorsRoutes from "../modules/floors/floors.routes.js";
+import flatsRoutes from "../modules/flats/flats.routes.js";
 import ownersRoutes from "../modules/owners/owners.routes.js";
 import tenantsRoutes from "../modules/tenants/tenants.routes.js";
 import staffRoutes from "../modules/staff/staff.routes.js";
@@ -48,6 +49,9 @@ apiV1Router.use("/blocks", blocksRoutes);
 
 // Module 7: Floors / Levels
 apiV1Router.use("/floors", floorsRoutes);
+
+// Module 8: Flats / Units
+apiV1Router.use("/flats", flatsRoutes);
 
 // Module 9: Owners
 apiV1Router.use("/owners", ownersRoutes);

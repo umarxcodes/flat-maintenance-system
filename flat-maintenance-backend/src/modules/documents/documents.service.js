@@ -4,6 +4,7 @@ import { Building } from "../../models/building.model.js";
 import { Flat } from "../../models/flat.model.js";
 import { Owner } from "../owners/owners.model.js";
 import { Tenant } from "../tenants/tenants.model.js";
+import { TENANTS_CONSTANTS } from "../tenants/tenants.constants.js";
 import {
   DOCUMENT_VISIBILITY,
   DOCUMENT_CONSTRAINTS,
@@ -308,7 +309,7 @@ class DocumentsService {
     else if (actor.role === ROLES.TENANT) {
       const tenant = await Tenant.findOne({
         userId: actorUserId,
-        status: "ACTIVE",
+        status: TENANTS_CONSTANTS.TENANT_STATUS.ACTIVE,
         isDeleted: false,
       });
 
