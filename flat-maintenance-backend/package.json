@@ -44,6 +44,7 @@
     "test:maintenance-configurations": "node --test --env-file=.env src/modules/maintenance-configurations/maintenance-configuration.test.js",
     "test:maintenance-requests": "node --test --env-file=.env src/modules/maintenance-requests/maintenance-requests.test.js",
     "test:invoices": "node --test --env-file=.env src/modules/invoices/invoices.test.js",
+    "test:payments": "node --test --env-file=.env src/modules/payments/payments.test.js",
     "test:complaints": "node --test --env-file=.env src/modules/complaints/complaints.test.js",
     "test:reviews": "node --test --env-file=.env src/modules/reviews/reviews.test.js",
     "test:notices": "node --test --env-file=.env src/modules/notices/notices.test.js",
