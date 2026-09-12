@@ -12,7 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import BuildIcon from "@mui/icons-material/Build";
 import { Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../../providers/auth-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatCard } from "../../components/common/StatCard.jsx";
@@ -52,7 +52,8 @@ export const DashboardPage = () => {
     limit: 8,
   });
 
-  const requests = maintenanceData?.requests || (Array.isArray(maintenanceData) ? maintenanceData : []);
+  const requests =
+    maintenanceData?.requests || (Array.isArray(maintenanceData) ? maintenanceData : []);
   const invoices = invoicesData?.invoices || (Array.isArray(invoicesData) ? invoicesData : []);
   const notices = noticesData?.notices || (Array.isArray(noticesData) ? noticesData : []);
   const flats = flatsData?.flats || (Array.isArray(flatsData) ? flatsData : []);
@@ -66,9 +67,13 @@ export const DashboardPage = () => {
   const occupancyPct = Math.round((occupiedFlats / totalFlats) * 100);
 
   const overdueInvoices = invoices.filter((i) => i.status === "OVERDUE");
-  const totalOverdueAmount = overdueInvoices.reduce((acc, curr) => acc + (curr.dueAmount || curr.totalAmount || 0), 0);
+  const totalOverdueAmount = overdueInvoices.reduce(
+    (acc, curr) => acc + (curr.dueAmount || curr.totalAmount || 0),
+    0
+  );
   const paidInvoices = invoices.filter((i) => i.status === "PAID");
-  const collectionRate = invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
+  const collectionRate =
+    invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
 
   // Expected visitors count for security staff
   const expectedVisitors = visitors.filter((v) => v.status === "EXPECTED");
@@ -92,11 +97,7 @@ export const DashboardPage = () => {
               >
                 Submit Work Order
               </Button>
-              <Button
-                component={RouterLink}
-                to="/visitors"
-                variant="outlined"
-              >
+              <Button component={RouterLink} to="/visitors" variant="outlined">
                 Create Guest Pass
               </Button>
             </Stack>
@@ -149,7 +150,11 @@ export const DashboardPage = () => {
               <StatCard
                 value={overdueInvoices.length}
                 label="Overdue Invoices"
-                delta={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} outstanding` : "All accounts clear"}
+                delta={
+                  totalOverdueAmount > 0
+                    ? `₨${totalOverdueAmount.toLocaleString()} outstanding`
+                    : "All accounts clear"
+                }
               />
             </Grid>
           </Grid>
@@ -197,7 +202,11 @@ export const DashboardPage = () => {
               <StatCard
                 value={overdueInvoices.length}
                 label="Overdue Accounts"
-                delta={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} total pending` : "Zero overdue dues"}
+                delta={
+                  totalOverdueAmount > 0
+                    ? `₨${totalOverdueAmount.toLocaleString()} total pending`
+                    : "Zero overdue dues"
+                }
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -224,7 +233,9 @@ export const DashboardPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <StatCard
-                value={requests.filter((r) => r.priority === "EMERGENCY" || r.priority === "HIGH").length}
+                value={
+                  requests.filter((r) => r.priority === "EMERGENCY" || r.priority === "HIGH").length
+                }
                 label="High / Emergency Urgency"
                 delta="Requires immediate dispatch"
               />
@@ -258,9 +269,15 @@ export const DashboardPage = () => {
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={6} md={4}>
               <StatCard
-                value={overdueInvoices.length > 0 ? `₨${totalOverdueAmount.toLocaleString()}` : "₨0"}
+                value={
+                  overdueInvoices.length > 0 ? `₨${totalOverdueAmount.toLocaleString()}` : "₨0"
+                }
                 label="Dues Status"
-                delta={overdueInvoices.length > 0 ? "Maintenance fee overdue" : "All maintenance dues settled"}
+                delta={
+                  overdueInvoices.length > 0
+                    ? "Maintenance fee overdue"
+                    : "All maintenance dues settled"
+                }
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -309,8 +326,13 @@ export const DashboardPage = () => {
           >
             Gate Security Terminal
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 480, mx: "auto" }}>
-            Verify arriving guest passes, check in delivery drivers, and log visitor departures with large 44px tap targets.
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3, maxWidth: 480, mx: "auto" }}
+          >
+            Verify arriving guest passes, check in delivery drivers, and log visitor departures with
+            large 44px tap targets.
           </Typography>
           <Button
             component={RouterLink}
@@ -344,7 +366,14 @@ export const DashboardPage = () => {
                 backgroundColor: "background.paper",
               }}
             >
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2.5,
+                }}
+              >
                 <Box>
                   <Typography
                     sx={{
@@ -372,7 +401,11 @@ export const DashboardPage = () => {
               {loadingMaintenance ? (
                 <TableLoadingSkeleton rows={4} />
               ) : requests.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ py: 3, textAlign: "center" }}
+                >
                   All clear — no work orders awaiting attention at this moment.
                 </Typography>
               ) : (
@@ -405,8 +438,14 @@ export const DashboardPage = () => {
                             width: 36,
                             height: 36,
                             borderRadius: "8px",
-                            bgcolor: req.priority === "EMERGENCY" ? DESIGN_TOKENS.paper[50] : "action.hover",
-                            color: req.priority === "EMERGENCY" ? DESIGN_TOKENS.semantic.danger : DESIGN_TOKENS.ink[900],
+                            bgcolor:
+                              req.priority === "EMERGENCY"
+                                ? DESIGN_TOKENS.paper[50]
+                                : "action.hover",
+                            color:
+                              req.priority === "EMERGENCY"
+                                ? DESIGN_TOKENS.semantic.danger
+                                : DESIGN_TOKENS.ink[900],
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -419,7 +458,8 @@ export const DashboardPage = () => {
                             {req.title}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Ticket #{req.requestNumber || req._id?.slice(-6)} • Category: {req.category}
+                            Ticket #{req.requestNumber || req._id?.slice(-6)} • Category:{" "}
+                            {req.category}
                           </Typography>
                         </Box>
                       </Box>
@@ -457,7 +497,14 @@ export const DashboardPage = () => {
                 height: "100%",
               }}
             >
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2.5,
+                }}
+              >
                 <Box>
                   <Typography
                     sx={{
@@ -478,7 +525,11 @@ export const DashboardPage = () => {
               </Box>
 
               {notices.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ py: 3, textAlign: "center" }}
+                >
                   No published notices.
                 </Typography>
               ) : (
@@ -495,7 +546,10 @@ export const DashboardPage = () => {
                       }}
                     >
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.75 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, fontSize: "0.875rem" }}
+                        >
                           {notice.title}
                         </Typography>
                         <Chip
@@ -544,7 +598,9 @@ export const DashboardPage = () => {
             mb: 4,
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+          >
             <Box>
               <Typography
                 sx={{
@@ -559,7 +615,12 @@ export const DashboardPage = () => {
                 Click any flat row to inspect invoices and record payment
               </Typography>
             </Box>
-            <Button component={RouterLink} to="/invoices" size="small" endIcon={<ArrowForwardIcon />}>
+            <Button
+              component={RouterLink}
+              to="/invoices"
+              size="small"
+              endIcon={<ArrowForwardIcon />}
+            >
               Billing Registry
             </Button>
           </Box>
@@ -598,7 +659,8 @@ export const DashboardPage = () => {
                       Invoice #{inv.invoiceNumber}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Period: {inv.periodMonth}/{inv.periodYear} • Due: {new Date(inv.dueDate).toLocaleDateString()}
+                      Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
+                      {new Date(inv.dueDate).toLocaleDateString()}
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
@@ -664,8 +726,12 @@ export const DashboardPage = () => {
                   minHeight: 52, // >= 44px tap target per Section 50 & Appendix A.8
                   borderRadius: "8px",
                   border: "1px solid",
-                  borderColor: req.priority === "EMERGENCY" ? DESIGN_TOKENS.semantic.danger : DESIGN_TOKENS.line[200],
-                  bgcolor: req.priority === "EMERGENCY" ? "rgba(179, 38, 30, 0.02)" : "background.paper",
+                  borderColor:
+                    req.priority === "EMERGENCY"
+                      ? DESIGN_TOKENS.semantic.danger
+                      : DESIGN_TOKENS.line[200],
+                  bgcolor:
+                    req.priority === "EMERGENCY" ? "rgba(179, 38, 30, 0.02)" : "background.paper",
                   textDecoration: "none",
                   color: "inherit",
                   "&:hover": {
@@ -678,7 +744,8 @@ export const DashboardPage = () => {
                     {req.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Location: Flat {req.flatId?.flatNumber || "Assigned Unit"} • Category: {req.category}
+                    Location: Flat {req.flatId?.flatNumber || "Assigned Unit"} • Category:{" "}
+                    {req.category}
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>

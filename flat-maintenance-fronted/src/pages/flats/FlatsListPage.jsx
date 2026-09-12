@@ -20,10 +20,14 @@ import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useFlatsList, useCreateFlatMutation, useUpdateFlatStatusMutation } from "../../features/flats/hooks/use-flats.js";
+import {
+  useFlatsList,
+  useCreateFlatMutation,
+  useUpdateFlatStatusMutation,
+} from "../../features/flats/hooks/use-flats.js";
 import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { useBlocksList } from "../../features/blocks/hooks/use-blocks.js";
 import { useFloorsList } from "../../features/floors/hooks/use-floors.js";
@@ -78,7 +82,7 @@ export const FlatsListPage = () => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     formState: { errors },
   } = useForm({
@@ -93,8 +97,8 @@ export const FlatsListPage = () => {
     },
   });
 
-  const selectedBuildingId = watch("buildingId");
-  const selectedBlockId = watch("blockId");
+  const selectedBuildingId = useWatch({ control, name: "buildingId" });
+  const selectedBlockId = useWatch({ control, name: "blockId" });
 
   const { data: blocksData } = useBlocksList({ buildingId: selectedBuildingId });
   const blocks = blocksData?.blocks || (Array.isArray(blocksData) ? blocksData : []);
@@ -203,10 +207,7 @@ export const FlatsListPage = () => {
       <PageHeader
         title="Flats & Units"
         subtitle="Manage residential unit inventory, layouts, square footage, and occupancy lifecycle"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Flats" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Flats" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.FLAT_CREATE}>
             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
@@ -315,7 +316,11 @@ export const FlatsListPage = () => {
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <FormControl fullWidth size="small" error={Boolean(errors.blockId)}>
                   <InputLabel>Block / Tower</InputLabel>
-                  <Select label="Block / Tower" {...register("blockId")} disabled={!selectedBuildingId}>
+                  <Select
+                    label="Block / Tower"
+                    {...register("blockId")}
+                    disabled={!selectedBuildingId}
+                  >
                     {blocks.map((blk) => (
                       <MenuItem key={blk.id || blk._id} value={blk.id || blk._id}>
                         {blk.name}
@@ -400,11 +405,7 @@ export const FlatsListPage = () => {
 
           <FormControl fullWidth size="small">
             <InputLabel>Status</InputLabel>
-            <Select
-              value={newStatus}
-              label="Status"
-              onChange={(e) => setNewStatus(e.target.value)}
-            >
+            <Select value={newStatus} label="Status" onChange={(e) => setNewStatus(e.target.value)}>
               {Object.values(STATUSES.FLAT).map((st) => (
                 <MenuItem key={st} value={st}>
                   {st}

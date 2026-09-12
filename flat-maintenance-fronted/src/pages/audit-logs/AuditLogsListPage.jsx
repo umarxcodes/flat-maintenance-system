@@ -52,7 +52,9 @@ export const AuditLogsListPage = () => {
       id: "actor",
       label: "Actor / User",
       render: (_, row) =>
-        row.actor ? `${row.actor.firstName || ""} ${row.actor.lastName || ""} (${row.actor.email || "User"})` : "System / Job",
+        row.actor
+          ? `${row.actor.firstName || ""} ${row.actor.lastName || ""} (${row.actor.email || "User"})`
+          : "System / Job",
     },
     {
       id: "action",
@@ -75,11 +77,7 @@ export const AuditLogsListPage = () => {
       align: "right",
       render: (_, row) => (
         <Tooltip title="Inspect State Diff">
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => setSelectedLog(row)}
-          >
+          <IconButton size="small" color="primary" onClick={() => setSelectedLog(row)}>
             <VisibilityIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -92,10 +90,7 @@ export const AuditLogsListPage = () => {
       <PageHeader
         title="Audit Logs & Compliance Trail"
         subtitle="Immutable append-only chronological log of security events and state transitions"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Audit Logs" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Audit Logs" }]}
       />
 
       <FilterBar
@@ -158,7 +153,8 @@ export const AuditLogsListPage = () => {
                 Actor Identity:
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {selectedLog?.actor?.firstName} {selectedLog?.actor?.lastName} ({selectedLog?.actor?.email})
+                {selectedLog?.actor?.firstName} {selectedLog?.actor?.lastName} (
+                {selectedLog?.actor?.email})
               </Typography>
             </Box>
 

@@ -3,10 +3,9 @@ import React from "react";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import ApartmentIcon from "@mui/icons-material/Apartment";
-import { useAuth } from "../../providers/auth-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { ROLES } from "../../lib/constants/roles.js";
 
 export const BuildingSelector = ({ buildings = [] }) => {

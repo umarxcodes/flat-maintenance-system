@@ -42,11 +42,7 @@ export const NotFoundPage = () => {
         Page Not Found
       </Typography>
 
-      <Typography
-        variant="body1"
-        color="text.secondary"
-        sx={{ maxWidth: 460, mb: 4 }}
-      >
+      <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 460, mb: 4 }}>
         The page you are looking for does not exist or may have been moved.
       </Typography>
 

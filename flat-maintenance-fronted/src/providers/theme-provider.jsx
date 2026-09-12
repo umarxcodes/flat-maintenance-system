@@ -1,30 +1,30 @@
 // =====================  THEME & COLOR MODE PROVIDER  =========
-import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
+import { ColorModeContext } from "./theme-context.js";
 import { createAppTheme } from "../theme/index.js";
 
-const ColorModeContext = createContext({
-  mode: "light",
-  toggleColorMode: () => {},
-});
-
-export const useColorMode = () => useContext(ColorModeContext);
+const getInitialColorMode = () => {
+  try {
+    const savedMode = localStorage.getItem("flat_mgt_theme_mode");
+    if (savedMode === "dark" || savedMode === "light") {
+      return savedMode;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      return "dark";
+    }
+  } catch {
+    // Ignore localStorage access issues
+  }
+  return "light";
+};
 
 export const AppThemeProvider = ({ children }) => {
-  const [mode, setMode] = useState("light");
-
-  useEffect(() => {
-    try {
-      const savedMode = localStorage.getItem("flat_mgt_theme_mode");
-      if (savedMode === "dark" || savedMode === "light") {
-        setMode(savedMode);
-      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        setMode("dark");
-      }
-    } catch {
-      // Ignore localStorage access issues
-    }
-  }, []);
+  const [mode, setMode] = useState(getInitialColorMode);
 
   const colorMode = useMemo(
     () => ({

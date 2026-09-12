@@ -1,7 +1,7 @@
 // =====================  AUTH MUTATION HOOKS  ==================
 import { useMutation } from "@tanstack/react-query";
 import { authApi } from "../api/auth.api.js";
-import { useAuth } from "../../../providers/auth-provider.jsx";
+import { useAuth } from "../../../providers/auth-context.js";
 
 export const useLoginMutation = () => {
   const { login } = useAuth();

@@ -25,10 +25,14 @@ import { Link as RouterLink } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useActiveMaintenanceConfig, usePublishMaintenanceConfigMutation } from "../../features/maintenance-configurations/hooks/use-maintenance-configurations.js";
+import {
+  useActiveMaintenanceConfig,
+  usePublishMaintenanceConfigMutation,
+} from "../../features/maintenance-configurations/hooks/use-maintenance-configurations.js";
 import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { EmptyState } from "../../components/common/EmptyState.jsx";
+import { TableLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 
@@ -49,7 +53,7 @@ export const MaintenanceConfigListPage = () => {
   const buildings = buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []);
 
   const [selectedBuildingId, setSelectedBuildingId] = useState("");
-  const activeBuildingId = selectedBuildingId || (buildings[0]?.id || buildings[0]?._id);
+  const activeBuildingId = selectedBuildingId || buildings[0]?.id || buildings[0]?._id;
 
   const { data: activeConfig, isLoading } = useActiveMaintenanceConfig(activeBuildingId);
   const publishMutation = usePublishMaintenanceConfigMutation();
@@ -60,7 +64,6 @@ export const MaintenanceConfigListPage = () => {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(configSchema),
@@ -76,12 +79,6 @@ export const MaintenanceConfigListPage = () => {
       effectiveFrom: new Date().toISOString().slice(0, 10),
     },
   });
-
-  const previewChargeType = watch("chargeType");
-  const previewBaseRate = watch("baseRate") || 0;
-  const previewParking = watch("parkingCharge") || 0;
-  const previewWater = watch("waterCharge") || 0;
-  const previewSinking = watch("sinkingFundCharge") || 0;
 
   const handleOpenPublish = () => {
     reset({
@@ -156,7 +153,9 @@ export const MaintenanceConfigListPage = () => {
       </Paper>
 
       {/* Active Rate Card */}
-      {!activeConfig ? (
+      {isLoading ? (
+        <TableLoadingSkeleton rows={3} />
+      ) : !activeConfig ? (
         <EmptyState
           title="No Active Maintenance Configuration"
           description="There is no active maintenance billing formula published for this building complex."
@@ -172,7 +171,12 @@ export const MaintenanceConfigListPage = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={7}>
             <Paper variant="outlined" sx={{ p: 3.5 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ mb: 2 }}
+              >
                 <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   Authoritative Active Rate Breakdown
                 </Typography>
@@ -187,7 +191,9 @@ export const MaintenanceConfigListPage = () => {
                     Calculation Strategy
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {activeConfig.chargeType === "FLAT_RATE" ? "Flat Fixed Rate" : "Per Square Foot"}
+                    {activeConfig.chargeType === "FLAT_RATE"
+                      ? "Flat Fixed Rate"
+                      : "Per Square Foot"}
                   </Typography>
                 </Grid>
 
@@ -284,7 +290,8 @@ export const MaintenanceConfigListPage = () => {
                 Total = Base Rate + Parking + Water + Sinking Fund
               </Box>
               <Typography variant="caption" color="text.secondary">
-                Late fees are calculated after grace period expires from due date. All calculations are authoritative on the backend.
+                Late fees are calculated after grace period expires from due date. All calculations
+                are authoritative on the backend.
               </Typography>
             </Paper>
           </Grid>

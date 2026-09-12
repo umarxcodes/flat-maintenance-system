@@ -7,7 +7,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
-import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import CircularProgress from "@mui/material/CircularProgress";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
@@ -66,7 +65,11 @@ export const VisitorVerifyPage = () => {
           { label: "Verify Pass" },
         ]}
         action={
-          <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/visitors")}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate("/visitors")}
+          >
             Back to Visitor Log
           </Button>
         }
@@ -121,7 +124,12 @@ export const VisitorVerifyPage = () => {
               borderWidth: 2,
             }}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 {verifiedPass.visitorName}
               </Typography>

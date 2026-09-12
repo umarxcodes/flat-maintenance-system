@@ -69,7 +69,8 @@ export const ResetPasswordPage = () => {
       {success ? (
         <Stack spacing={3}>
           <Alert severity="success">
-            Your password has been successfully reset! You may now sign in with your new credentials.
+            Your password has been successfully reset! You may now sign in with your new
+            credentials.
           </Alert>
           <Button
             component={RouterLink}
@@ -85,7 +86,8 @@ export const ResetPasswordPage = () => {
         <Stack spacing={2.5}>
           {resetMutation.isError && (
             <Alert severity="error">
-              {resetMutation.error?.message || "Failed to reset password. The token may be expired or invalid."}
+              {resetMutation.error?.message ||
+                "Failed to reset password. The token may be expired or invalid."}
             </Alert>
           )}
 
@@ -121,7 +123,9 @@ export const ResetPasswordPage = () => {
             fullWidth
             size="large"
             disabled={resetMutation.isPending}
-            startIcon={resetMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null}
+            startIcon={
+              resetMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null
+            }
             sx={{ py: 1.25, fontWeight: 700 }}
           >
             {resetMutation.isPending ? "Resetting..." : "Confirm New Password"}

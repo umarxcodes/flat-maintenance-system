@@ -185,15 +185,25 @@ export const MaintenanceRequestsListPage = () => {
       label: "Priority",
       render: (val) => {
         const color =
-          val === "EMERGENCY" ? "error" : val === "HIGH" ? "warning" : val === "MEDIUM" ? "info" : "default";
-        return <Chip label={val} color={color} size="small" variant="filled" sx={{ fontWeight: 700 }} />;
+          val === "EMERGENCY"
+            ? "error"
+            : val === "HIGH"
+              ? "warning"
+              : val === "MEDIUM"
+                ? "info"
+                : "default";
+        return (
+          <Chip label={val} color={color} size="small" variant="filled" sx={{ fontWeight: 700 }} />
+        );
       },
     },
     {
       id: "technician",
       label: "Assigned Tech",
       render: (_, row) =>
-        row.assignedStaff ? `${row.assignedStaff.user?.firstName} ${row.assignedStaff.user?.lastName}` : "Unassigned",
+        row.assignedStaff
+          ? `${row.assignedStaff.user?.firstName} ${row.assignedStaff.user?.lastName}`
+          : "Unassigned",
     },
     {
       id: "slaDeadline",

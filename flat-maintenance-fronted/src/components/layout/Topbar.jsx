@@ -18,8 +18,8 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../providers/auth-provider.jsx";
-import { useColorMode } from "../../providers/theme-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
+import { useColorMode } from "../../providers/theme-context.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { BuildingSelector } from "../common/BuildingSelector.jsx";
 
@@ -91,11 +91,7 @@ export const Topbar = ({ onMenuClick }) => {
 
           {/* Notifications Shortcut */}
           <Tooltip title="Notifications">
-            <IconButton
-              onClick={() => navigate("/notifications")}
-              color="inherit"
-              size="small"
-            >
+            <IconButton onClick={() => navigate("/notifications")} color="inherit" size="small">
               <NotificationsNoneIcon />
             </IconButton>
           </Tooltip>

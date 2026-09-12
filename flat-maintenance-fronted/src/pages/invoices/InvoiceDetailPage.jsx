@@ -48,7 +48,11 @@ export const InvoiceDetailPage = () => {
         ]}
         action={
           <Stack direction="row" spacing={1.5}>
-            <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/invoices")}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate("/invoices")}
+            >
               Back to Invoices
             </Button>
             {invoice?.dueAmount > 0 && invoice?.status !== "VOID" && (
@@ -76,14 +80,18 @@ export const InvoiceDetailPage = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700 }}>Amount ($)</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>
+                      Amount ($)
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {lineItems.length > 0 ? (
                     lineItems.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.description || item.name || `Charge Component ${index + 1}`}</TableCell>
+                        <TableCell>
+                          {item.description || item.name || `Charge Component ${index + 1}`}
+                        </TableCell>
                         <TableCell align="right">${item.amount?.toLocaleString()}</TableCell>
                       </TableRow>
                     ))
@@ -91,7 +99,9 @@ export const InvoiceDetailPage = () => {
                     <>
                       <TableRow>
                         <TableCell>Base Maintenance Charge</TableCell>
-                        <TableCell align="right">${invoice?.subTotal?.toLocaleString() || "0"}</TableCell>
+                        <TableCell align="right">
+                          ${invoice?.subTotal?.toLocaleString() || "0"}
+                        </TableCell>
                       </TableRow>
                       {invoice?.lateFee > 0 && (
                         <TableRow>
@@ -117,20 +127,28 @@ export const InvoiceDetailPage = () => {
 
             <Stack spacing={2}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Status
+                </Typography>
                 <StatusChip status={invoice?.status || "ISSUED"} />
               </Box>
 
               <Divider />
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Subtotal</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>${invoice?.subTotal?.toLocaleString() || "0"}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Subtotal
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  ${invoice?.subTotal?.toLocaleString() || "0"}
+                </Typography>
               </Box>
 
               {invoice?.lateFee > 0 && (
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="body2" color="error.main">Late Fee</Typography>
+                  <Typography variant="body2" color="error.main">
+                    Late Fee
+                  </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "error.main" }}>
                     +${invoice?.lateFee?.toLocaleString()}
                   </Typography>
@@ -138,14 +156,18 @@ export const InvoiceDetailPage = () => {
               )}
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Total Invoiced</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Invoiced
+                </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 700 }}>
                   ${invoice?.totalAmount?.toLocaleString() || "0"}
                 </Typography>
               </Box>
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Amount Paid</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Amount Paid
+                </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: "success.main" }}>
                   ${invoice?.paidAmount?.toLocaleString() || "0"}
                 </Typography>
@@ -154,8 +176,16 @@ export const InvoiceDetailPage = () => {
               <Divider />
 
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Outstanding Balance</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: invoice?.dueAmount > 0 ? "error.main" : "success.main" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  Outstanding Balance
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: invoice?.dueAmount > 0 ? "error.main" : "success.main",
+                  }}
+                >
                   ${invoice?.dueAmount?.toLocaleString() || "0"}
                 </Typography>
               </Box>

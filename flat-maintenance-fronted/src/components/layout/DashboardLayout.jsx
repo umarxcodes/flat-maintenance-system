@@ -18,10 +18,7 @@ export const DashboardLayout = () => {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
       {/* Sidebar Navigation */}
-      <Sidebar
-        mobileOpen={mobileOpen}
-        onMobileClose={() => setMobileOpen(false)}
-      />
+      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
 
       {/* Main Content Area */}
       <Box

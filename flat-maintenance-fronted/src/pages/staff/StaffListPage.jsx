@@ -27,7 +27,6 @@ import { FilterBar } from "../../components/common/FilterBar.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
-import { STATUSES } from "../../lib/constants/statuses.js";
 
 const CATEGORIES = ["MAINTENANCE", "SECURITY", "ADMINISTRATION", "CLEANING"];
 const SUBCATEGORIES = [
@@ -157,10 +156,7 @@ export const StaffListPage = () => {
       <PageHeader
         title="Staff & Operations Crew"
         subtitle="Manage on-site technicians, security guards, cleaning staff, shifts, and ratings"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Staff" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Staff" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.STAFF_CREATE}>
             <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenCreate}>
@@ -288,7 +284,11 @@ export const StaffListPage = () => {
 
                 <FormControl fullWidth size="small" error={Boolean(errors.subcategory)}>
                   <InputLabel>Trade Subcategory</InputLabel>
-                  <Select label="Trade Subcategory" defaultValue="PLUMBER" {...register("subcategory")}>
+                  <Select
+                    label="Trade Subcategory"
+                    defaultValue="PLUMBER"
+                    {...register("subcategory")}
+                  >
                     {SUBCATEGORIES.map((s) => (
                       <MenuItem key={s} value={s}>
                         {s}

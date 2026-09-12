@@ -135,10 +135,7 @@ export const OwnersListPage = () => {
       <PageHeader
         title="Property Owners"
         subtitle="Manage registered property owners, property portfolios, and emergency contacts"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Owners" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Owners" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.OWNER_CREATE}>
             <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenRegister}>

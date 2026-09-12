@@ -8,9 +8,7 @@ export const AppProviders = ({ children }) => {
   return (
     <AppQueryProvider>
       <AppThemeProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </AppThemeProvider>
     </AppQueryProvider>
   );

@@ -121,7 +121,11 @@ export const LoginPage = () => {
                     edge="end"
                     size="small"
                   >
-                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    {showPassword ? (
+                      <VisibilityOff fontSize="small" />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
                   </IconButton>
                 </InputAdornment>
               ),
@@ -147,7 +151,9 @@ export const LoginPage = () => {
           fullWidth
           size="large"
           disabled={loginMutation.isPending}
-          startIcon={loginMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null}
+          startIcon={
+            loginMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null
+          }
           sx={{ py: 1.25, fontWeight: 700 }}
         >
           {loginMutation.isPending ? "Signing in..." : "Sign in to digital lobby"}

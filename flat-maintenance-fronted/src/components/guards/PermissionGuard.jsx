@@ -1,7 +1,11 @@
 // =====================  PERMISSION GUARD  ====================
 import React from "react";
-import { useAuth } from "../../providers/auth-provider.jsx";
-import { hasPermission, hasAnyPermission, hasAllPermissions } from "../../lib/permissions/rbac.util.js";
+import { useAuth } from "../../providers/auth-context.js";
+import {
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+} from "../../lib/permissions/rbac.util.js";
 
 export const PermissionGuard = ({
   permission,

@@ -1,7 +1,7 @@
 // =====================  AUTHENTICATION GUARD  ================
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../providers/auth-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { Box, CircularProgress } from "@mui/material";
 
 export const AuthGuard = ({ children }) => {

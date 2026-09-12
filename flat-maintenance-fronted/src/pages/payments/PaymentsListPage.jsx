@@ -22,33 +22,22 @@ import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { usePaymentsList, useCreatePaymentMutation } from "../../features/payments/hooks/use-payments.js";
+import {
+  usePaymentsList,
+  useCreatePaymentMutation,
+} from "../../features/payments/hooks/use-payments.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 
-const PAYMENT_METHODS = [
-  "CASH",
-  "BANK_TRANSFER",
-  "CREDIT_CARD",
-  "DEBIT_CARD",
-  "UPI",
-  "CHEQUE",
-];
+const PAYMENT_METHODS = ["CASH", "BANK_TRANSFER", "CREDIT_CARD", "DEBIT_CARD", "UPI", "CHEQUE"];
 
 const paymentSchema = z.object({
   invoiceId: z.string().min(1, "Invoice ID is required"),
   amount: z.coerce.number().positive("Amount must be greater than zero"),
-  paymentMethod: z.enum([
-    "CASH",
-    "BANK_TRANSFER",
-    "CREDIT_CARD",
-    "DEBIT_CARD",
-    "UPI",
-    "CHEQUE",
-  ]),
+  paymentMethod: z.enum(["CASH", "BANK_TRANSFER", "CREDIT_CARD", "DEBIT_CARD", "UPI", "CHEQUE"]),
   transactionReference: z.string().min(1, "Transaction reference / cheque no. is required"),
 });
 
@@ -112,7 +101,9 @@ export const PaymentsListPage = () => {
       label: "Receipt / Trx ID",
       render: (val, row) => (
         <Box>
-          <Box sx={{ fontWeight: 600 }}>{val || row.transactionReference || row._id?.slice(-8)}</Box>
+          <Box sx={{ fontWeight: 600 }}>
+            {val || row.transactionReference || row._id?.slice(-8)}
+          </Box>
           <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
             Invoice: {row.invoice?.invoiceNumber || row.invoiceId?.slice?.(-6) || row.invoiceId}
           </Box>
@@ -123,9 +114,7 @@ export const PaymentsListPage = () => {
       id: "amount",
       label: "Amount Paid ($)",
       render: (val) => (
-        <Box sx={{ fontWeight: 700, color: "success.main" }}>
-          ${val?.toLocaleString() || "0"}
-        </Box>
+        <Box sx={{ fontWeight: 700, color: "success.main" }}>${val?.toLocaleString() || "0"}</Box>
       ),
     },
     {
@@ -163,10 +152,7 @@ export const PaymentsListPage = () => {
       <PageHeader
         title="Payment Transactions Ledger"
         subtitle="Immutable financial reconciliation ledger and receipts"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Payments" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Payments" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.PAYMENT_CREATE}>
             <Button variant="contained" startIcon={<PaymentIcon />} onClick={handleOpenRecord}>

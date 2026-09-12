@@ -34,14 +34,7 @@ import { ConfirmDialog } from "../../components/common/ConfirmDialog.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 
-const CATEGORIES = [
-  "GENERAL",
-  "MAINTENANCE",
-  "EMERGENCY",
-  "EVENT",
-  "FINANCIAL",
-  "SECURITY",
-];
+const CATEGORIES = ["GENERAL", "MAINTENANCE", "EMERGENCY", "EVENT", "FINANCIAL", "SECURITY"];
 const PRIORITIES = ["NORMAL", "HIGH", "URGENT_EMERGENCY"];
 const AUDIENCES = ["ALL", "OWNERS_ONLY", "TENANTS_ONLY"];
 
@@ -139,7 +132,9 @@ export const NoticesListPage = () => {
       label: "Priority",
       render: (val) => {
         const color = val === "URGENT_EMERGENCY" ? "error" : val === "HIGH" ? "warning" : "default";
-        return <Chip label={val} color={color} size="small" variant="filled" sx={{ fontWeight: 700 }} />;
+        return (
+          <Chip label={val} color={color} size="small" variant="filled" sx={{ fontWeight: 700 }} />
+        );
       },
     },
     {
@@ -159,11 +154,7 @@ export const NoticesListPage = () => {
       render: (_, row) => (
         <PermissionGuard permission={PERMISSIONS.NOTICE_RETRACT}>
           <Tooltip title="Retract Notice">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={() => setRetractNotice(row)}
-            >
+            <IconButton size="small" color="error" onClick={() => setRetractNotice(row)}>
               <DeleteOutlineIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -177,10 +168,7 @@ export const NoticesListPage = () => {
       <PageHeader
         title="Community Bulletins & Notices"
         subtitle="Broadcast community updates, emergency announcements, maintenance circulars, and notices"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Notices" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Notices" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.NOTICE_CREATE}>
             <Button

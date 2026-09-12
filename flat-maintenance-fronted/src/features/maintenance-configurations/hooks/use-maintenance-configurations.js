@@ -24,7 +24,7 @@ export const usePublishMaintenanceConfigMutation = () => {
 
   return useMutation({
     mutationFn: (data) => maintenanceConfigApi.publishConfig(data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.maintenanceConfigurations.all(),
       });

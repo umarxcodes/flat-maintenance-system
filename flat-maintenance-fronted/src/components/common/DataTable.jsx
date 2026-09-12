@@ -8,7 +8,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import Box from "@mui/material/Box";
 import { TableLoadingSkeleton } from "./LoadingSkeleton.jsx";
 import { EmptyState } from "./EmptyState.jsx";
 
@@ -98,7 +97,7 @@ export const DataTable = ({
                       const value = row[column.id];
                       return (
                         <TableCell key={column.id} align={column.align || "left"}>
-                          {column.render ? column.render(value, row) : value ?? "-"}
+                          {column.render ? column.render(value, row) : (value ?? "-")}
                         </TableCell>
                       );
                     })}

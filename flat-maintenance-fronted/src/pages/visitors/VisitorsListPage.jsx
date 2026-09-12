@@ -182,10 +182,7 @@ export const VisitorsListPage = () => {
       <PageHeader
         title="Visitor Gate Management"
         subtitle="Manage visitor passes, delivery entries, security check-in, and departure timestamps"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Visitors" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Visitors" }]}
         action={
           <Stack direction="row" spacing={1.5}>
             <PermissionGuard permission={PERMISSIONS.VISITOR_VERIFY}>

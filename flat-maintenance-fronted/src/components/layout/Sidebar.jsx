@@ -35,7 +35,7 @@ import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import HistoryEduIcon from "@mui/icons-material/HistoryEdu";
 import { Link as RouterLink, useLocation } from "react-router-dom";
-import { useAuth } from "../../providers/auth-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { NAVIGATION_CONFIG } from "../../lib/constants/navigation.config.js";
 import { hasPermission } from "../../lib/permissions/rbac.util.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";

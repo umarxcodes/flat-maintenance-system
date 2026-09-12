@@ -181,10 +181,7 @@ export const ComplaintsListPage = () => {
       <PageHeader
         title="Society Complaints & Grievances"
         subtitle="Review community disputes, noise disturbances, rule violations, and resolution notes"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Complaints" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Complaints" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.COMPLAINT_CREATE}>
             <Button
@@ -316,7 +313,11 @@ export const ComplaintsListPage = () => {
 
               <FormControl fullWidth size="small" error={Boolean(errors.complaintType)}>
                 <InputLabel>Grievance Type</InputLabel>
-                <Select label="Grievance Type" defaultValue="NOISE_DISTURBANCE" {...register("complaintType")}>
+                <Select
+                  label="Grievance Type"
+                  defaultValue="NOISE_DISTURBANCE"
+                  {...register("complaintType")}
+                >
                   {COMPLAINT_TYPES.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}

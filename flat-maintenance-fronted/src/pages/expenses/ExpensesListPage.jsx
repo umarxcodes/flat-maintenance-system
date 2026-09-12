@@ -110,7 +110,10 @@ export const ExpensesListPage = () => {
   const handleApproveConfirm = () => {
     if (!approveExpenseTarget) return;
     approveMutation.mutate(
-      { id: approveExpenseTarget.id || approveExpenseTarget._id, data: { approvalNotes: "Approved for payout" } },
+      {
+        id: approveExpenseTarget.id || approveExpenseTarget._id,
+        data: { approvalNotes: "Approved for payout" },
+      },
       {
         onSuccess: () => {
           setApproveExpenseTarget(null);
@@ -136,9 +139,7 @@ export const ExpensesListPage = () => {
       id: "amount",
       label: "Disbursement ($)",
       render: (val) => (
-        <Box sx={{ fontWeight: 700, color: "text.primary" }}>
-          ${val?.toLocaleString() || "0"}
-        </Box>
+        <Box sx={{ fontWeight: 700, color: "text.primary" }}>${val?.toLocaleString() || "0"}</Box>
       ),
     },
     {
@@ -164,11 +165,7 @@ export const ExpensesListPage = () => {
         <PermissionGuard permission={PERMISSIONS.EXPENSE_APPROVE}>
           {row.status === "PENDING_APPROVAL" && (
             <Tooltip title="Authorize Payout Disbursement">
-              <IconButton
-                size="small"
-                color="success"
-                onClick={() => setApproveExpenseTarget(row)}
-              >
+              <IconButton size="small" color="success" onClick={() => setApproveExpenseTarget(row)}>
                 <CheckCircleIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -183,10 +180,7 @@ export const ExpensesListPage = () => {
       <PageHeader
         title="Operational Society Expenses"
         subtitle="Track vendor bills, utility payments, maintenance AMCs, and financial disbursements"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Expenses" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Expenses" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.EXPENSE_CREATE}>
             <Button

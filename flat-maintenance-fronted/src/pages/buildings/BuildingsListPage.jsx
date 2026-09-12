@@ -21,7 +21,10 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useBuildingsList, useCreateBuildingMutation } from "../../features/buildings/hooks/use-buildings.js";
+import {
+  useBuildingsList,
+  useCreateBuildingMutation,
+} from "../../features/buildings/hooks/use-buildings.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
@@ -152,17 +155,10 @@ export const BuildingsListPage = () => {
       <PageHeader
         title="Buildings & Complexes"
         subtitle="Manage registered properties, address settings, and structural statistics"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Buildings" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Buildings" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.BUILDING_CREATE}>
-            <Button
-              variant="contained"
-              startIcon={<AddBusinessIcon />}
-              onClick={handleOpenCreate}
-            >
+            <Button variant="contained" startIcon={<AddBusinessIcon />} onClick={handleOpenCreate}>
               Add Building
             </Button>
           </PermissionGuard>
@@ -221,12 +217,7 @@ export const BuildingsListPage = () => {
       />
 
       {/* Create Building Modal */}
-      <Dialog
-        open={isCreateOpen}
-        onClose={handleCloseCreate}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={isCreateOpen} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 600 }}>Register New Building Complex</DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <DialogContent dividers>
@@ -302,11 +293,7 @@ export const BuildingsListPage = () => {
             <Button onClick={handleCloseCreate} color="inherit">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={createMutation.isPending}
-            >
+            <Button type="submit" variant="contained" disabled={createMutation.isPending}>
               {createMutation.isPending ? "Creating..." : "Save Building"}
             </Button>
           </DialogActions>

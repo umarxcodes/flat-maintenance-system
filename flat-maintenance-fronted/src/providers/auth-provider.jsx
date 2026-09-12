@@ -1,46 +1,33 @@
 // =====================  AUTH CONTEXT PROVIDER  ================
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState } from "react";
+import { AuthContext } from "./auth-context.js";
 import { tokenStorage } from "../lib/auth/token-storage.js";
 import { queryClient } from "../lib/query/query-client.js";
 
-const AuthContext = createContext({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: true,
-  activeBuildingId: null,
-  login: () => {},
-  logout: () => {},
-  switchBuilding: () => {},
-  refreshUser: () => {},
-});
+const getInitialAuthState = () => {
+  try {
+    const storedToken = tokenStorage.getToken();
+    const storedUser = tokenStorage.getUser();
+    const storedBuildingId = tokenStorage.getActiveBuildingId();
 
-export const useAuth = () => useContext(AuthContext);
+    if (storedToken && storedUser) {
+      return {
+        token: storedToken,
+        user: storedUser,
+        activeBuildingId: storedBuildingId || storedUser.assignedBuildingIds?.[0] || null,
+      };
+    }
+  } catch (e) {
+    console.error("Failed to restore auth state", e);
+  }
+  return { token: null, user: null, activeBuildingId: null };
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [activeBuildingId, setActiveBuildingId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Initialize session from localStorage
-  useEffect(() => {
-    try {
-      const storedToken = tokenStorage.getToken();
-      const storedUser = tokenStorage.getUser();
-      const storedBuildingId = tokenStorage.getActiveBuildingId();
-
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(storedUser);
-        setActiveBuildingId(storedBuildingId || storedUser.assignedBuildingIds?.[0] || null);
-      }
-    } catch (e) {
-      console.error("Failed to restore auth state", e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const [initial] = useState(getInitialAuthState);
+  const [user, setUser] = useState(initial.user);
+  const [token, setToken] = useState(initial.token);
+  const [activeBuildingId, setActiveBuildingId] = useState(initial.activeBuildingId);
 
   const login = (authData) => {
     const { token: receivedToken, user: receivedUser } = authData;
@@ -79,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     isAuthenticated: Boolean(token && user),
-    isLoading,
+    isLoading: false,
     activeBuildingId,
     login,
     logout,

@@ -29,7 +29,7 @@ export const ReportsOverviewPage = () => {
   const buildings = buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []);
 
   const [selectedBuildingId, setSelectedBuildingId] = useState("");
-  const activeBuildingId = selectedBuildingId || (buildings[0]?.id || buildings[0]?._id);
+  const activeBuildingId = selectedBuildingId || buildings[0]?.id || buildings[0]?._id;
 
   const currentPeriod = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
 
@@ -50,7 +50,8 @@ export const ReportsOverviewPage = () => {
   const totalBilled = colStats.totalBilled || 0;
   const totalCollected = colStats.totalCollected || 0;
   const totalOutstanding = Math.max(0, totalBilled - totalCollected);
-  const collectionRate = totalBilled > 0 ? Math.min(100, Math.round((totalCollected / totalBilled) * 100)) : 100;
+  const collectionRate =
+    totalBilled > 0 ? Math.min(100, Math.round((totalCollected / totalBilled) * 100)) : 100;
 
   const staffStats = staffData?.technicians || (Array.isArray(staffData) ? staffData : []);
   const slaStats = slaData?.slaStats || slaData || {};
@@ -63,10 +64,7 @@ export const ReportsOverviewPage = () => {
       <PageHeader
         title="Operational & Financial Reports"
         subtitle="Authoritative collections velocity, staff SLA compliance, and grievance resolution metrics"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Reports" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Reports" }]}
         action={
           <FormControl size="small" sx={{ minWidth: 220 }}>
             <InputLabel id="report-building-select-label">Building Scope</InputLabel>
@@ -162,7 +160,8 @@ export const ReportsOverviewPage = () => {
               Ranked Outstanding Dues by Flat
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Directly actionable list: Click through to inspect the flat ledger and send payment reminders
+              Directly actionable list: Click through to inspect the flat ledger and send payment
+              reminders
             </Typography>
           </Box>
           <Button component={RouterLink} to="/invoices" size="small">
@@ -252,7 +251,11 @@ export const ReportsOverviewPage = () => {
             {isStaffLoading ? (
               <TableLoadingSkeleton rows={3} />
             ) : staffStats.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ py: 3, textAlign: "center" }}
+              >
                 No performance data recorded for on-duty technicians this cycle.
               </Typography>
             ) : (
@@ -275,7 +278,8 @@ export const ReportsOverviewPage = () => {
                         {tech.fullName || tech.name}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Specialty: {tech.specialty || tech.designation || "General Maintenance"} • Avg {tech.avgResolutionHours || 4}h turnaround
+                        Specialty: {tech.specialty || tech.designation || "General Maintenance"} •
+                        Avg {tech.avgResolutionHours || 4}h turnaround
                       </Typography>
                     </Box>
                     <Chip
@@ -329,7 +333,11 @@ export const ReportsOverviewPage = () => {
                 <StatCard
                   value={`${resolvedWithinSla} of ${totalComplaints}`}
                   label="Complaints Resolved Within SLA"
-                  delta={breachedComplaints > 0 ? `${breachedComplaints} complaints missed SLA deadline this month` : "100% compliant with building SLA standards"}
+                  delta={
+                    breachedComplaints > 0
+                      ? `${breachedComplaints} complaints missed SLA deadline this month`
+                      : "100% compliant with building SLA standards"
+                  }
                   isHero={breachedComplaints > 0}
                 />
 
@@ -346,7 +354,8 @@ export const ReportsOverviewPage = () => {
                     SLA Escalation Protocol
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8125rem" }}>
-                    Complaints not acknowledged within 24 hours or unresolved past 72 hours are automatically escalated to the Building Manager.
+                    Complaints not acknowledged within 24 hours or unresolved past 72 hours are
+                    automatically escalated to the Building Manager.
                   </Typography>
                 </Box>
               </Stack>

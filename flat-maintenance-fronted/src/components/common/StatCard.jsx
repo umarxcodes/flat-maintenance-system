@@ -14,14 +14,7 @@ import { DESIGN_TOKENS } from "../../theme/palette.js";
  * - Optional one-line delta written in words ("12 more than last month"), NEVER a sparkline or arrow icon.
  * - Optional brass tertiary highlight support if isHero=true (Appendix §A.1: at most one element per screen).
  */
-export const StatCard = ({
-  value,
-  label,
-  delta,
-  isHero = false,
-  action = null,
-  sx = {},
-}) => {
+export const StatCard = ({ value, label, delta, isHero = false, action = null, sx = {} }) => {
   return (
     <Card
       sx={{
@@ -55,7 +48,9 @@ export const StatCard = ({
       )}
 
       <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+        <Box
+          sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}
+        >
           <Typography
             sx={{
               fontFamily: FONT_DISPLAY,

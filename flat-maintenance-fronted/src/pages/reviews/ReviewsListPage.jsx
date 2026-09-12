@@ -19,7 +19,11 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useReviewsList, useCreateReviewMutation, useModerateReviewMutation } from "../../features/reviews/hooks/use-reviews.js";
+import {
+  useReviewsList,
+  useCreateReviewMutation,
+  useModerateReviewMutation,
+} from "../../features/reviews/hooks/use-reviews.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
@@ -144,10 +148,7 @@ export const ReviewsListPage = () => {
       <PageHeader
         title="Service Ratings & Reviews"
         subtitle="Review resident satisfaction ratings, feedback comments, and moderation controls"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Reviews" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Reviews" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.REVIEW_CREATE}>
             <Button
@@ -209,7 +210,12 @@ export const ReviewsListPage = () => {
               />
 
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }} display="block">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600, mb: 0.5 }}
+                  display="block"
+                >
                   Rating (1 to 5 Stars)
                 </Typography>
                 <Controller

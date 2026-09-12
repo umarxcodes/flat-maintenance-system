@@ -116,10 +116,7 @@ export const BlocksListPage = () => {
       <PageHeader
         title="Blocks & Towers"
         subtitle="Manage structural towers and sections across building complexes"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Blocks" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Blocks" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.BLOCK_CREATE}>
             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>

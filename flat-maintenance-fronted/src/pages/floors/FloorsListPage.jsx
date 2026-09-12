@@ -107,10 +107,7 @@ export const FloorsListPage = () => {
       <PageHeader
         title="Floors & Levels"
         subtitle="Manage vertical floor levels within designated towers and blocks"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Floors" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Floors" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.FLOOR_CREATE}>
             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>

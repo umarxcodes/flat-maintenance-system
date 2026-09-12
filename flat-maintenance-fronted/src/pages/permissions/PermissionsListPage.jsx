@@ -18,13 +18,12 @@ export const PermissionsListPage = () => {
   const [search, setSearch] = useState("");
   const { data, isLoading } = usePermissionsList();
 
-  const permissions = data?.permissions || (Array.isArray(data) ? data : []);
-
   // Group permissions by module prefix
   const groupedPermissions = useMemo(() => {
+    const list = data?.permissions || (Array.isArray(data) ? data : []);
     const map = {};
 
-    permissions.forEach((perm) => {
+    list.forEach((perm) => {
       const code = typeof perm === "string" ? perm : perm.code;
       const description = typeof perm === "object" ? perm.description : "";
       const moduleName = code.split("_")[0];
@@ -50,7 +49,7 @@ export const PermissionsListPage = () => {
     });
 
     return map;
-  }, [permissions, search]);
+  }, [data, search]);
 
   const groupKeys = Object.keys(groupedPermissions);
 
@@ -59,10 +58,7 @@ export const PermissionsListPage = () => {
       <PageHeader
         title="Permissions Registry"
         subtitle="Catalog of granular platform security tokens governing access across all 24 modules"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Permissions" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Permissions" }]}
       />
 
       <FilterBar

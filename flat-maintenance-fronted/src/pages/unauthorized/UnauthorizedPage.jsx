@@ -42,12 +42,9 @@ export const UnauthorizedPage = () => {
         Access Denied
       </Typography>
 
-      <Typography
-        variant="body1"
-        color="text.secondary"
-        sx={{ maxWidth: 460, mb: 4 }}
-      >
-        You do not have the required role or permissions to view this resource. If you believe this is an error, please contact your building administrator.
+      <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 460, mb: 4 }}>
+        You do not have the required role or permissions to view this resource. If you believe this
+        is an error, please contact your building administrator.
       </Typography>
 
       <Button

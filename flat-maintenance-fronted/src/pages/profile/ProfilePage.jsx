@@ -8,7 +8,7 @@ import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
-import { useAuth } from "../../providers/auth-provider.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
@@ -23,10 +23,7 @@ export const ProfilePage = () => {
       <PageHeader
         title="My Profile"
         subtitle="Manage your personal account credentials and view organizational building scope"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Profile" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Profile" }]}
       />
 
       <Grid container spacing={3}>

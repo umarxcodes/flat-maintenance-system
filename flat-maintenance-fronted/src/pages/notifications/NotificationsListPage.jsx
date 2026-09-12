@@ -1,5 +1,5 @@
 // =====================  NOTIFICATIONS LIST PAGE  =============
-import React, { useState } from "react";
+import React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -8,7 +8,6 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -34,10 +33,7 @@ export const NotificationsListPage = () => {
       <PageHeader
         title="In-App Notifications"
         subtitle={`System notifications, financial reminders, gate alerts, and work order updates (${unreadCount} unread)`}
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Notifications" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Notifications" }]}
         action={
           unreadCount > 0 && (
             <Button
@@ -89,13 +85,22 @@ export const NotificationsListPage = () => {
                       <Chip label={item.category} size="small" variant="outlined" />
                     )}
                     {isUnread && (
-                      <Chip label="NEW" size="small" color="primary" sx={{ height: 20, fontSize: "0.6875rem" }} />
+                      <Chip
+                        label="NEW"
+                        size="small"
+                        color="primary"
+                        sx={{ height: 20, fontSize: "0.6875rem" }}
+                      />
                     )}
                   </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {item.message || item.body}
                   </Typography>
-                  <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: "block" }}>
+                  <Typography
+                    variant="caption"
+                    color="text.disabled"
+                    sx={{ mt: 0.5, display: "block" }}
+                  >
                     {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
                   </Typography>
                 </Box>

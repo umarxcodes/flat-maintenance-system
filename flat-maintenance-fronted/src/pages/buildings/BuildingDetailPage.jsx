@@ -56,7 +56,9 @@ export const BuildingDetailPage = () => {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={4}>
           <Paper variant="outlined" sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: "primary.lighter", color: "primary.main" }}>
+            <Box
+              sx={{ p: 1.5, borderRadius: 2, bgcolor: "primary.lighter", color: "primary.main" }}
+            >
               <DomainIcon />
             </Box>
             <Box>
@@ -88,7 +90,9 @@ export const BuildingDetailPage = () => {
 
         <Grid item xs={12} sm={4}>
           <Paper variant="outlined" sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: "success.lighter", color: "success.main" }}>
+            <Box
+              sx={{ p: 1.5, borderRadius: 2, bgcolor: "success.lighter", color: "success.main" }}
+            >
               <MeetingRoomIcon />
             </Box>
             <Box>
@@ -163,7 +167,8 @@ export const BuildingDetailPage = () => {
                   City, State & Postal
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {building?.address?.city}, {building?.address?.state} {building?.address?.postalCode}
+                  {building?.address?.city}, {building?.address?.state}{" "}
+                  {building?.address?.postalCode}
                 </Typography>
               </Box>
 

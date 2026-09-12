@@ -57,7 +57,8 @@ export const ForgotPasswordPage = () => {
       {submitted ? (
         <Stack spacing={3}>
           <Alert severity="success">
-            If an account is registered with this email, password reset instructions have been dispatched.
+            If an account is registered with this email, password reset instructions have been
+            dispatched.
           </Alert>
           <Button
             component={RouterLink}
@@ -102,7 +103,9 @@ export const ForgotPasswordPage = () => {
             fullWidth
             size="large"
             disabled={forgotMutation.isPending}
-            startIcon={forgotMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null}
+            startIcon={
+              forgotMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null
+            }
             sx={{ py: 1.25, fontWeight: 700 }}
           >
             {forgotMutation.isPending ? "Submitting..." : "Send Reset Link"}

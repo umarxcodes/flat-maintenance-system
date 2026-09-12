@@ -23,7 +23,11 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useUsersList, useUpdateUserStatusMutation, useInviteUserMutation } from "../../features/users/hooks/use-users.js";
+import {
+  useUsersList,
+  useUpdateUserStatusMutation,
+  useInviteUserMutation,
+} from "../../features/users/hooks/use-users.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
@@ -196,17 +200,10 @@ export const UsersListPage = () => {
       <PageHeader
         title="Users Directory"
         subtitle="Manage user accounts, roles, access permissions, and activation states"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Users" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Users" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.USER_CREATE}>
-            <Button
-              variant="contained"
-              startIcon={<PersonAddIcon />}
-              onClick={handleOpenInvite}
-            >
+            <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenInvite}>
               Invite User
             </Button>
           </PermissionGuard>
@@ -282,12 +279,7 @@ export const UsersListPage = () => {
       />
 
       {/* Invite User Dialog */}
-      <Dialog
-        open={isInviteOpen}
-        onClose={handleCloseInvite}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={isInviteOpen} onClose={handleCloseInvite} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 600 }}>Invite New User</DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onInviteSubmit)} noValidate>
           <DialogContent dividers>
@@ -334,11 +326,7 @@ export const UsersListPage = () => {
 
               <FormControl fullWidth size="small" error={Boolean(errors.role)}>
                 <InputLabel>Role</InputLabel>
-                <Select
-                  label="Role"
-                  defaultValue={ROLES.TENANT}
-                  {...register("role")}
-                >
+                <Select label="Role" defaultValue={ROLES.TENANT} {...register("role")}>
                   {Object.entries(ROLE_LABELS).map(([code, label]) => (
                     <MenuItem key={code} value={code}>
                       {label}
@@ -352,11 +340,7 @@ export const UsersListPage = () => {
             <Button onClick={handleCloseInvite} color="inherit">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={inviteMutation.isPending}
-            >
+            <Button type="submit" variant="contained" disabled={inviteMutation.isPending}>
               {inviteMutation.isPending ? "Sending..." : "Send Invitation"}
             </Button>
           </DialogActions>
@@ -370,9 +354,7 @@ export const UsersListPage = () => {
         description={`Are you sure you want to ${
           statusDialogUser?.status === STATUSES.USER.ACTIVE ? "deactivate" : "activate"
         } ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`}
-        confirmLabel={
-          statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Deactivate" : "Activate"
-        }
+        confirmLabel={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Deactivate" : "Activate"}
         confirmColor={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "error" : "primary"}
         isLoading={updateStatusMutation.isPending}
         onConfirm={handleToggleStatusConfirm}

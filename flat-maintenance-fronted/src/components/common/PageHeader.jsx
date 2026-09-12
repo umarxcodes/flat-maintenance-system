@@ -7,12 +7,7 @@ import Link from "@mui/material/Link";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link as RouterLink } from "react-router-dom";
 
-export const PageHeader = ({
-  title,
-  subtitle,
-  breadcrumbs = [],
-  action = null,
-}) => {
+export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null }) => {
   return (
     <Box sx={{ mb: 3 }}>
       {breadcrumbs && breadcrumbs.length > 0 && (

@@ -45,6 +45,17 @@ const batchSchema = z.object({
   dueDate: z.string().min(1, "Due date is required"),
 });
 
+const getDefaultBatchValues = () => {
+  const now = new Date();
+  const future = new Date(now.getTime() + 15 * 86400000);
+  return {
+    buildingId: "",
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+    dueDate: future.toISOString().slice(0, 10),
+  };
+};
+
 export const InvoicesListPage = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
@@ -78,12 +89,7 @@ export const InvoicesListPage = () => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(batchSchema),
-    defaultValues: {
-      buildingId: "",
-      month: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-      dueDate: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
-    },
+    defaultValues: getDefaultBatchValues(),
   });
 
   const onBatchSubmit = (values) => {
@@ -188,10 +194,7 @@ export const InvoicesListPage = () => {
       <PageHeader
         title="Maintenance Invoices"
         subtitle="Manage billing batches, track payments, review arrears, and process invoice voiding"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Invoices" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Invoices" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.INVOICE_GENERATE}>
             <Button
@@ -286,7 +289,8 @@ export const InvoicesListPage = () => {
             )}
 
             <Typography variant="body2" color="text.secondary" paragraph>
-              This triggers the billing engine to calculate authoritative maintenance charges for all units in the selected complex using the active maintenance configuration.
+              This triggers the billing engine to calculate authoritative maintenance charges for
+              all units in the selected complex using the active maintenance configuration.
             </Typography>
 
             <Stack spacing={2}>

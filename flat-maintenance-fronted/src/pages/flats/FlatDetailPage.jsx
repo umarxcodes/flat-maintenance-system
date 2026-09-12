@@ -38,7 +38,11 @@ export const FlatDetailPage = () => {
           { label: "Details" },
         ]}
         action={
-          <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/flats")}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate("/flats")}
+          >
             Back to Flats
           </Button>
         }
@@ -138,7 +142,9 @@ export const FlatDetailPage = () => {
                   Assigned Owner
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {flat?.currentOwner ? `${flat.currentOwner.firstName} ${flat.currentOwner.lastName}` : "None Assigned"}
+                  {flat?.currentOwner
+                    ? `${flat.currentOwner.firstName} ${flat.currentOwner.lastName}`
+                    : "None Assigned"}
                 </Typography>
               </Box>
 
@@ -147,7 +153,9 @@ export const FlatDetailPage = () => {
                   Active Tenant / Lease
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {flat?.currentTenant ? `${flat.currentTenant.firstName} ${flat.currentTenant.lastName}` : "Vacant / No Active Lease"}
+                  {flat?.currentTenant
+                    ? `${flat.currentTenant.firstName} ${flat.currentTenant.lastName}`
+                    : "Vacant / No Active Lease"}
                 </Typography>
               </Box>
             </Stack>

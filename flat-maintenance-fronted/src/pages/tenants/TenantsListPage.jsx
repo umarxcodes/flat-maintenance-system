@@ -20,7 +20,11 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTenantsList, useOnboardTenantMutation, useMoveOutTenantMutation } from "../../features/tenants/hooks/use-tenants.js";
+import {
+  useTenantsList,
+  useOnboardTenantMutation,
+  useMoveOutTenantMutation,
+} from "../../features/tenants/hooks/use-tenants.js";
 import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
@@ -105,7 +109,10 @@ export const TenantsListPage = () => {
   const handleMoveOutConfirm = () => {
     if (!moveOutTenant) return;
     moveOutMutation.mutate(
-      { id: moveOutTenant.id || moveOutTenant._id, data: { moveOutDate: new Date().toISOString() } },
+      {
+        id: moveOutTenant.id || moveOutTenant._id,
+        data: { moveOutDate: new Date().toISOString() },
+      },
       {
         onSuccess: () => {
           setMoveOutTenant(null);
@@ -185,10 +192,7 @@ export const TenantsListPage = () => {
       <PageHeader
         title="Tenants & Leases"
         subtitle="Manage resident tenant registrations, lease terms, move-out workflows, and police verifications"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Tenants" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Tenants" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.TENANT_CREATE}>
             <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenCreate}>

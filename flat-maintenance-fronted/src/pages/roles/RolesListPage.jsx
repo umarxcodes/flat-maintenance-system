@@ -29,10 +29,7 @@ export const RolesListPage = () => {
       <PageHeader
         title="System Roles & Authority"
         subtitle="Review platform roles, hierarchical privileges, and associated permission codes"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Roles" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Roles" }]}
       />
 
       {isLoading ? (
@@ -84,27 +81,20 @@ export const RolesListPage = () => {
                     </Stack>
 
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {role.description || "System authority role with predefined operational capabilities."}
+                      {role.description ||
+                        "System authority role with predefined operational capabilities."}
                     </Typography>
                   </Box>
 
                   <Box sx={{ pt: 2, borderTop: 1, borderColor: "divider" }}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Chip
                         label={`${permissionsCount} Permissions`}
                         size="small"
                         color="primary"
                         variant="outlined"
                       />
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() => setSelectedRole(role)}
-                      >
+                      <Button size="small" variant="text" onClick={() => setSelectedRole(role)}>
                         View Permissions
                       </Button>
                     </Stack>
@@ -131,7 +121,12 @@ export const RolesListPage = () => {
             {selectedRole?.description}
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, mb: 1 }} display="block">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontWeight: 700, mb: 1 }}
+            display="block"
+          >
             Attached Granular Permission Tokens:
           </Typography>
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1, mt: 1 }}>

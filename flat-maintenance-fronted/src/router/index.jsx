@@ -292,7 +292,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.NOTIFICATIONS,
         element: (
-          <PermissionGuard permission={PERMISSIONS.NOTIFICATION_READ} fallback={<UnauthorizedPage />}>
+          <PermissionGuard
+            permission={PERMISSIONS.NOTIFICATION_READ}
+            fallback={<UnauthorizedPage />}
+          >
             <NotificationsListPage />
           </PermissionGuard>
         ),

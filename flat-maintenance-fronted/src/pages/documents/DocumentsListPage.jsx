@@ -43,12 +43,7 @@ const DOCUMENT_TYPES = [
   "OTHER",
 ];
 
-const VISIBILITY_LEVELS = [
-  "PUBLIC_ALL_RESIDENTS",
-  "OWNERS_ONLY",
-  "ADMIN_ONLY",
-  "FLAT_SPECIFIC",
-];
+const VISIBILITY_LEVELS = ["PUBLIC_ALL_RESIDENTS", "OWNERS_ONLY", "ADMIN_ONLY", "FLAT_SPECIFIC"];
 
 export const DocumentsListPage = () => {
   const [page, setPage] = useState(0);
@@ -118,7 +113,8 @@ export const DocumentsListPage = () => {
         <Box>
           <Box sx={{ fontWeight: 600 }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
-            {row.originalFileName || "File"} • {row.fileSizeBytes ? `${(row.fileSizeBytes / 1024).toFixed(1)} KB` : ""}
+            {row.originalFileName || "File"} •{" "}
+            {row.fileSizeBytes ? `${(row.fileSizeBytes / 1024).toFixed(1)} KB` : ""}
           </Box>
         </Box>
       ),
@@ -154,11 +150,7 @@ export const DocumentsListPage = () => {
 
           <PermissionGuard permission={PERMISSIONS.DOCUMENT_DELETE}>
             <Tooltip title="Delete Document">
-              <IconButton
-                size="small"
-                color="error"
-                onClick={() => setDeleteDocumentTarget(row)}
-              >
+              <IconButton size="small" color="error" onClick={() => setDeleteDocumentTarget(row)}>
                 <DeleteOutlineIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -173,10 +165,7 @@ export const DocumentsListPage = () => {
       <PageHeader
         title="Documents & Legal Repository"
         subtitle="Manage society bylaws, AGM minutes, title deeds, insurance policies, and lease contracts"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Documents" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Documents" }]}
         action={
           <PermissionGuard permission={PERMISSIONS.DOCUMENT_UPLOAD}>
             <Button
@@ -308,7 +297,15 @@ export const DocumentsListPage = () => {
                 </FormControl>
               </Stack>
 
-              <Box sx={{ border: "2px dashed", borderColor: "divider", p: 3, textAlign: "center", borderRadius: 2 }}>
+              <Box
+                sx={{
+                  border: "2px dashed",
+                  borderColor: "divider",
+                  p: 3,
+                  textAlign: "center",
+                  borderRadius: 2,
+                }}
+              >
                 <input
                   type="file"
                   id="document-upload-file"
@@ -321,7 +318,9 @@ export const DocumentsListPage = () => {
                   </Button>
                 </label>
                 {selectedFile && (
-                  <Box sx={{ mt: 1, fontWeight: 600, fontSize: "0.8125rem", color: "primary.main" }}>
+                  <Box
+                    sx={{ mt: 1, fontWeight: 600, fontSize: "0.8125rem", color: "primary.main" }}
+                  >
                     Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                   </Box>
                 )}

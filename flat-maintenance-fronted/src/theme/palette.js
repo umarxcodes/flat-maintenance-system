@@ -17,8 +17,8 @@ export const DESIGN_TOKENS = Object.freeze({
     400: "#E2AC5E", // Dark mode tint
   },
   paper: {
-    50: "#F6F4EF",  // App background: warm off-white
-    0: "#FFFFFF",   // Card/surface background
+    50: "#F6F4EF", // App background: warm off-white
+    0: "#FFFFFF", // Card/surface background
   },
   line: {
     200: "#E4E0D6", // Hairline borders and dividers: warm-toned
@@ -56,10 +56,10 @@ export const lightPalette = {
   },
   background: {
     default: DESIGN_TOKENS.paper[50], // #F6F4EF - warm off-white
-    paper: DESIGN_TOKENS.paper[0],     // #FFFFFF - card surface
+    paper: DESIGN_TOKENS.paper[0], // #FFFFFF - card surface
   },
   text: {
-    primary: DESIGN_TOKENS.text.primary,     // #1B1F27
+    primary: DESIGN_TOKENS.text.primary, // #1B1F27
     secondary: DESIGN_TOKENS.text.secondary, // #5B5F6B
     disabled: "#8C919D",
   },
