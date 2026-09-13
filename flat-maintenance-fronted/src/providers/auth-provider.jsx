@@ -30,9 +30,14 @@ export const AuthProvider = ({ children }) => {
   const [activeBuildingId, setActiveBuildingId] = useState(initial.activeBuildingId);
 
   const login = (authData) => {
-    const { token: receivedToken, user: receivedUser } = authData;
-    tokenStorage.setToken(receivedToken);
-    tokenStorage.setUser(receivedUser);
+    const receivedToken = authData?.token || authData?.accessToken;
+    const receivedUser = authData?.user;
+    if (receivedToken) {
+      tokenStorage.setToken(receivedToken);
+    }
+    if (receivedUser) {
+      tokenStorage.setUser(receivedUser);
+    }
 
     const initialBuildingId = receivedUser?.assignedBuildingIds?.[0] || null;
     tokenStorage.setActiveBuildingId(initialBuildingId);
