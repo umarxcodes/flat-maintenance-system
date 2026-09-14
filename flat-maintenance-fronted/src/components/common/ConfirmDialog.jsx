@@ -7,6 +7,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import { FONT_UI } from "../../theme/typography.js";
 
 export const ConfirmDialog = ({
   open,
@@ -30,9 +31,10 @@ export const ConfirmDialog = ({
       <DialogTitle
         id="confirm-dialog-title"
         sx={{
-          fontFamily: "Fraunces, serif",
+          fontFamily: FONT_UI,
           fontSize: "1.25rem",
-          fontWeight: 500,
+          fontWeight: 700,
+          letterSpacing: "-0.015em",
         }}
       >
         {title}
