@@ -36,11 +36,12 @@ export const DashboardLayout = () => {
         <Container
           maxWidth={false}
           sx={{
-            maxWidth: "1280px",
-            mx: { xs: "auto", md: 0 }, // left-aligned under sidebar with generous right margin per Appendix §A.3
+            maxWidth: "1360px",
+            mx: "auto",
+            width: "100%",
             flex: 1,
             py: { xs: 2.5, sm: 4 },
-            px: { xs: 2, sm: 3.5 },
+            px: { xs: 2, sm: 4 },
           }}
         >
           <Outlet />

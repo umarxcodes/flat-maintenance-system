@@ -66,11 +66,16 @@ export const TrendChart = ({
         borderColor: DESIGN_TOKENS.line[200],
         borderRadius: "12px",
         backgroundColor: "#FFFFFF",
-        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        "&:hover": {
+          borderColor: DESIGN_TOKENS.line[300],
+          boxShadow: "0 4px 14px -2px rgba(15, 23, 42, 0.06)",
+        },
         ...sx,
       }}
     >
-      <CardContent sx={{ p: 2.5, pb: 1, "&:last-child": { pb: 2 } }}>
+      <CardContent sx={{ p: 3, pb: 2, "&:last-child": { pb: 2.5 } }}>
         <Box
           sx={{
             display: "flex",

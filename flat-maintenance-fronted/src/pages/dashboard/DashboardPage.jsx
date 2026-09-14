@@ -1,4 +1,4 @@
-// =====================  ROLE-AWARE DASHBOARD (SECTION 39, 39.1 & APPENDIX §A.4/§A.5)  ===========
+// =====================  ROLE-AWARE DASHBOARD (SUPER-CLEAN FIGMA SPEC)  ===========
 import React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -11,6 +11,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import AddIcon from "@mui/icons-material/Add";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import BuildIcon from "@mui/icons-material/Build";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
@@ -82,7 +83,7 @@ export const DashboardPage = () => {
 
   return (
     <Box sx={{ width: "100%" }}>
-      {/* Page Header (Fraunces Display font per Appendix A.2) */}
+      {/* Page Header */}
       <PageHeader
         title={`Good day, ${user?.firstName || "Resident"}`}
         subtitle={`${ROLE_LABELS[role] || role} • Digital Lobby & Operations`}
@@ -95,10 +96,28 @@ export const DashboardPage = () => {
                 to="/maintenance-requests"
                 variant="contained"
                 startIcon={<AddIcon />}
+                sx={{
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                }}
               >
                 Submit Work Order
               </Button>
-              <Button component={RouterLink} to="/visitors" variant="outlined">
+              <Button
+                component={RouterLink}
+                to="/visitors"
+                variant="outlined"
+                sx={{
+                  borderColor: DESIGN_TOKENS.line[200],
+                  fontWeight: 600,
+                  color: DESIGN_TOKENS.text.primary,
+                  "&:hover": {
+                    borderColor: DESIGN_TOKENS.line[300],
+                    bgcolor: DESIGN_TOKENS.surface[50],
+                  },
+                }}
+              >
                 Create Guest Pass
               </Button>
             </Stack>
@@ -107,7 +126,7 @@ export const DashboardPage = () => {
       />
 
       {/* =========================================================================
-          ROLE-SPECIFIC STATCARD ROWS (APPENDIX §A.4 & §A.6 DELIBERATE LOAD-IN MOTION)
+          ROLE-SPECIFIC STATCARD ROWS (SUPER CLEAN & AIRY)
           ========================================================================= */}
       <Box
         sx={{
@@ -129,7 +148,7 @@ export const DashboardPage = () => {
               <StatCard
                 value={`${occupancyPct}%`}
                 label="Occupancy Rate"
-                delta={`${occupiedFlats} occupied, ${vacantFlats} vacant`}
+                delta={`${occupiedFlats} occupied, ${vacantFlats} vacant units`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -144,7 +163,7 @@ export const DashboardPage = () => {
               <StatCard
                 value={`${collectionRate}%`}
                 label="Maintenance Collections"
-                delta={`${paidInvoices.length} of ${invoices.length} invoices paid`}
+                delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -168,7 +187,7 @@ export const DashboardPage = () => {
               <StatCard
                 value={openRequests.length}
                 label="Tickets Needing Triage"
-                delta="Direct action queue below"
+                delta="Actionable priority tickets"
                 isHero={true}
               />
             </Grid>
@@ -215,7 +234,7 @@ export const DashboardPage = () => {
               <StatCard
                 value={invoices.length}
                 label="Total Invoices Issued"
-                delta="Click through to ledger"
+                delta="Click through to billing registry"
               />
             </Grid>
           </Grid>
@@ -301,7 +320,7 @@ export const DashboardPage = () => {
       </Box>
 
       {/* =========================================================================
-          PRIMARY ROLE-TAILORED CONTENT (SECTION 39.1 CRAFT NOTES)
+          PRIMARY OPERATIONAL PANELS (SUPER CLEAN CARDS & DIVIDED LISTS)
           ========================================================================= */}
 
       {/* 1. SECURITY STAFF: ONE-TAP GATE TERMINAL LAUNCHER */}
@@ -309,15 +328,30 @@ export const DashboardPage = () => {
         <Paper
           variant="outlined"
           sx={{
-            p: 4,
+            p: { xs: 3.5, sm: 5 },
             textAlign: "center",
-            borderRadius: "12px",
+            borderRadius: "14px",
             borderColor: DESIGN_TOKENS.line[200],
             backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
             mb: 4,
           }}
         >
+          <Box
+            sx={{
+              width: 52,
+              height: 52,
+              borderRadius: "12px",
+              bgcolor: DESIGN_TOKENS.brand[50],
+              color: DESIGN_TOKENS.brand[600],
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <ShieldOutlinedIcon sx={{ fontSize: 28 }} />
+          </Box>
           <Typography
             sx={{
               fontFamily: FONT_UI,
@@ -331,12 +365,17 @@ export const DashboardPage = () => {
             Gate Security Terminal
           </Typography>
           <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 480, mx: "auto" }}
+            variant="body2"
+            sx={{
+              color: DESIGN_TOKENS.text.secondary,
+              mb: 3.5,
+              maxWidth: 460,
+              mx: "auto",
+              lineHeight: 1.6,
+            }}
           >
-            Verify arriving guest passes, check in delivery drivers, and log visitor departures with
-            large 44px tap targets.
+            Verify arriving visitor QR passes, register incoming guests, and log departures with
+            spacious, responsive controls.
           </Typography>
           <Button
             component={RouterLink}
@@ -345,9 +384,10 @@ export const DashboardPage = () => {
             size="large"
             startIcon={<QrCodeScannerIcon />}
             sx={{
-              minHeight: 48,
-              px: 4,
-              fontSize: "1rem",
+              minHeight: 46,
+              px: 3.5,
+              fontSize: "0.9375rem",
+              fontWeight: 600,
               borderRadius: "8px",
               bgcolor: DESIGN_TOKENS.brand[600],
               "&:hover": {
@@ -360,149 +400,201 @@ export const DashboardPage = () => {
         </Paper>
       )}
 
-      {/* 2. MANAGER / ADMINS: TRIAGE QUEUE & CHARTS (TWO-COLUMN SPLIT) */}
+      {/* 2. MANAGER / ADMINS: ACTIONABLE QUEUE & CHARTS (TWO-COLUMN SPLIT) */}
       {(role === ROLES.MANAGER || role === ROLES.SUPER_ADMIN || role === ROLES.BUILDING_ADMIN) && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} lg={7}>
             <Paper
               variant="outlined"
               sx={{
-                p: 3,
-                borderRadius: "12px",
+                p: { xs: 2.5, sm: 3.5 },
+                borderRadius: "14px",
                 borderColor: DESIGN_TOKENS.line[200],
                 backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2.5,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: FONT_UI,
-                      fontSize: "1.125rem",
-                      fontWeight: 700,
-                      color: DESIGN_TOKENS.text.primary,
-                    }}
-                  >
-                    Actionable Work Orders
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Requires immediate triage and technician assignment
-                  </Typography>
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to="/maintenance-requests"
-                  size="small"
-                  endIcon={<ArrowForwardIcon />}
+              <Box>
+                {/* Header */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
                 >
-                  View All
-                </Button>
-              </Box>
-
-              {loadingMaintenance ? (
-                <TableLoadingSkeleton rows={4} />
-              ) : requests.length === 0 ? (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ py: 3, textAlign: "center" }}
-                >
-                  All clear — no work orders awaiting attention at this moment.
-                </Typography>
-              ) : (
-                <Stack spacing={1.5}>
-                  {requests.slice(0, 5).map((req) => (
-                    <Box
-                      key={req._id}
-                      component={RouterLink}
-                      to="/maintenance-requests"
+                  <Box>
+                    <Typography
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 2,
-                        borderRadius: "8px",
-                        border: "1px solid",
-                        borderColor: DESIGN_TOKENS.line[200],
-                        textDecoration: "none",
-                        color: "inherit",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: DESIGN_TOKENS.ink[900],
-                          bgcolor: "rgba(20, 33, 61, 0.02)",
-                        },
+                        fontFamily: FONT_UI,
+                        fontSize: "1.0625rem",
+                        fontWeight: 700,
+                        color: DESIGN_TOKENS.text.primary,
+                        letterSpacing: "-0.01em",
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      Actionable Work Orders
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
+                    >
+                      Requires immediate triage and technician assignment
+                    </Typography>
+                  </Box>
+                  <Button
+                    component={RouterLink}
+                    to="/maintenance-requests"
+                    size="small"
+                    endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: "0.8125rem",
+                      color: DESIGN_TOKENS.brand[600],
+                    }}
+                  >
+                    View All
+                  </Button>
+                </Box>
+
+                {loadingMaintenance ? (
+                  <TableLoadingSkeleton rows={4} />
+                ) : requests.length === 0 ? (
+                  <Box sx={{ py: 6, textAlign: "center" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+                    >
+                      All clear — no pending work orders awaiting attention.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Stack spacing={1}>
+                    {requests.slice(0, 5).map((req) => (
+                      <Box
+                        key={req._id}
+                        component={RouterLink}
+                        to="/maintenance-requests"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          p: 1.75,
+                          borderRadius: "10px",
+                          border: "1px solid #F1F5F9",
+                          bgcolor: "#FFFFFF",
+                          textDecoration: "none",
+                          color: "inherit",
+                          transition: "all 0.15s ease",
+                          "&:hover": {
+                            borderColor: DESIGN_TOKENS.line[200],
+                            bgcolor: DESIGN_TOKENS.surface[50],
+                            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+                          },
+                        }}
+                      >
                         <Box
                           sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: "8px",
-                            bgcolor:
-                              req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.paper[50]
-                                : "action.hover",
-                            color:
-                              req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.danger[600]
-                                : DESIGN_TOKENS.ink[900],
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
+                            gap: 1.75,
+                            minWidth: 0,
+                            mr: 2,
                           }}
                         >
-                          <BuildIcon fontSize="small" />
+                          <Box
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: "8px",
+                              bgcolor:
+                                req.priority === "EMERGENCY"
+                                  ? "#FEE2E2"
+                                  : DESIGN_TOKENS.surface[100],
+                              color:
+                                req.priority === "EMERGENCY"
+                                  ? DESIGN_TOKENS.danger[600]
+                                  : DESIGN_TOKENS.brand[600],
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <BuildIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 600,
+                                color: DESIGN_TOKENS.text.primary,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {req.title}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: DESIGN_TOKENS.text.secondary,
+                                fontSize: "0.75rem",
+                                display: "block",
+                              }}
+                            >
+                              #{req.requestNumber || req._id?.slice(-6)} • {req.category}
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                            {req.title}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Ticket #{req.requestNumber || req._id?.slice(-6)} • Category:{" "}
-                            {req.category}
-                          </Typography>
-                        </Box>
+
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          sx={{ alignItems: "center", flexShrink: 0 }}
+                        >
+                          <Chip
+                            label={req.priority}
+                            size="small"
+                            sx={{
+                              fontSize: "0.6875rem",
+                              fontWeight: 600,
+                              height: 22,
+                              borderRadius: "999px",
+                              bgcolor:
+                                req.priority === "EMERGENCY"
+                                  ? "#FEE2E2"
+                                  : DESIGN_TOKENS.surface[100],
+                              color:
+                                req.priority === "EMERGENCY"
+                                  ? DESIGN_TOKENS.danger[600]
+                                  : DESIGN_TOKENS.text.secondary,
+                            }}
+                          />
+                          <StatusChip status={req.status} />
+                        </Stack>
                       </Box>
-                      <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                        <Chip
-                          label={req.priority}
-                          size="small"
-                          sx={{
-                            fontSize: "0.6875rem",
-                            fontWeight: 600,
-                            height: 22,
-                            borderRadius: "4px",
-                            bgcolor: req.priority === "EMERGENCY" ? "#F6E7E5" : "#F6F4EF",
-                            color: req.priority === "EMERGENCY" ? "#B3261E" : "#5B5F6B",
-                          }}
-                        />
-                        <StatusChip status={req.status} />
-                      </Stack>
-                    </Box>
-                  ))}
-                </Stack>
-              )}
+                    ))}
+                  </Stack>
+                )}
+              </Box>
             </Paper>
           </Grid>
 
-          {/* SIDE PANEL: TREND CHART & LATEST NOTICES (SECTION 8.2 & APPENDIX §A.5) */}
+          {/* SIDE PANEL: TREND CHART & LATEST NOTICES */}
           <Grid item xs={12} lg={5}>
-            <Stack spacing={2.5}>
+            <Stack spacing={3}>
               <TrendChart
                 title="Collections & Invoicing Trend"
                 subtitle="Monthly operational collection rate"
                 metric={`${collectionRate}% Paid`}
-                color={DESIGN_TOKENS.accent.blue}
+                color={DESIGN_TOKENS.brand[600]}
                 data={[68, 72, 79, 82, 86, collectionRate]}
                 labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
               />
@@ -510,11 +602,11 @@ export const DashboardPage = () => {
               <Paper
                 variant="outlined"
                 sx={{
-                  p: 3,
-                  borderRadius: "12px",
+                  p: { xs: 2.5, sm: 3.5 },
+                  borderRadius: "14px",
                   borderColor: DESIGN_TOKENS.line[200],
                   backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
                 }}
               >
                 <Box
@@ -522,37 +614,51 @@ export const DashboardPage = () => {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    mb: 2,
+                    mb: 2.5,
                   }}
                 >
                   <Box>
                     <Typography
                       sx={{
                         fontFamily: FONT_UI,
-                        fontSize: "1rem",
+                        fontSize: "1.0625rem",
                         fontWeight: 700,
                         color: DESIGN_TOKENS.text.primary,
+                        letterSpacing: "-0.01em",
                       }}
                     >
                       Community Bulletins
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Official building notices
+                    <Typography
+                      variant="caption"
+                      sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
+                    >
+                      Official building broadcast announcements
                     </Typography>
                   </Box>
-                  <Button component={RouterLink} to="/notices" size="small">
+                  <Button
+                    component={RouterLink}
+                    to="/notices"
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: "0.8125rem",
+                      color: DESIGN_TOKENS.brand[600],
+                    }}
+                  >
                     All Notices
                   </Button>
                 </Box>
 
                 {notices.length === 0 ? (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ py: 2, textAlign: "center" }}
-                  >
-                    No published notices.
-                  </Typography>
+                  <Box sx={{ py: 4, textAlign: "center" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+                    >
+                      No published announcements at this moment.
+                    </Typography>
+                  </Box>
                 ) : (
                   <Stack spacing={1.5}>
                     {notices.slice(0, 2).map((notice) => (
@@ -560,16 +666,32 @@ export const DashboardPage = () => {
                         key={notice._id}
                         sx={{
                           p: 2,
-                          borderRadius: "8px",
+                          borderRadius: "10px",
                           bgcolor: DESIGN_TOKENS.surface[50],
-                          border: "1px solid",
-                          borderColor: DESIGN_TOKENS.line[200],
+                          border: "1px solid #F1F5F9",
+                          transition: "all 0.15s ease",
+                          "&:hover": {
+                            borderColor: DESIGN_TOKENS.line[200],
+                            bgcolor: "#FFFFFF",
+                            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+                          },
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.75 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 0.75,
+                          }}
+                        >
                           <Typography
                             variant="subtitle2"
-                            sx={{ fontWeight: 600, fontSize: "0.875rem" }}
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: "0.875rem",
+                              color: DESIGN_TOKENS.text.primary,
+                            }}
                           >
                             {notice.title}
                           </Typography>
@@ -587,19 +709,20 @@ export const DashboardPage = () => {
                               color:
                                 notice.priority === "URGENT_EMERGENCY"
                                   ? DESIGN_TOKENS.danger[600]
-                                  : "text.secondary",
+                                  : DESIGN_TOKENS.text.secondary,
                             }}
                           />
                         </Box>
                         <Typography
                           variant="body2"
-                          color="text.secondary"
                           sx={{
+                            color: DESIGN_TOKENS.text.secondary,
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                             fontSize: "0.8125rem",
+                            lineHeight: 1.5,
                           }}
                         >
                           {notice.content}
@@ -614,18 +737,18 @@ export const DashboardPage = () => {
         </Grid>
       )}
 
-      {/* 3. ACCOUNTANT: RANKED OVERDUE LIST & RECONCILIATION CHART (SECTION 8.2 & 8.5) */}
+      {/* 3. ACCOUNTANT: RANKED OVERDUE LIST & RECONCILIATION CHART */}
       {(role === ROLES.ACCOUNTANT || role === ROLES.SUPER_ADMIN) && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} lg={7}>
             <Paper
               variant="outlined"
               sx={{
-                p: 3,
-                borderRadius: "12px",
+                p: { xs: 2.5, sm: 3.5 },
+                borderRadius: "14px",
                 borderColor: DESIGN_TOKENS.line[200],
                 backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
                 height: "100%",
               }}
             >
@@ -634,21 +757,25 @@ export const DashboardPage = () => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  mb: 2,
+                  mb: 3,
                 }}
               >
                 <Box>
                   <Typography
                     sx={{
                       fontFamily: FONT_UI,
-                      fontSize: "1.125rem",
+                      fontSize: "1.0625rem",
                       fontWeight: 700,
                       color: DESIGN_TOKENS.text.primary,
+                      letterSpacing: "-0.01em",
                     }}
                   >
                     Accounts Requiring Follow-up
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography
+                    variant="caption"
+                    sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
+                  >
                     Ranked by outstanding dues • Click any row to inspect flat ledger
                   </Typography>
                 </Box>
@@ -656,7 +783,12 @@ export const DashboardPage = () => {
                   component={RouterLink}
                   to="/invoices"
                   size="small"
-                  endIcon={<ArrowForwardIcon />}
+                  endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.8125rem",
+                    color: DESIGN_TOKENS.brand[600],
+                  }}
                 >
                   Billing Registry
                 </Button>
@@ -665,15 +797,16 @@ export const DashboardPage = () => {
               {loadingInvoices ? (
                 <TableLoadingSkeleton rows={4} />
               ) : overdueInvoices.length === 0 ? (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ py: 3, textAlign: "center" }}
-                >
-                  Outstanding balance is zero. All tenant and owner accounts are settled!
-                </Typography>
+                <Box sx={{ py: 6, textAlign: "center" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+                  >
+                    Outstanding balance is zero. All resident accounts are settled.
+                  </Typography>
+                </Box>
               ) : (
-                <Stack spacing={1.5}>
+                <Stack spacing={1}>
                   {overdueInvoices.slice(0, 5).map((inv) => (
                     <Box
                       key={inv._id}
@@ -683,24 +816,31 @@ export const DashboardPage = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        p: 2,
-                        borderRadius: "8px",
-                        border: "1px solid",
-                        borderColor: DESIGN_TOKENS.line[200],
+                        p: 1.75,
+                        borderRadius: "10px",
+                        border: "1px solid #F1F5F9",
+                        bgcolor: "#FFFFFF",
                         textDecoration: "none",
                         color: "inherit",
                         transition: "all 0.15s ease",
                         "&:hover": {
-                          borderColor: DESIGN_TOKENS.brand[600],
+                          borderColor: DESIGN_TOKENS.line[200],
                           bgcolor: DESIGN_TOKENS.surface[50],
+                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
                         },
                       }}
                     >
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
+                        >
                           Invoice #{inv.invoiceNumber}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
+                        >
                           Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
                           {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
                         </Typography>
@@ -712,6 +852,7 @@ export const DashboardPage = () => {
                             fontSize: "1.0625rem",
                             fontWeight: 700,
                             color: DESIGN_TOKENS.danger[600],
+                            letterSpacing: "-0.01em",
                           }}
                         >
                           ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
@@ -738,36 +879,40 @@ export const DashboardPage = () => {
         </Grid>
       )}
 
-      {/* 4. MAINTENANCE STAFF: MOBILE-FIRST ACTION LIST (LARGE TAP TARGETS >= 44PX) */}
+      {/* 4. MAINTENANCE STAFF: ACTION LIST */}
       {role === ROLES.MAINTENANCE_STAFF && (
         <Paper
           variant="outlined"
           sx={{
-            p: 3,
-            borderRadius: "12px",
+            p: { xs: 2.5, sm: 3.5 },
+            borderRadius: "14px",
             borderColor: DESIGN_TOKENS.line[200],
             backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
             mb: 4,
           }}
         >
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 3 }}>
             <Typography
               sx={{
                 fontFamily: FONT_UI,
-                fontSize: "1.125rem",
+                fontSize: "1.0625rem",
                 fontWeight: 700,
                 color: DESIGN_TOKENS.text.primary,
+                letterSpacing: "-0.01em",
               }}
             >
               Today's Work Schedule
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography
+              variant="caption"
+              sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
+            >
               Ordered by urgency and appointment time. Tap any card to update job status.
             </Typography>
           </Box>
 
-          <Stack spacing={2}>
+          <Stack spacing={1.25}>
             {requests.map((req) => (
               <Box
                 key={req._id}
@@ -779,34 +924,48 @@ export const DashboardPage = () => {
                   justifyContent: "space-between",
                   alignItems: { xs: "flex-start", sm: "center" },
                   gap: 2,
-                  p: 2.5,
-                  minHeight: 52, // >= 44px tap target per Section 50 & Appendix A.8
-                  borderRadius: "8px",
+                  p: 2,
+                  minHeight: 52,
+                  borderRadius: "10px",
                   border: "1px solid",
-                  borderColor:
-                    req.priority === "EMERGENCY"
-                      ? DESIGN_TOKENS.danger[600]
-                      : DESIGN_TOKENS.line[200],
+                  borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#F1F5F9",
                   bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
                   textDecoration: "none",
                   color: "inherit",
                   transition: "all 0.15s ease",
                   "&:hover": {
-                    borderColor: DESIGN_TOKENS.brand[600],
-                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.06)",
+                    borderColor:
+                      req.priority === "EMERGENCY"
+                        ? DESIGN_TOKENS.danger[600]
+                        : DESIGN_TOKENS.line[200],
+                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
                   },
                 }}
               >
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      color: DESIGN_TOKENS.text.primary,
+                      fontSize: "0.9375rem",
+                    }}
+                  >
                     {req.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Location: Flat {req.flatId?.flatNumber || "Assigned Unit"} • Category:{" "}
-                    {req.category}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: DESIGN_TOKENS.text.secondary,
+                      fontSize: "0.8125rem",
+                      mt: 0.25,
+                      display: "block",
+                    }}
+                  >
+                    Unit: {req.flatId?.flatNumber || "Assigned Unit"} • Category: {req.category}
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
                   <Chip
                     label={req.priority}
                     size="small"
@@ -816,7 +975,9 @@ export const DashboardPage = () => {
                       bgcolor:
                         req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
                       color:
-                        req.priority === "EMERGENCY" ? DESIGN_TOKENS.danger[600] : "text.secondary",
+                        req.priority === "EMERGENCY"
+                          ? DESIGN_TOKENS.danger[600]
+                          : DESIGN_TOKENS.text.secondary,
                     }}
                   />
                   <StatusChip status={req.status} />
@@ -832,35 +993,45 @@ export const DashboardPage = () => {
         <Paper
           variant="outlined"
           sx={{
-            p: 3,
-            borderRadius: "12px",
+            p: { xs: 2.5, sm: 3.5 },
+            borderRadius: "14px",
             borderColor: DESIGN_TOKENS.line[200],
             backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
             mb: 4,
           }}
         >
-          <Typography
-            sx={{
-              fontFamily: FONT_UI,
-              fontSize: "1.125rem",
-              fontWeight: 700,
-              color: DESIGN_TOKENS.text.primary,
-              mb: 0.5,
-            }}
-          >
-            My Residence Ledger
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 3 }}>
-            Review official monthly maintenance dues and download receipts
-          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              sx={{
+                fontFamily: FONT_UI,
+                fontSize: "1.0625rem",
+                fontWeight: 700,
+                color: DESIGN_TOKENS.text.primary,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              My Residence Ledger
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
+            >
+              Official monthly flat maintenance charges and receipts
+            </Typography>
+          </Box>
 
           {invoices.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-              No invoices issued yet for your flat.
-            </Typography>
+            <Box sx={{ py: 4, textAlign: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+              >
+                No invoices issued yet for your residence.
+              </Typography>
+            </Box>
           ) : (
-            <Stack spacing={1.5}>
+            <Stack spacing={1}>
               {invoices.slice(0, 3).map((inv) => (
                 <Box
                   key={inv._id}
@@ -869,22 +1040,41 @@ export const DashboardPage = () => {
                     justifyContent: "space-between",
                     alignItems: "center",
                     p: 2,
-                    borderRadius: "8px",
-                    border: "1px solid",
-                    borderColor: DESIGN_TOKENS.line[200],
-                    bgcolor: DESIGN_TOKENS.surface[50],
+                    borderRadius: "10px",
+                    border: "1px solid #F1F5F9",
+                    bgcolor: "#FFFFFF",
+                    transition: "all 0.15s ease",
+                    "&:hover": {
+                      borderColor: DESIGN_TOKENS.line[200],
+                      bgcolor: DESIGN_TOKENS.surface[50],
+                      boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+                    },
                   }}
                 >
                   <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
+                    >
                       Invoice #{inv.invoiceNumber}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
+                    >
                       Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                    <Typography sx={{ fontFamily: FONT_UI, fontWeight: 700, fontSize: "1rem" }}>
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_UI,
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        color: DESIGN_TOKENS.text.primary,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
                       ₨{(inv.totalAmount || 0).toLocaleString()}
                     </Typography>
                     <StatusChip status={inv.status} />

@@ -1,4 +1,4 @@
-// =====================  STAT CARD COMPONENT (APPENDIX §A.4)  =================
+// =====================  STAT CARD COMPONENT (SUPER-CLEAN FIGMA SPEC)  =================
 import React from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -8,11 +8,11 @@ import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 /**
- * Visual Specification from UI/UX Master Prompt Section 6:
- * - Bold numeral (28px / 700) in Inter
- * - Label beneath in text.secondary (14px / 600)
- * - White surface.0 card with line.200 border and subtle elevation
- * - Optional delta written in words beneath
+ * Super-clean StatCard matching modern SaaS standards (Linear, Stripe, Figma reference):
+ * - Generous 24px padding with pure white surface and 1px hairline border (#E2E8F0)
+ * - 28-32px bold Inter numeral (-0.03em tracking)
+ * - Restrained, readable secondary metadata
+ * - Smooth micro-hover elevation without jarring colored bars
  */
 export const StatCard = ({ value, label, delta, isHero = false, action = null, sx = {} }) => {
   return (
@@ -23,78 +23,82 @@ export const StatCard = ({ value, label, delta, isHero = false, action = null, s
         flexDirection: "column",
         justifyContent: "space-between",
         border: "1px solid",
-        borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200],
+        borderColor: isHero ? "rgba(67, 56, 202, 0.25)" : DESIGN_TOKENS.line[200],
         borderRadius: "12px",
-        position: "relative",
-        overflow: "hidden",
         backgroundColor: "#FFFFFF",
-        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
-        transition: "all 0.15s ease",
+        boxShadow: isHero
+          ? "0 1px 3px rgba(67, 56, 202, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04)"
+          : "0 1px 2px rgba(15, 23, 42, 0.03)",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
           borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[300],
-          boxShadow: "0 4px 12px rgba(15, 23, 42, 0.08)",
+          boxShadow: "0 4px 14px -2px rgba(15, 23, 42, 0.06)",
+          transform: "translateY(-1px)",
         },
         ...sx,
       }}
     >
-      {isHero && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            backgroundColor: DESIGN_TOKENS.brand[600],
-          }}
-        />
-      )}
-
-      <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
+      <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
+        {/* Top: Label & Action */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            mb: 0.5,
+            alignItems: "center",
+            mb: 1.25,
           }}
         >
           <Typography
+            variant="body2"
             sx={{
               fontFamily: FONT_UI,
-              fontSize: { xs: "1.75rem", sm: "2rem" },
-              lineHeight: 1.15,
-              fontWeight: 700,
-              color: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.primary,
-              letterSpacing: "-0.02em",
+              fontWeight: 500,
+              color: DESIGN_TOKENS.text.secondary,
+              fontSize: "0.875rem",
+              lineHeight: 1.3,
             }}
           >
-            {value}
+            {label}
           </Typography>
-          {action && <Box>{action}</Box>}
+          {action ? (
+            <Box>{action}</Box>
+          ) : isHero ? (
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                bgcolor: DESIGN_TOKENS.brand[600],
+              }}
+            />
+          ) : null}
         </Box>
 
+        {/* Center: Key Metric Numeral */}
         <Typography
-          variant="body2"
           sx={{
             fontFamily: FONT_UI,
-            fontWeight: 600,
-            color: "text.secondary",
-            fontSize: "0.875rem",
+            fontSize: { xs: "1.75rem", sm: "2.125rem" },
+            lineHeight: 1.15,
+            fontWeight: 700,
+            color: DESIGN_TOKENS.text.primary,
+            letterSpacing: "-0.03em",
           }}
         >
-          {label}
+          {value}
         </Typography>
 
+        {/* Bottom: Contextual Delta / Meta */}
         {delta && (
           <Typography
             variant="caption"
             sx={{
               fontFamily: FONT_UI,
               display: "block",
-              mt: 0.75,
-              color: "text.secondary",
-              fontWeight: 500,
+              mt: 1,
+              color: DESIGN_TOKENS.text.secondary,
+              fontSize: "0.8125rem",
+              lineHeight: 1.4,
             }}
           >
             {delta}
