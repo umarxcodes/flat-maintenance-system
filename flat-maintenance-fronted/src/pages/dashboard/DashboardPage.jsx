@@ -369,10 +369,6 @@ export const DashboardPage = () => {
     buildingId: activeBuildingId || undefined,
     limit: 50,
   });
-  const { data: tenantsData } = useTenantsList({
-    buildingId: activeBuildingId || undefined,
-    limit: 50,
-  });
 
   // Normalize Arrays
   const buildings = useMemo(
