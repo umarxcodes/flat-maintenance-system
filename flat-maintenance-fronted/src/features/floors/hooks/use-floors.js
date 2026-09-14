@@ -7,6 +7,7 @@ export const useFloorsList = (params = {}) => {
   return useQuery({
     queryKey: queryKeys.floors.list(params),
     queryFn: () => floorsApi.getFloors(params),
+    enabled: Boolean(params?.blockId),
   });
 };
 

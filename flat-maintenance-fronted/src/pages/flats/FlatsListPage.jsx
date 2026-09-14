@@ -1,6 +1,8 @@
 // =====================  FLATS / UNITS LIST PAGE  =============
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -16,10 +18,18 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
+import Chip from "@mui/material/Chip";
+import Skeleton from "@mui/material/Skeleton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
-import { useNavigate } from "react-router-dom";
+import GridViewIcon from "@mui/icons-material/GridView";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useNavigate, useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,43 +41,74 @@ import {
 import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { useBlocksList } from "../../features/blocks/hooks/use-blocks.js";
 import { useFloorsList } from "../../features/floors/hooks/use-floors.js";
+import { useAuth } from "../../providers/auth-context.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
+import { EmptyState } from "../../components/common/EmptyState.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 import { STATUSES } from "../../lib/constants/statuses.js";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { FONT_UI } from "../../theme/typography.js";
 
-const FLAT_TYPES = ["1BHK", "2BHK", "3BHK", "4BHK", "PENTHOUSE", "STUDIO"];
+const FLAT_TYPES = ["STUDIO", "1BHK", "2BHK", "3BHK", "4BHK", "PENTHOUSE", "VILLA"];
 
 const flatSchema = z.object({
   buildingId: z.string().min(1, "Building complex is required"),
-  blockId: z.string().min(1, "Block is required"),
-  floorId: z.string().min(1, "Floor is required"),
-  flatNumber: z.string().min(1, "Flat number is required"),
-  areaSqFt: z.coerce.number().positive("Area must be positive"),
-  flatType: z.enum(["1BHK", "2BHK", "3BHK", "4BHK", "PENTHOUSE", "STUDIO"]),
+  blockId: z.string().min(1, "Block / Tower is required"),
+  floorId: z.string().min(1, "Floor level is required"),
+  flatNumber: z
+    .string({ required_error: "Flat / Unit number is required" })
+    .trim()
+    .min(1, "Flat number must be at least 1 character")
+    .max(20, "Flat number cannot exceed 20 characters"),
+  areaSqFt: z.coerce
+    .number({ required_error: "Area in square feet is required" })
+    .min(50, "Area must be at least 50 sq ft")
+    .max(50000, "Area cannot exceed 50,000 sq ft"),
+  flatType: z.enum(FLAT_TYPES),
+  status: z.enum(Object.values(STATUSES.FLAT)).default(STATUSES.FLAT.VACANT),
 });
 
 export const FlatsListPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { activeBuildingId } = useAuth();
+
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [statusDialogFlat, setStatusDialogFlat] = useState(null);
   const [newStatus, setNewStatus] = useState("");
 
+  // 1. Fetch Buildings
   const { data: buildingsData } = useBuildingsList();
   const buildings = buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []);
+
+  const initialBuilding =
+    searchParams.get("buildingId") ||
+    activeBuildingId ||
+    buildings[0]?.id ||
+    buildings[0]?._id ||
+    "";
+  const [selectedBuilding, setSelectedBuilding] = useState(initialBuilding);
+
+  useEffect(() => {
+    if (!selectedBuilding && buildings.length > 0) {
+      setSelectedBuilding(buildings[0].id || buildings[0]._id);
+    }
+  }, [buildings, selectedBuilding]);
 
   const queryParams = {
     page: page + 1,
     limit: rowsPerPage,
-    ...(search && { search }),
+    ...(selectedBuilding && { buildingId: selectedBuilding }),
     ...(statusFilter && { status: statusFilter }),
     ...(typeFilter && { flatType: typeFilter }),
   };
@@ -79,6 +120,17 @@ export const FlatsListPage = () => {
   const flats = data?.flats || (Array.isArray(data) ? data : []);
   const totalCount = data?.total || flats.length;
 
+  // Client-side search filtering by flat number
+  const filteredFlats = flats.filter((flat) => {
+    if (!search.trim()) return true;
+    const term = search.toLowerCase();
+    return (
+      flat.flatNumber?.toLowerCase().includes(term) ||
+      flat.flatType?.toLowerCase().includes(term) ||
+      flat.blockId?.name?.toLowerCase().includes(term)
+    );
+  });
+
   const {
     register,
     handleSubmit,
@@ -88,26 +140,35 @@ export const FlatsListPage = () => {
   } = useForm({
     resolver: zodResolver(flatSchema),
     defaultValues: {
-      buildingId: "",
+      buildingId: selectedBuilding || "",
       blockId: "",
       floorId: "",
       flatNumber: "",
       areaSqFt: 850,
       flatType: "2BHK",
+      status: STATUSES.FLAT.VACANT,
     },
   });
 
-  const selectedBuildingId = useWatch({ control, name: "buildingId" });
-  const selectedBlockId = useWatch({ control, name: "blockId" });
+  const dialogBuildingId = useWatch({ control, name: "buildingId" });
+  const dialogBlockId = useWatch({ control, name: "blockId" });
 
-  const { data: blocksData } = useBlocksList({ buildingId: selectedBuildingId });
-  const blocks = blocksData?.blocks || (Array.isArray(blocksData) ? blocksData : []);
+  const { data: blocksData } = useBlocksList({ buildingId: dialogBuildingId });
+  const dialogBlocks = blocksData?.blocks || (Array.isArray(blocksData) ? blocksData : []);
 
-  const { data: floorsData } = useFloorsList({ blockId: selectedBlockId });
-  const floors = floorsData?.floors || (Array.isArray(floorsData) ? floorsData : []);
+  const { data: floorsData } = useFloorsList({ blockId: dialogBlockId });
+  const dialogFloors = floorsData?.floors || (Array.isArray(floorsData) ? floorsData : []);
 
   const handleOpenCreate = () => {
-    reset();
+    reset({
+      buildingId: selectedBuilding || buildings[0]?.id || buildings[0]?._id || "",
+      blockId: "",
+      floorId: "",
+      flatNumber: "",
+      areaSqFt: 850,
+      flatType: "2BHK",
+      status: STATUSES.FLAT.VACANT,
+    });
     setIsCreateOpen(true);
   };
 
@@ -117,7 +178,17 @@ export const FlatsListPage = () => {
   };
 
   const onSubmit = (values) => {
-    createMutation.mutate(values, {
+    const payload = {
+      buildingId: values.buildingId,
+      blockId: values.blockId,
+      floorId: values.floorId,
+      flatNumber: values.flatNumber,
+      areaSqFt: Number(values.areaSqFt),
+      flatType: values.flatType,
+      status: values.status,
+    };
+
+    createMutation.mutate(payload, {
       onSuccess: () => {
         handleCloseCreate();
       },
@@ -143,22 +214,18 @@ export const FlatsListPage = () => {
       label: "Unit / Flat No.",
       render: (val, row) => (
         <Box>
-          <Box sx={{ fontWeight: 700 }}>Flat {val}</Box>
-          <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
-            {row.block?.name || "Block"} • Level {row.floor?.floorNumber ?? "-"}
+          <Box sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary }}>Flat {val}</Box>
+          <Box sx={{ fontSize: "0.75rem", color: DESIGN_TOKENS.text.secondary }}>
+            {row.blockId?.name || row.block?.name || "Tower"} • Level{" "}
+            {row.floorId?.floorNumber ?? row.floor?.floorNumber ?? "—"}
           </Box>
         </Box>
       ),
     },
     {
-      id: "building",
-      label: "Building Complex",
-      render: (_, row) => row.building?.name || row.buildingId || "-",
-    },
-    {
       id: "flatType",
       label: "Configuration",
-      render: (val, row) => `${val} (${row.areaSqFt} sq ft)`,
+      render: (val, row) => `${val || "—"} (${row.areaSqFt || "—"} sq ft)`,
     },
     {
       id: "status",
@@ -203,27 +270,50 @@ export const FlatsListPage = () => {
   ];
 
   return (
-    <Box>
+    <Box sx={{ width: "100%", pb: 4 }}>
       <PageHeader
         title="Flats & Units"
         subtitle="Manage residential unit inventory, layouts, square footage, and occupancy lifecycle"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Flats" }]}
         action={
-          <PermissionGuard permission={PERMISSIONS.FLAT_CREATE}>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
-              Add Flat
-            </Button>
-          </PermissionGuard>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <ToggleButtonGroup
+              size="small"
+              value={viewMode}
+              exclusive
+              onChange={(_, next) => next && setViewMode(next)}
+              sx={{ bgcolor: "#FFFFFF" }}
+            >
+              <ToggleButton value="grid" aria-label="Units Grid">
+                <GridViewIcon sx={{ fontSize: 18 }} />
+              </ToggleButton>
+              <ToggleButton value="table" aria-label="Data Table">
+                <ViewListIcon sx={{ fontSize: 18 }} />
+              </ToggleButton>
+            </ToggleButtonGroup>
+
+            <PermissionGuard permission={PERMISSIONS.FLAT_CREATE}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenCreate}
+                sx={{
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                }}
+              >
+                Add Flat Unit
+              </Button>
+            </PermissionGuard>
+          </Stack>
         }
       />
 
       <FilterBar
         searchValue={search}
-        onSearchChange={(v) => {
-          setSearch(v);
-          setPage(0);
-        }}
-        searchPlaceholder="Search by flat number..."
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by flat number or type..."
         onReset={() => {
           setSearch("");
           setStatusFilter("");
@@ -232,11 +322,32 @@ export const FlatsListPage = () => {
         }}
         hasActiveFilters={Boolean(search || statusFilter || typeFilter)}
       >
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel id="flat-bld-label">Building Complex</InputLabel>
+          <Select
+            labelId="flat-bld-label"
+            value={selectedBuilding}
+            label="Building Complex"
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedBuilding(val);
+              setSearchParams({ buildingId: val });
+              setPage(0);
+            }}
+          >
+            {buildings.map((b) => (
+              <MenuItem key={b.id || b._id} value={b.id || b._id}>
+                {b.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel>Status</InputLabel>
+          <InputLabel>Occupancy Status</InputLabel>
           <Select
             value={statusFilter}
-            label="Status"
+            label="Occupancy Status"
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(0);
@@ -253,11 +364,11 @@ export const FlatsListPage = () => {
           </Select>
         </FormControl>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Type</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Unit Layout</InputLabel>
           <Select
             value={typeFilter}
-            label="Type"
+            label="Unit Layout"
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setPage(0);
@@ -275,24 +386,181 @@ export const FlatsListPage = () => {
         </FormControl>
       </FilterBar>
 
-      <DataTable
-        columns={columns}
-        rows={flats}
-        isLoading={isLoading}
-        totalCount={totalCount}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={setPage}
-        onRowsPerPageChange={(r) => {
-          setRowsPerPage(r);
-          setPage(0);
-        }}
-        onRowClick={(row) => navigate(`/flats/${row.id || row._id}`)}
-      />
+      {/* Grid or Table Presentation */}
+      {viewMode === "grid" ? (
+        <Box sx={{ mb: 4 }}>
+          {isLoading ? (
+            <Grid container spacing={2.5}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                <Grid item xs={12} sm={6} md={3} key={idx}>
+                  <Paper
+                    variant="outlined"
+                    sx={{ p: 2.5, borderRadius: "14px", borderColor: DESIGN_TOKENS.line[200] }}
+                  >
+                    <Skeleton variant="text" width="40%" height={26} />
+                    <Skeleton variant="text" width="70%" height={18} sx={{ mb: 2 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ borderRadius: "8px" }} />
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          ) : filteredFlats.length === 0 ? (
+            <EmptyState
+              title="No residential flats match your filters."
+              description="Register new units or clear filter parameters to view inventory."
+              action={
+                <PermissionGuard permission={PERMISSIONS.FLAT_CREATE}>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenCreate}
+                    sx={{ bgcolor: DESIGN_TOKENS.brand[600], fontWeight: 600 }}
+                  >
+                    Add Flat Unit
+                  </Button>
+                </PermissionGuard>
+              }
+            />
+          ) : (
+            <Grid container spacing={2.5}>
+              {filteredFlats.map((flat) => {
+                const fId = flat.id || flat._id;
+                const towerName = flat.blockId?.name || flat.block?.name || "Tower";
+                const floorLvl = flat.floorId?.floorNumber ?? flat.floor?.floorNumber ?? "—";
+
+                return (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={fId}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2.5,
+                        borderRadius: "14px",
+                        borderColor: DESIGN_TOKENS.line[200],
+                        bgcolor: "#FFFFFF",
+                        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        height: "100%",
+                        "&:hover": {
+                          borderColor: DESIGN_TOKENS.brand[600],
+                          boxShadow: "0 6px 18px -3px rgba(15, 23, 42, 0.08)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Box>
+                        {/* Header: Flat No & Status */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            mb: 1.5,
+                          }}
+                        >
+                          <Typography
+                            sx={{ fontWeight: 700, fontSize: "1.125rem", color: "#0F172A" }}
+                          >
+                            Flat {flat.flatNumber}
+                          </Typography>
+                          <StatusChip status={flat.status} />
+                        </Box>
+
+                        <Typography
+                          variant="body2"
+                          sx={{ color: DESIGN_TOKENS.text.secondary, mb: 1 }}
+                        >
+                          {towerName} • Level {floorLvl}
+                        </Typography>
+
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                          <Chip
+                            label={flat.flatType || "2BHK"}
+                            size="small"
+                            sx={{
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                              bgcolor: "#EEF2FF",
+                              color: DESIGN_TOKENS.brand[600],
+                            }}
+                          />
+                          <Chip
+                            label={`${flat.areaSqFt || 0} sq ft`}
+                            size="small"
+                            sx={{ fontSize: "0.75rem", fontWeight: 500, bgcolor: "#F1F5F9" }}
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* Footer Actions */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          pt: 1.5,
+                          borderTop: "1px solid #F1F5F9",
+                        }}
+                      >
+                        <PermissionGuard permission={PERMISSIONS.FLAT_UPDATE}>
+                          <Button
+                            size="small"
+                            startIcon={<EditLocationAltIcon sx={{ fontSize: 15 }} />}
+                            onClick={() => {
+                              setStatusDialogFlat(flat);
+                              setNewStatus(flat.status);
+                            }}
+                            sx={{ fontSize: "0.75rem", color: DESIGN_TOKENS.text.secondary }}
+                          >
+                            Status
+                          </Button>
+                        </PermissionGuard>
+
+                        <Button
+                          component={RouterLink}
+                          to={`/flats/${fId}`}
+                          size="small"
+                          endIcon={<ArrowForwardIcon sx={{ fontSize: 13 }} />}
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.8125rem",
+                            color: DESIGN_TOKENS.brand[600],
+                          }}
+                        >
+                          Details
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          )}
+        </Box>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={filteredFlats}
+          isLoading={isLoading}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={(r) => {
+            setRowsPerPage(r);
+            setPage(0);
+          }}
+          onRowClick={(row) => navigate(`/flats/${row.id || row._id}`)}
+        />
+      )}
 
       {/* Create Flat Modal */}
       <Dialog open={isCreateOpen} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600 }}>Provision New Flat Unit</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>
+          Provision New Flat Unit
+        </DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <DialogContent dividers>
             {createMutation.isError && (
@@ -319,11 +587,11 @@ export const FlatsListPage = () => {
                   <Select
                     label="Block / Tower"
                     {...register("blockId")}
-                    disabled={!selectedBuildingId}
+                    disabled={!dialogBuildingId}
                   >
-                    {blocks.map((blk) => (
+                    {dialogBlocks.map((blk) => (
                       <MenuItem key={blk.id || blk._id} value={blk.id || blk._id}>
-                        {blk.name}
+                        {blk.name} ({blk.code})
                       </MenuItem>
                     ))}
                   </Select>
@@ -331,8 +599,8 @@ export const FlatsListPage = () => {
 
                 <FormControl fullWidth size="small" error={Boolean(errors.floorId)}>
                   <InputLabel>Floor Level</InputLabel>
-                  <Select label="Floor Level" {...register("floorId")} disabled={!selectedBlockId}>
-                    {floors.map((fl) => (
+                  <Select label="Floor Level" {...register("floorId")} disabled={!dialogBlockId}>
+                    {dialogFloors.map((fl) => (
                       <MenuItem key={fl.id || fl._id} value={fl.id || fl._id}>
                         Level {fl.floorNumber} {fl.name ? `(${fl.name})` : ""}
                       </MenuItem>
@@ -344,7 +612,7 @@ export const FlatsListPage = () => {
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Flat / Unit Number"
-                  placeholder="e.g. 402, A-101"
+                  placeholder="e.g. 101, 402"
                   fullWidth
                   error={Boolean(errors.flatNumber)}
                   helperText={errors.flatNumber?.message}
@@ -355,30 +623,56 @@ export const FlatsListPage = () => {
                   label="Area (Square Feet)"
                   type="number"
                   fullWidth
+                  inputProps={{ min: 50, max: 50000 }}
                   error={Boolean(errors.areaSqFt)}
                   helperText={errors.areaSqFt?.message}
                   {...register("areaSqFt")}
                 />
               </Stack>
 
-              <FormControl fullWidth size="small" error={Boolean(errors.flatType)}>
-                <InputLabel>Flat Type</InputLabel>
-                <Select label="Flat Type" defaultValue="2BHK" {...register("flatType")}>
-                  {FLAT_TYPES.map((t) => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <FormControl fullWidth size="small" error={Boolean(errors.flatType)}>
+                  <InputLabel>Flat Type</InputLabel>
+                  <Select label="Flat Type" defaultValue="2BHK" {...register("flatType")}>
+                    {FLAT_TYPES.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size="small">
+                  <InputLabel>Occupancy Status</InputLabel>
+                  <Select
+                    label="Occupancy Status"
+                    defaultValue={STATUSES.FLAT.VACANT}
+                    {...register("status")}
+                  >
+                    {Object.values(STATUSES.FLAT).map((st) => (
+                      <MenuItem key={st} value={st}>
+                        {st}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
             <Button onClick={handleCloseCreate} color="inherit">
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Creating..." : "Save Flat"}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={createMutation.isPending}
+              sx={{
+                bgcolor: DESIGN_TOKENS.brand[600],
+                "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+              }}
+            >
+              {createMutation.isPending ? "Registering..." : "Register Flat"}
             </Button>
           </DialogActions>
         </Box>
@@ -391,7 +685,9 @@ export const FlatsListPage = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Update Occupancy Status</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>
+          Update Occupancy Status
+        </DialogTitle>
         <DialogContent dividers>
           {updateStatusMutation.isError && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -399,8 +695,8 @@ export const FlatsListPage = () => {
             </Alert>
           )}
 
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            Select new operational occupancy status for Flat {statusDialogFlat?.flatNumber}:
+          <Typography variant="body2" sx={{ mb: 2, color: DESIGN_TOKENS.text.secondary }}>
+            Select operational occupancy status for Flat {statusDialogFlat?.flatNumber}:
           </Typography>
 
           <FormControl fullWidth size="small">
@@ -414,7 +710,7 @@ export const FlatsListPage = () => {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 1.5 }}>
+        <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={() => setStatusDialogFlat(null)} color="inherit">
             Cancel
           </Button>
@@ -422,8 +718,12 @@ export const FlatsListPage = () => {
             variant="contained"
             onClick={handleStatusUpdateSubmit}
             disabled={updateStatusMutation.isPending}
+            sx={{
+              bgcolor: DESIGN_TOKENS.brand[600],
+              "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+            }}
           >
-            {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
+            {updateStatusMutation.isPending ? "Updating..." : "Confirm Status"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -46,16 +46,53 @@ import { STATUSES } from "../../lib/constants/statuses.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 import { FONT_UI } from "../../theme/typography.js";
 
+const BUILDING_CODE_REGEX = /^[A-Za-z0-9_-]+$/;
+
 const buildingSchema = z.object({
-  name: z.string().min(1, "Building name is required"),
-  code: z.string().min(1, "Building code is required"),
+  name: z
+    .string({ required_error: "Building name is required" })
+    .trim()
+    .min(2, "Building name must be at least 2 characters")
+    .max(128, "Building name cannot exceed 128 characters"),
+  code: z
+    .string({ required_error: "Building code is required" })
+    .trim()
+    .min(2, "Building code must be at least 2 characters")
+    .max(50, "Building code cannot exceed 50 characters")
+    .regex(
+      BUILDING_CODE_REGEX,
+      "Building code must contain only letters, numbers, hyphens, or underscores"
+    ),
   address: z.object({
-    street: z.string().min(1, "Street is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    postalCode: z.string().min(1, "Postal code is required"),
-    country: z.string().min(1, "Country is required"),
+    street: z
+      .string({ required_error: "Street address is required" })
+      .trim()
+      .min(2, "Street must be at least 2 characters")
+      .max(200, "Street cannot exceed 200 characters"),
+    city: z
+      .string({ required_error: "City is required" })
+      .trim()
+      .min(2, "City must be at least 2 characters")
+      .max(100, "City cannot exceed 100 characters"),
+    state: z
+      .string({ required_error: "State/Province is required" })
+      .trim()
+      .min(2, "State must be at least 2 characters")
+      .max(100, "State cannot exceed 100 characters"),
+    postalCode: z
+      .string({ required_error: "Postal code is required" })
+      .trim()
+      .min(2, "Postal code must be at least 2 characters")
+      .max(20, "Postal code cannot exceed 20 characters"),
+    country: z
+      .string({ required_error: "Country is required" })
+      .trim()
+      .min(2, "Country must be at least 2 characters")
+      .max(100, "Country cannot exceed 100 characters"),
   }),
+  totalBlocks: z.coerce.number().int().min(0, "Total blocks cannot be negative").default(0),
+  totalFlats: z.coerce.number().int().min(0, "Total flats cannot be negative").default(0),
+  status: z.enum(Object.values(STATUSES.BUILDING)).default(STATUSES.BUILDING.ACTIVE),
 });
 
 export const BuildingsListPage = () => {
@@ -84,6 +121,8 @@ export const BuildingsListPage = () => {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(buildingSchema),
@@ -95,8 +134,11 @@ export const BuildingsListPage = () => {
         city: "",
         state: "",
         postalCode: "",
-        country: "",
+        country: "Pakistan",
       },
+      totalBlocks: 0,
+      totalFlats: 0,
+      status: STATUSES.BUILDING.ACTIVE,
     },
   });
 
@@ -590,6 +632,43 @@ export const BuildingsListPage = () => {
                   {...register("address.country")}
                 />
               </Stack>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  label="Initial Blocks / Towers"
+                  type="number"
+                  fullWidth
+                  inputProps={{ min: 0 }}
+                  error={Boolean(errors.totalBlocks)}
+                  helperText={errors.totalBlocks?.message || "e.g. 2 towers"}
+                  {...register("totalBlocks")}
+                />
+                <TextField
+                  label="Initial Total Flats"
+                  type="number"
+                  fullWidth
+                  inputProps={{ min: 0 }}
+                  error={Boolean(errors.totalFlats)}
+                  helperText={errors.totalFlats?.message || "e.g. 24 units"}
+                  {...register("totalFlats")}
+                />
+              </Stack>
+
+              <FormControl fullWidth size="small">
+                <InputLabel id="create-status-label">Operational Status</InputLabel>
+                <Select
+                  labelId="create-status-label"
+                  label="Operational Status"
+                  defaultValue={STATUSES.BUILDING.ACTIVE}
+                  {...register("status")}
+                >
+                  <MenuItem value={STATUSES.BUILDING.ACTIVE}>Active</MenuItem>
+                  <MenuItem value={STATUSES.BUILDING.UNDER_CONSTRUCTION}>
+                    Under Construction
+                  </MenuItem>
+                  <MenuItem value={STATUSES.BUILDING.INACTIVE}>Inactive</MenuItem>
+                </Select>
+              </FormControl>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
@@ -605,7 +684,7 @@ export const BuildingsListPage = () => {
                 "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
               }}
             >
-              {createMutation.isPending ? "Creating..." : "Save Building"}
+              {createMutation.isPending ? "Registering..." : "Register Building"}
             </Button>
           </DialogActions>
         </Box>

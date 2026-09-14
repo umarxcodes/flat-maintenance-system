@@ -7,6 +7,7 @@ export const useBlocksList = (params = {}) => {
   return useQuery({
     queryKey: queryKeys.blocks.list(params),
     queryFn: () => blocksApi.getBlocks(params),
+    enabled: Boolean(params?.buildingId),
   });
 };
 

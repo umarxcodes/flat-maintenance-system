@@ -4,7 +4,8 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const blocksApi = {
   getBlocks: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.BLOCKS.BASE, { params });
+    const cleanParams = params.buildingId ? { buildingId: params.buildingId } : {};
+    return await apiClient.get(API_ENDPOINTS.BLOCKS.BASE, { params: cleanParams });
   },
 
   getBlockById: async (id) => {
