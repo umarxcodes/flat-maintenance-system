@@ -37,9 +37,17 @@ apiClient.interceptors.request.use(
 // Response Interceptor: JSend normalization and 401 redirection
 apiClient.interceptors.response.use(
   (response) => {
-    // Backend standard JSend payload format: { success: true, data: { ... }, message: "..." }
+    // Backend standard JSend payload format: { success: true, data: { ... }, message: "...", meta: { ... } }
     if (response.data && typeof response.data === "object") {
       if (response.data.data !== undefined) {
+        if (
+          response.data.meta !== undefined &&
+          response.data.data &&
+          typeof response.data.data === "object" &&
+          response.data.data.meta === undefined
+        ) {
+          response.data.data.meta = response.data.meta;
+        }
         return response.data.data;
       }
       return response.data;
