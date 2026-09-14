@@ -50,3 +50,14 @@ export const useUpdateMaintenanceStatusMutation = () => {
     },
   });
 };
+
+export const useVerifyMaintenanceRequestMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => maintenanceRequestsApi.verifyRequest(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRequests.all() });
+    },
+  });
+};

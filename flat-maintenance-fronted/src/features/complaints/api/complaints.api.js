@@ -4,7 +4,14 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const complaintsApi = {
   getComplaints: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.COMPLAINTS.BASE, { params });
+    const cleanParams = {};
+    if (params.page) cleanParams.page = params.page;
+    if (params.limit) cleanParams.limit = params.limit;
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    if (params.flatId) cleanParams.flatId = params.flatId;
+    if (params.status) cleanParams.status = params.status;
+    if (params.type) cleanParams.type = params.type;
+    return await apiClient.get(API_ENDPOINTS.COMPLAINTS.BASE, { params: cleanParams });
   },
 
   getComplaintById: async (id) => {

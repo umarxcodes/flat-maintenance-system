@@ -4,7 +4,13 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const reviewsApi = {
   getReviews: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.REVIEWS.BASE, { params });
+    const cleanParams = {};
+    if (params.page) cleanParams.page = params.page;
+    if (params.limit) cleanParams.limit = params.limit;
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    if (params.staffId) cleanParams.staffId = params.staffId;
+    if (params.moderationStatus) cleanParams.moderationStatus = params.moderationStatus;
+    return await apiClient.get(API_ENDPOINTS.REVIEWS.BASE, { params: cleanParams });
   },
 
   getReviewById: async (id) => {

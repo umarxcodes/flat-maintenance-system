@@ -91,6 +91,7 @@ export const API_ENDPOINTS = Object.freeze({
     BY_ID: (id) => `/maintenance-requests/${id}`,
     ASSIGN: (id) => `/maintenance-requests/${id}/assign`,
     STATUS: (id) => `/maintenance-requests/${id}/status`,
+    VERIFY: (id) => `/maintenance-requests/${id}/verify`,
   },
 
   // Module 14: Invoices
