@@ -40,6 +40,7 @@ import { NAVIGATION_CONFIG } from "../../lib/constants/navigation.config.js";
 import { hasPermission } from "../../lib/permissions/rbac.util.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 import { FONT_UI } from "../../theme/typography.js";
+import { ROLE_LABELS } from "../../lib/constants/roles.js";
 
 const DRAWER_WIDTH = 260;
 
