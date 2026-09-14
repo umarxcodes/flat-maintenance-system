@@ -160,7 +160,16 @@ export const TenantsListPage = () => {
     {
       id: "status",
       label: "Lease Status",
-      render: (val) => <StatusChip status={val} />,
+      render: (val, row) => {
+        if (row.leaseEndDate && val === "ACTIVE") {
+          const now = new Date();
+          const end = new Date(row.leaseEndDate);
+          const diffDays = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+          if (diffDays < 0) return <StatusChip status="ENDED" />;
+          if (diffDays <= 30) return <StatusChip status="ENDING_SOON" />;
+        }
+        return <StatusChip status={val} />;
+      },
     },
     {
       id: "actions",
