@@ -10,10 +10,14 @@ import Link from "@mui/material/Link";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import Chip from "@mui/material/Chip";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import BoltIcon from "@mui/icons-material/Bolt";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +29,57 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const DEMO_ACCOUNTS = [
+  {
+    label: "Super Admin",
+    email: "muhammadumar.codes@gmail.com",
+    password: "umarkhan",
+    color: "#7C3AED",
+  },
+  {
+    label: "Bldg Admin",
+    email: "admin.greenwood@society.local",
+    password: "Password123!",
+    color: "#1D4ED8",
+  },
+  {
+    label: "Manager",
+    email: "manager.sarah@society.local",
+    password: "Password123!",
+    color: "#0369A1",
+  },
+  {
+    label: "Accountant",
+    email: "accountant.dave@society.local",
+    password: "Password123!",
+    color: "#047857",
+  },
+  {
+    label: "Maintenance",
+    email: "tech.carlos@society.local",
+    password: "Password123!",
+    color: "#B45309",
+  },
+  {
+    label: "Security",
+    email: "guard.ahmed@society.local",
+    password: "Password123!",
+    color: "#7C2D12",
+  },
+  {
+    label: "Owner",
+    email: "owner.elena@society.local",
+    password: "Password123!",
+    color: "#9D174D",
+  },
+  {
+    label: "Tenant",
+    email: "tenant.marcus@society.local",
+    password: "Password123!",
+    color: "#065F46",
+  },
+];
+
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -34,6 +89,7 @@ export const LoginPage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
@@ -44,6 +100,11 @@ export const LoginPage = () => {
   });
 
   const loginMutation = useLoginMutation();
+
+  const fillDemo = (account) => {
+    setValue("email", account.email, { shouldValidate: true });
+    setValue("password", account.password, { shouldValidate: true });
+  };
 
   const onSubmit = (values) => {
     loginMutation.mutate(values, {
@@ -65,12 +126,63 @@ export const LoginPage = () => {
             mb: 0.5,
           }}
         >
-          Resident & Staff Sign In
+          Resident &amp; Staff Sign In
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Enter your registered credentials to access your portal
         </Typography>
       </Box>
+
+      {/* Quick-fill Demo Credentials */}
+      <Box
+        sx={{
+          mb: 2.5,
+          p: 1.5,
+          borderRadius: "10px",
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "grey.50",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.25 }}>
+          <BoltIcon sx={{ fontSize: 14, color: "warning.main" }} />
+          <Typography variant="caption" fontWeight={600} color="text.secondary" letterSpacing={0.5}>
+            QUICK DEMO LOGIN
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+          {DEMO_ACCOUNTS.map((account) => (
+            <Tooltip key={account.email} title={account.email} placement="top" arrow>
+              <Chip
+                label={account.label}
+                size="small"
+                onClick={() => fillDemo(account)}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "0.7rem",
+                  cursor: "pointer",
+                  color: account.color,
+                  borderColor: account.color,
+                  bgcolor: `${account.color}12`,
+                  "&:hover": {
+                    bgcolor: `${account.color}22`,
+                  },
+                }}
+                variant="outlined"
+              />
+            </Tooltip>
+          ))}
+        </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+          Click any role chip to auto-fill credentials, then press Sign In.
+        </Typography>
+      </Box>
+
+      <Divider sx={{ mb: 2.5 }}>
+        <Typography variant="caption" color="text.secondary">
+          or enter manually
+        </Typography>
+      </Divider>
 
       {loginMutation.isError && (
         <Alert severity="error" sx={{ mb: 2.5 }}>
@@ -83,7 +195,6 @@ export const LoginPage = () => {
           label="Email Address"
           fullWidth
           autoComplete="email"
-          autoFocus
           error={Boolean(errors.email)}
           helperText={errors.email?.message}
           {...register("email")}
