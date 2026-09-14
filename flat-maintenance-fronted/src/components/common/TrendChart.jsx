@@ -40,9 +40,17 @@ export const TrendChart = ({
     return { x, y, val, label: labels[idx] || `Point ${idx + 1}` };
   });
 
-  const linePath = points.reduce((acc, pt, idx) => {
-    return idx === 0 ? `M ${pt.x},${pt.y}` : `${acc} L ${pt.x},${pt.y}`;
-  }, "");
+  const linePath =
+    points.length > 0
+      ? points.reduce((acc, pt, idx) => {
+          return idx === 0 ? `M ${pt.x},${pt.y}` : `${acc} L ${pt.x},${pt.y}`;
+        }, "")
+      : "";
+
+  const areaPath =
+    points.length > 0
+      ? `${linePath} L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`
+      : "";
 
   const uniqueId = useId().replace(/:/g, "");
   const gradientId = `trend-gradient-${uniqueId}`;
