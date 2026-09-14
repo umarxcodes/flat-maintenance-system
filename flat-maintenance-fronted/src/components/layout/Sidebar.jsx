@@ -34,6 +34,14 @@ import TransferWithinAStationIcon from "@mui/icons-material/TransferWithinAStati
 import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import HistoryEduIcon from "@mui/icons-material/HistoryEdu";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
+import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { NAVIGATION_CONFIG } from "../../lib/constants/navigation.config.js";
@@ -86,14 +94,43 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
 
   const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U";
 
+  // Super Admin specific navigation matching Figma prototype
+  const superAdminNav = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: <DashboardOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      title: "Buildings",
+      href: "/buildings",
+      icon: <ApartmentOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
+    { title: "Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
+    { title: "Users", href: "/users", icon: <PeopleOutlineOutlinedIcon sx={{ fontSize: 20 }} /> },
+    {
+      title: "Roles & Permissions",
+      href: "/roles",
+      icon: <LockOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      title: "Audit Logs",
+      href: "/audit-logs",
+      icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
+      badge: "99+",
+    },
+    { title: "Reports", href: "/reports", icon: <DescriptionOutlinedIcon sx={{ fontSize: 20 }} /> },
+    { title: "Settings", href: "/profile", icon: <SettingsOutlinedIcon sx={{ fontSize: 20 }} /> },
+  ];
+
   const drawerContent = (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        bgcolor: "#FFFFFF",
-        color: DESIGN_TOKENS.text.primary,
+        bgcolor: "#0B132B", // Exact dark navy from Figma
+        color: "#FFFFFF",
       }}
     >
       {/* Brand Header */}
@@ -102,9 +139,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-          p: 2.5,
-          borderBottom: "1px solid",
-          borderColor: DESIGN_TOKENS.line[200],
+          px: 3,
+          py: 3,
         }}
       >
         <Box
@@ -112,41 +148,39 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 38,
-            height: 38,
+            width: 36,
+            height: 36,
             borderRadius: "10px",
-            background: `linear-gradient(135deg, ${DESIGN_TOKENS.brand[600]} 0%, #6366F1 100%)`,
+            bgcolor: "#4F46E5",
             color: "#FFFFFF",
-            boxShadow: "0 2px 8px rgba(67, 56, 202, 0.25)",
+            boxShadow: "0 2px 10px rgba(79, 70, 229, 0.35)",
+            flexShrink: 0,
           }}
         >
-          <ApartmentIcon fontSize="small" />
-        </Box>
-        <Box>
-          <Typography
+          <Box
             sx={{
-              fontFamily: FONT_UI,
-              fontSize: "0.9375rem",
-              fontWeight: 700,
-              lineHeight: 1.2,
-              color: DESIGN_TOKENS.text.primary,
-              letterSpacing: "-0.02em",
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              bgcolor: "#FFFFFF",
             }}
-          >
-            Flat Maintenance
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              fontFamily: FONT_UI,
-              color: DESIGN_TOKENS.text.secondary,
-              fontWeight: 500,
-              fontSize: "0.75rem",
-            }}
-          >
-            Residential Operations
-          </Typography>
+          />
         </Box>
+        <Typography
+          sx={{
+            fontFamily: FONT_UI,
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            lineHeight: 1,
+            color: "#FFFFFF",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Flat
+          <Box component="span" sx={{ color: "#94A3B8", fontWeight: 400 }}>
+            Maint
+          </Box>
+        </Typography>
       </Box>
 
       {/* Navigation List */}
@@ -154,44 +188,22 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
         sx={{
           flex: 1,
           overflowY: "auto",
-          py: 1.5,
+          py: 1,
+          px: 2,
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {authorizedNavigation.map((section) => (
-          <List
-            key={section.category}
-            dense
-            subheader={
-              <ListSubheader
-                disableSticky
-                sx={{
-                  bgcolor: "transparent",
-                  fontSize: "0.6875rem", // 11px
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  color: DESIGN_TOKENS.text.disabled || "#94A3B8",
-                  lineHeight: "20px",
-                  px: 2.5,
-                  mt: 1.75,
-                  mb: 0.5,
-                  fontFamily: FONT_UI,
-                }}
-              >
-                {section.category}
-              </ListSubheader>
-            }
-          >
-            {section.items.map((item) => {
+        {user?.role === "SUPER_ADMIN" ? (
+          <List dense disablePadding>
+            {superAdminNav.map((item) => {
               const isActive =
                 item.href === "/dashboard"
                   ? location.pathname === "/dashboard"
                   : location.pathname.startsWith(item.href);
 
               return (
-                <ListItem key={item.href} disablePadding sx={{ px: 1.5, mb: 0.25 }}>
+                <ListItem key={item.title} disablePadding sx={{ mb: 0.75 }}>
                   <ListItemButton
                     component={RouterLink}
                     to={item.href}
@@ -199,39 +211,39 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                     selected={isActive}
                     sx={{
                       borderRadius: "8px",
-                      py: 0.85,
-                      px: 1.5,
-                      color: isActive ? DESIGN_TOKENS.brand[600] : "#475569",
-                      bgcolor: isActive ? DESIGN_TOKENS.brand[50] : "transparent",
+                      py: 1,
+                      px: 1.75,
+                      color: isActive ? "#FFFFFF" : "#94A3B8",
+                      bgcolor: isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
                       border: isActive
-                        ? "1px solid rgba(67, 56, 202, 0.15)"
+                        ? "1px solid rgba(255, 255, 255, 0.08)"
                         : "1px solid transparent",
                       "&.Mui-selected": {
-                        bgcolor: DESIGN_TOKENS.brand[50],
-                        color: DESIGN_TOKENS.brand[600],
+                        bgcolor: "rgba(255, 255, 255, 0.08)",
+                        color: "#FFFFFF",
                         "&:hover": {
-                          bgcolor: DESIGN_TOKENS.brand[100],
+                          bgcolor: "rgba(255, 255, 255, 0.12)",
                         },
                         "& .MuiListItemIcon-root": {
-                          color: DESIGN_TOKENS.brand[600],
+                          color: "#FFFFFF",
                         },
                       },
                       "&:hover": {
-                        bgcolor: DESIGN_TOKENS.surface[100],
-                        color: DESIGN_TOKENS.text.primary,
+                        bgcolor: "rgba(255, 255, 255, 0.04)",
+                        color: "#FFFFFF",
                         "& .MuiListItemIcon-root": {
-                          color: DESIGN_TOKENS.text.primary,
+                          color: "#FFFFFF",
                         },
                       },
                     }}
                   >
                     <ListItemIcon
                       sx={{
-                        minWidth: 32,
-                        color: isActive ? DESIGN_TOKENS.brand[600] : "#64748B",
+                        minWidth: 34,
+                        color: isActive ? "#FFFFFF" : "#94A3B8",
                       }}
                     >
-                      {ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
+                      {item.icon || ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
                     </ListItemIcon>
                     <ListItemText
                       primary={item.title}
@@ -239,29 +251,112 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                         primary: {
                           sx: {
                             fontFamily: FONT_UI,
-                            fontSize: "0.8125rem",
+                            fontSize: "0.875rem",
                             fontWeight: isActive ? 600 : 500,
                           },
                         },
                       }}
                     />
+                    {item.badge && (
+                      <Box
+                        sx={{
+                          bgcolor: "#6366F1",
+                          color: "#FFFFFF",
+                          fontSize: "0.6875rem",
+                          fontWeight: 700,
+                          borderRadius: "999px",
+                          px: 1,
+                          py: 0.2,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {item.badge}
+                      </Box>
+                    )}
                   </ListItemButton>
                 </ListItem>
               );
             })}
           </List>
-        ))}
+        ) : (
+          authorizedNavigation.map((section) => (
+            <List key={section.category} dense disablePadding sx={{ mb: 2 }}>
+              {section.items.map((item) => {
+                const isActive =
+                  item.href === "/dashboard"
+                    ? location.pathname === "/dashboard"
+                    : location.pathname.startsWith(item.href);
+
+                return (
+                  <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      component={RouterLink}
+                      to={item.href}
+                      onClick={onMobileClose}
+                      selected={isActive}
+                      sx={{
+                        borderRadius: "8px",
+                        py: 0.9,
+                        px: 1.5,
+                        color: isActive ? "#FFFFFF" : "#94A3B8",
+                        bgcolor: isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
+                        border: isActive
+                          ? "1px solid rgba(255, 255, 255, 0.08)"
+                          : "1px solid transparent",
+                        "&.Mui-selected": {
+                          bgcolor: "rgba(255, 255, 255, 0.08)",
+                          color: "#FFFFFF",
+                          "& .MuiListItemIcon-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "&:hover": {
+                          bgcolor: "rgba(255, 255, 255, 0.04)",
+                          color: "#FFFFFF",
+                          "& .MuiListItemIcon-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 32,
+                          color: isActive ? "#FFFFFF" : "#94A3B8",
+                        }}
+                      >
+                        {ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.title}
+                        slotProps={{
+                          primary: {
+                            sx: {
+                              fontFamily: FONT_UI,
+                              fontSize: "0.8125rem",
+                              fontWeight: isActive ? 600 : 500,
+                            },
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          ))
+        )}
       </Box>
 
       {/* Footer / User info */}
-      <Divider sx={{ borderColor: DESIGN_TOKENS.line[200] }} />
+      <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
       <Box
         sx={{
           p: 2,
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-          bgcolor: DESIGN_TOKENS.surface[50],
+          bgcolor: "rgba(0, 0, 0, 0.2)",
         }}
       >
         <Box
@@ -269,7 +364,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             width: 36,
             height: 36,
             borderRadius: "50%",
-            bgcolor: DESIGN_TOKENS.brand[600],
+            bgcolor: "#4F46E5",
             color: "#FFFFFF",
             display: "flex",
             alignItems: "center",
@@ -286,7 +381,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             variant="body2"
             sx={{
               fontWeight: 600,
-              color: DESIGN_TOKENS.text.primary,
+              color: "#FFFFFF",
               fontSize: "0.8125rem",
               lineHeight: 1.2,
               fontFamily: FONT_UI,
@@ -298,7 +393,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           <Typography
             variant="caption"
             sx={{
-              color: DESIGN_TOKENS.text.secondary,
+              color: "#94A3B8",
               fontFamily: FONT_UI,
               fontSize: "0.75rem",
               display: "block",
@@ -327,9 +422,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            bgcolor: "#FFFFFF",
-            borderRight: "1px solid",
-            borderColor: DESIGN_TOKENS.line[200],
+            bgcolor: "#0B132B",
+            borderRight: "1px solid rgba(255, 255, 255, 0.06)",
             backgroundImage: "none",
           },
         }}
@@ -347,9 +441,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            borderRight: "1px solid",
-            borderColor: DESIGN_TOKENS.line[200],
-            bgcolor: "#FFFFFF",
+            borderRight: "1px solid rgba(255, 255, 255, 0.06)",
+            bgcolor: "#0B132B",
             backgroundImage: "none",
             boxShadow: "none",
           },

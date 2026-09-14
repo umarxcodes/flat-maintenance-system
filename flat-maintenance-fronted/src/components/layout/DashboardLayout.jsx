@@ -1,18 +1,24 @@
-// =====================  DASHBOARD SHELL LAYOUT  =============
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar.jsx";
 import { Topbar } from "./Topbar.jsx";
+import { useAuth } from "../../providers/auth-context.js";
+import { ROLES } from "../../lib/constants/roles.js";
 
 const DRAWER_WIDTH = 260;
 
 export const DashboardLayout = () => {
+  const { user } = useAuth();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  const isSuperAdminDashboard =
+    user?.role === ROLES.SUPER_ADMIN && location.pathname === "/dashboard";
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
@@ -30,17 +36,17 @@ export const DashboardLayout = () => {
           flexDirection: "column",
         }}
       >
-        <Topbar onMenuClick={handleDrawerToggle} />
+        {!isSuperAdminDashboard && <Topbar onMenuClick={handleDrawerToggle} />}
 
         <Box
           sx={{
             width: "100%",
             flex: 1,
-            py: { xs: 2.5, sm: 3.5 },
+            py: isSuperAdminDashboard ? { xs: 2, sm: 3 } : { xs: 2.5, sm: 3.5 },
             px: { xs: 2, sm: 3, md: 4 },
           }}
         >
-          <Outlet />
+          <Outlet context={{ onMenuClick: handleDrawerToggle }} />
         </Box>
       </Box>
     </Box>

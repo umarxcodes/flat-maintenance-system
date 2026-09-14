@@ -31,7 +31,8 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DoorSlidingIcon from "@mui/icons-material/DoorSliding";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useOutletContext } from "react-router-dom";
+import { SuperAdminDashboardView } from "./components/SuperAdminDashboardView.jsx";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
@@ -454,6 +455,20 @@ export const DashboardPage = () => {
     [ROLES.OWNER]: "View your flat maintenance dues, service work orders, and community notices.",
     [ROLES.TENANT]: "View your flat maintenance dues, service work orders, and community notices.",
   };
+
+  const outletContext = useOutletContext();
+
+  // 1. SUPER ADMIN FIGMA SPECIFICATION VIEW
+  if (role === ROLES.SUPER_ADMIN) {
+    return (
+      <SuperAdminDashboardView
+        buildings={buildings}
+        users={users}
+        openRequests={openRequests}
+        onMenuClick={outletContext?.onMenuClick}
+      />
+    );
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
