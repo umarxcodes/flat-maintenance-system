@@ -5,6 +5,7 @@ import {
   verifyVisitorPass,
   checkInVisitor,
   checkOutVisitor,
+  listVisitors,
 } from "./visitors.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
@@ -21,6 +22,17 @@ import {
 const router = Router();
 
 // =====================  GATE VISITOR PASS ROUTES  ==========
+/**
+ * @route   GET /api/v1/visitors
+ * @desc    Lists visitor records with building/role scoping and pagination
+ * @access  Private (Authenticated users)
+ */
+router.get(
+  "/",
+  authenticate,
+  listVisitors
+);
+
 /**
  * @route   POST /api/v1/visitors
  * @desc    Resident pre-generates digital visitor pass with cryptographic verification credentials

@@ -90,3 +90,22 @@ export const checkOutVisitor = asyncHandler(async (req, res) => {
       )
     );
 });
+
+/**
+ * Controller: Lists visitor records with building/role scoping and pagination.
+ *
+ * GET /api/v1/visitors
+ */
+export const listVisitors = asyncHandler(async (req, res) => {
+  const result = await visitorsService.listVisitors(req.query, req.user);
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        result.visitors,
+        "Visitors retrieved successfully",
+        result.meta
+      )
+    );
+});

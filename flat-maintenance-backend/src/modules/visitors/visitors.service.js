@@ -633,6 +633,57 @@ class VisitorsService {
 
     return updatedVisitor.toSafeObject();
   }
+
+  /**
+   * Retrieves paginated visitor passes scoped by role and building.
+   */
+  async listVisitors(query = {}, actor) {
+    const page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (query.buildingId) {
+      filter.buildingId = query.buildingId;
+    } else if (actor.assignedBuildingIds && actor.assignedBuildingIds.length > 0) {
+      filter.buildingId = { $in: actor.assignedBuildingIds };
+    }
+
+    if (actor.role === ROLES.OWNER || actor.role === ROLES.TENANT) {
+      filter.hostUserId = actor._id || actor.id;
+    }
+
+    if (query.status) {
+      filter.status = query.status;
+    }
+    if (query.visitorType) {
+      filter.visitorType = query.visitorType;
+    }
+    if (query.flatId) {
+      filter.flatId = query.flatId;
+    }
+
+    const [total, records] = await Promise.all([
+      Visitor.countDocuments(filter),
+      Visitor.find(filter)
+        .sort({ expectedArrivalDate: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("buildingId", "name code")
+        .populate("flatId", "flatNumber blockId")
+        .populate("hostUserId", "firstName lastName email phone"),
+    ]);
+
+    return {
+      visitors: records.map((r) => r.toSafeObject()),
+      meta: {
+        page,
+        limit,
+        totalRecords: total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
 }
 
 // =====================  SINGLETON EXPORT  ==================
