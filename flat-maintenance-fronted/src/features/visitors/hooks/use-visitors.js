@@ -25,7 +25,13 @@ export const useCheckInVisitorMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id) => visitorsApi.checkInVisitor(id),
+    mutationFn: (arg) => {
+      if (typeof arg === "string") {
+        return visitorsApi.checkInVisitor(arg);
+      }
+      const { id, ...data } = arg;
+      return visitorsApi.checkInVisitor(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.visitors.all() });
     },
