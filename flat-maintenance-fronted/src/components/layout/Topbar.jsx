@@ -115,7 +115,7 @@ export const Topbar = ({ onMenuClick }) => {
                 {user?.firstName} {user?.lastName}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user ? ROLE_LABELS[user.role] : ""}
+                {user ? ROLE_LABELS[user.role] || user.role : ""}
               </Typography>
             </Box>
           </Box>

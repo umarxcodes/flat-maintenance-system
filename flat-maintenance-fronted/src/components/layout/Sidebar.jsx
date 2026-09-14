@@ -260,7 +260,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           variant="caption"
           sx={{ color: "rgba(255, 255, 255, 0.6)", fontFamily: FONT_UI }}
         >
-          {user ? ROLE_LABELS[user.role] : ""}
+          {user ? ROLE_LABELS[user.role] || user.role : ""}
         </Typography>
       </Box>
     </Box>
