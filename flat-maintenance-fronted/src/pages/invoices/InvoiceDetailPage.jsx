@@ -13,13 +13,22 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Chip from "@mui/material/Chip";
 import PaymentIcon from "@mui/icons-material/Payment";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import { useParams, useNavigate } from "react-router-dom";
 import { useInvoiceDetail } from "../../features/invoices/hooks/use-invoices.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { TableLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
+import { formatCurrency } from "../../utils/format-currency.js";
+
+const DESIGN_TOKENS = {
+  brand: { 600: "#4F46E5", 700: "#4338CA", 50: "#EEF2FF" },
+  text: { primary: "#0F172A", secondary: "#64748B" },
+  line: { 200: "#E2E8F0" },
+};
 
 export const InvoiceDetailPage = () => {
   const { id } = useParams();
@@ -39,12 +48,12 @@ export const InvoiceDetailPage = () => {
   return (
     <Box>
       <PageHeader
-        title={`Invoice ${invoice?.invoiceNumber || id}`}
-        subtitle={`Billing Period: ${invoice?.billingMonth}/${invoice?.billingYear} • Flat ${invoice?.flat?.flatNumber || "Unit"}`}
+        title={`Invoice Voucher #${invoice?.invoiceNumber || id.slice(-6).toUpperCase()}`}
+        subtitle={`Billing Period: ${invoice?.billingPeriod || `${invoice?.billingMonth}/${invoice?.billingYear}`} • Flat ${invoice?.flat?.flatNumber || "Unit"}`}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Invoices", href: "/invoices" },
-          { label: "Invoice Details" },
+          { label: "Voucher Breakdown" },
         ]}
         action={
           <Stack direction="row" spacing={1.5}>
@@ -52,6 +61,12 @@ export const InvoiceDetailPage = () => {
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate("/invoices")}
+              sx={{
+                borderColor: DESIGN_TOKENS.line[200],
+                color: DESIGN_TOKENS.text.primary,
+                fontWeight: 600,
+                textTransform: "none",
+              }}
             >
               Back to Invoices
             </Button>
@@ -60,8 +75,14 @@ export const InvoiceDetailPage = () => {
                 variant="contained"
                 startIcon={<PaymentIcon />}
                 onClick={() => navigate(`/payments?invoiceId=${id}`)}
+                sx={{
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                  fontWeight: 600,
+                  textTransform: "none",
+                }}
               >
-                Make Payment
+                Execute Payment
               </Button>
             )}
           </Stack>
@@ -70,18 +91,27 @@ export const InvoiceDetailPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Paper variant="outlined" sx={{ p: 3.5, mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-              Itemized Billing Breakdown
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3.5,
+              mb: 3,
+              borderRadius: "14px",
+              borderColor: DESIGN_TOKENS.line[200],
+              bgcolor: "#FFFFFF",
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: DESIGN_TOKENS.text.primary }}>
+              Itemized Fee Breakdown
             </Typography>
 
             <TableContainer>
               <Table size="small">
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700 }}>
-                      Amount ($)
+                  <TableRow sx={{ bgcolor: "#F8FAFC" }}>
+                    <TableCell sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary }}>Description</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary }}>
+                      Calculated Amount
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -89,25 +119,27 @@ export const InvoiceDetailPage = () => {
                   {lineItems.length > 0 ? (
                     lineItems.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>
-                          {item.description || item.name || `Charge Component ${index + 1}`}
+                        <TableCell sx={{ color: DESIGN_TOKENS.text.primary }}>
+                          {item.description || item.name || `Maintenance Component ${index + 1}`}
                         </TableCell>
-                        <TableCell align="right">${item.amount?.toLocaleString()}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
+                          {formatCurrency(item.amount || 0)}
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <>
                       <TableRow>
-                        <TableCell>Base Maintenance Charge</TableCell>
-                        <TableCell align="right">
-                          ${invoice?.subTotal?.toLocaleString() || "0"}
+                        <TableCell>Base Maintenance Assessment</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          {formatCurrency(invoice?.subTotal || invoice?.totalAmount || 0)}
                         </TableCell>
                       </TableRow>
                       {invoice?.lateFee > 0 && (
                         <TableRow>
-                          <TableCell>Late Payment Penalty</TableCell>
-                          <TableCell align="right" sx={{ color: "error.main" }}>
-                            ${invoice?.lateFee?.toLocaleString()}
+                          <TableCell sx={{ color: "error.main" }}>Late Payment Surcharge</TableCell>
+                          <TableCell align="right" sx={{ color: "error.main", fontWeight: 700 }}>
+                            +{formatCurrency(invoice?.lateFee || 0)}
                           </TableCell>
                         </TableRow>
                       )}
@@ -120,9 +152,17 @@ export const InvoiceDetailPage = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Paper variant="outlined" sx={{ p: 3.5 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-              Payment Summary
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3.5,
+              borderRadius: "14px",
+              borderColor: DESIGN_TOKENS.line[200],
+              bgcolor: "#FFFFFF",
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: DESIGN_TOKENS.text.primary }}>
+              Voucher Ledger
             </Typography>
 
             <Stack spacing={2}>
@@ -133,51 +173,29 @@ export const InvoiceDetailPage = () => {
                 <StatusChip status={invoice?.status || "ISSUED"} />
               </Box>
 
-              <Divider />
+              <Divider sx={{ borderColor: DESIGN_TOKENS.line[200] }} />
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="body2" color="text.secondary">
-                  Subtotal
+                  Total Assessment
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  ${invoice?.subTotal?.toLocaleString() || "0"}
-                </Typography>
-              </Box>
-
-              {invoice?.lateFee > 0 && (
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="body2" color="error.main">
-                    Late Fee
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "error.main" }}>
-                    +${invoice?.lateFee?.toLocaleString()}
-                  </Typography>
-                </Box>
-              )}
-
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">
-                  Total Invoiced
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                  ${invoice?.totalAmount?.toLocaleString() || "0"}
+                <Typography variant="body2" sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary }}>
+                  {formatCurrency(invoice?.totalAmount || 0)}
                 </Typography>
               </Box>
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="body2" color="text.secondary">
-                  Amount Paid
+                  Paid to Date
                 </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600, color: "success.main" }}>
-                  ${invoice?.paidAmount?.toLocaleString() || "0"}
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "#16A34A" }}>
+                  {formatCurrency(invoice?.paidAmount || 0)}
                 </Typography>
               </Box>
 
-              <Divider />
-
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  Outstanding Balance
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="body2" color="text.secondary">
+                  Balance Outstanding
                 </Typography>
                 <Typography
                   variant="h6"
@@ -186,15 +204,15 @@ export const InvoiceDetailPage = () => {
                     color: invoice?.dueAmount > 0 ? "error.main" : "success.main",
                   }}
                 >
-                  ${invoice?.dueAmount?.toLocaleString() || "0"}
+                  {formatCurrency(invoice?.dueAmount || 0)}
                 </Typography>
               </Box>
 
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Due Date: {invoice?.dueDate ? invoice.dueDate.slice(0, 10) : "-"}
-                </Typography>
-              </Box>
+              <Divider sx={{ borderColor: DESIGN_TOKENS.line[200] }} />
+
+              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
+                Payment Due: {invoice?.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "-"}
+              </Typography>
             </Stack>
           </Paper>
         </Grid>
