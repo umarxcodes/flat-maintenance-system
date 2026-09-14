@@ -1,7 +1,6 @@
 // =====================  DASHBOARD SHELL LAYOUT  =============
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar.jsx";
 import { Topbar } from "./Topbar.jsx";
@@ -33,19 +32,16 @@ export const DashboardLayout = () => {
       >
         <Topbar onMenuClick={handleDrawerToggle} />
 
-        <Container
-          maxWidth={false}
+        <Box
           sx={{
-            maxWidth: "1360px",
-            mx: "auto",
             width: "100%",
             flex: 1,
-            py: { xs: 2.5, sm: 4 },
-            px: { xs: 2, sm: 4 },
+            py: { xs: 2.5, sm: 3.5 },
+            px: { xs: 2, sm: 3, md: 4 },
           }}
         >
           <Outlet />
-        </Container>
+        </Box>
       </Box>
     </Box>
   );

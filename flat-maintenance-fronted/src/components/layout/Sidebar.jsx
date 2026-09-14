@@ -84,14 +84,16 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
     }),
   })).filter((section) => section.items.length > 0);
 
+  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U";
+
   const drawerContent = (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        bgcolor: DESIGN_TOKENS.brand[900], // #1E1B4B
-        color: "#FFFFFF",
+        bgcolor: "#FFFFFF",
+        color: DESIGN_TOKENS.text.primary,
       }}
     >
       {/* Brand Header */}
@@ -101,7 +103,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           alignItems: "center",
           gap: 1.5,
           p: 2.5,
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          borderBottom: "1px solid",
+          borderColor: DESIGN_TOKENS.line[200],
         }}
       >
         <Box
@@ -109,12 +112,12 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 36,
-            height: 36,
-            borderRadius: "8px",
-            bgcolor: DESIGN_TOKENS.brand[600], // #4338CA
+            width: 38,
+            height: 38,
+            borderRadius: "10px",
+            background: `linear-gradient(135deg, ${DESIGN_TOKENS.brand[600]} 0%, #6366F1 100%)`,
             color: "#FFFFFF",
-            boxShadow: "0 2px 8px rgba(67, 56, 202, 0.35)",
+            boxShadow: "0 2px 8px rgba(67, 56, 202, 0.25)",
           }}
         >
           <ApartmentIcon fontSize="small" />
@@ -123,11 +126,11 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           <Typography
             sx={{
               fontFamily: FONT_UI,
-              fontSize: "1rem",
+              fontSize: "0.9375rem",
               fontWeight: 700,
               lineHeight: 1.2,
-              color: "#FFFFFF",
-              letterSpacing: "-0.01em",
+              color: DESIGN_TOKENS.text.primary,
+              letterSpacing: "-0.02em",
             }}
           >
             Flat Maintenance
@@ -136,9 +139,9 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
             variant="caption"
             sx={{
               fontFamily: FONT_UI,
-              color: "rgba(255, 255, 255, 0.5)",
-              letterSpacing: "0.02em",
-              fontSize: "0.72rem",
+              color: DESIGN_TOKENS.text.secondary,
+              fontWeight: 500,
+              fontSize: "0.75rem",
             }}
           >
             Residential Operations
@@ -147,7 +150,15 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
       </Box>
 
       {/* Navigation List */}
-      <Box sx={{ flex: 1, overflowY: "auto", py: 1.5 }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          py: 1.5,
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+        }}
+      >
         {authorizedNavigation.map((section) => (
           <List
             key={section.category}
@@ -157,14 +168,14 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                 disableSticky
                 sx={{
                   bgcolor: "transparent",
-                  fontSize: "0.75rem", // 12px
-                  fontWeight: 500,
-                  textTransform: "none",
-                  letterSpacing: "normal",
-                  color: "rgba(226, 232, 240, 0.6)", // muted lavender/grey on dark rail
-                  lineHeight: "22px",
+                  fontSize: "0.6875rem", // 11px
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: DESIGN_TOKENS.text.disabled || "#94A3B8",
+                  lineHeight: "20px",
                   px: 2.5,
-                  mt: 2,
+                  mt: 1.75,
                   mb: 0.5,
                   fontFamily: FONT_UI,
                 }}
@@ -190,24 +201,26 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                       borderRadius: "8px",
                       py: 0.85,
                       px: 1.5,
-                      color: isActive ? "#FFFFFF" : "rgba(255, 255, 255, 0.72)",
-                      bgcolor: isActive ? DESIGN_TOKENS.brand[600] : "transparent",
-                      boxShadow: isActive ? "0 2px 8px rgba(67, 56, 202, 0.3)" : "none",
+                      color: isActive ? DESIGN_TOKENS.brand[600] : "#475569",
+                      bgcolor: isActive ? DESIGN_TOKENS.brand[50] : "transparent",
+                      border: isActive
+                        ? "1px solid rgba(67, 56, 202, 0.15)"
+                        : "1px solid transparent",
                       "&.Mui-selected": {
-                        bgcolor: DESIGN_TOKENS.brand[600],
-                        color: "#FFFFFF",
+                        bgcolor: DESIGN_TOKENS.brand[50],
+                        color: DESIGN_TOKENS.brand[600],
                         "&:hover": {
-                          bgcolor: DESIGN_TOKENS.brand[700],
+                          bgcolor: DESIGN_TOKENS.brand[100],
                         },
                         "& .MuiListItemIcon-root": {
-                          color: "#FFFFFF",
+                          color: DESIGN_TOKENS.brand[600],
                         },
                       },
                       "&:hover": {
-                        bgcolor: "rgba(255, 255, 255, 0.08)",
-                        color: "#FFFFFF",
+                        bgcolor: DESIGN_TOKENS.surface[100],
+                        color: DESIGN_TOKENS.text.primary,
                         "& .MuiListItemIcon-root": {
-                          color: "#FFFFFF",
+                          color: DESIGN_TOKENS.text.primary,
                         },
                       },
                     }}
@@ -215,7 +228,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                     <ListItemIcon
                       sx={{
                         minWidth: 32,
-                        color: isActive ? "#FFFFFF" : "rgba(255, 255, 255, 0.55)",
+                        color: isActive ? DESIGN_TOKENS.brand[600] : "#64748B",
                       }}
                     >
                       {ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
@@ -240,28 +253,63 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
         ))}
       </Box>
 
-      {/* Footer / Scope info */}
-      <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.08)" }} />
-      <Box sx={{ p: 2, bgcolor: "rgba(0, 0, 0, 0.18)" }}>
-        <Typography
-          variant="caption"
-          sx={{ color: "rgba(255, 255, 255, 0.45)", display: "block", fontFamily: FONT_UI }}
+      {/* Footer / User info */}
+      <Divider sx={{ borderColor: DESIGN_TOKENS.line[200] }} />
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          bgcolor: DESIGN_TOKENS.surface[50],
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            bgcolor: DESIGN_TOKENS.brand[600],
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 600,
+            fontSize: "0.8125rem",
+            flexShrink: 0,
+          }}
         >
-          Logged in as
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600, color: "#FFFFFF", fontFamily: FONT_UI }}
-          noWrap
-        >
-          {user?.firstName} {user?.lastName}
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ color: "rgba(255, 255, 255, 0.6)", fontFamily: FONT_UI }}
-        >
-          {user ? ROLE_LABELS[user.role] || user.role : ""}
-        </Typography>
+          {initials}
+        </Box>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: DESIGN_TOKENS.text.primary,
+              fontSize: "0.8125rem",
+              lineHeight: 1.2,
+              fontFamily: FONT_UI,
+            }}
+            noWrap
+          >
+            {user?.firstName} {user?.lastName}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: DESIGN_TOKENS.text.secondary,
+              fontFamily: FONT_UI,
+              fontSize: "0.75rem",
+              display: "block",
+              lineHeight: 1.2,
+              mt: 0.25,
+            }}
+            noWrap
+          >
+            {user ? ROLE_LABELS[user.role] || user.role : ""}
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
@@ -279,8 +327,9 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            bgcolor: DESIGN_TOKENS.brand[900],
-            borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+            bgcolor: "#FFFFFF",
+            borderRight: "1px solid",
+            borderColor: DESIGN_TOKENS.line[200],
             backgroundImage: "none",
           },
         }}
@@ -298,9 +347,11 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: DRAWER_WIDTH,
-            borderRight: "1px solid rgba(255, 255, 255, 0.08)",
-            bgcolor: DESIGN_TOKENS.brand[900],
+            borderRight: "1px solid",
+            borderColor: DESIGN_TOKENS.line[200],
+            bgcolor: "#FFFFFF",
             backgroundImage: "none",
+            boxShadow: "none",
           },
         }}
         open

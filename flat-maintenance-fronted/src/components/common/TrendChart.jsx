@@ -28,8 +28,17 @@ export const TrendChart = ({
   // Normalize data to SVG coordinates
   const values = data.map((d) => (typeof d === "number" ? d : (d.value ?? 0)));
   const isAllZero = values.length === 0 || values.every((v) => v === 0);
-  const minVal = Math.min(...values, 0);
-  const maxVal = Math.max(...values, 100);
+
+  // Dynamic range calculation for graceful curvature
+  const rawMin = values.length > 0 ? Math.min(...values) : 0;
+  const rawMax = values.length > 0 ? Math.max(...values) : 10;
+  const diff = rawMax - rawMin;
+
+  const minVal =
+    diff === 0
+      ? Math.max(0, rawMin - (rawMin > 0 ? rawMin * 0.2 : 5))
+      : Math.max(0, rawMin - diff * 0.15);
+  const maxVal = diff === 0 ? (rawMax === 0 ? 10 : rawMax * 1.3) : rawMax + diff * 0.15;
   const range = maxVal - minVal || 1;
 
   const width = 400;

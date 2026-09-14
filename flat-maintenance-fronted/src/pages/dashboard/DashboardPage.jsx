@@ -58,22 +58,27 @@ import { DESIGN_TOKENS } from "../../theme/palette.js";
 // =========================================================================
 
 /**
- * Clean Card Container matching Figma tokens:
- * - Pure #FFFFFF background, 1px #E2E8F0 border, 12px border radius
- * - Subdued SaaS elevation, clean header with title and action
+ * Clean Card Container matching modern SaaS standards:
+ * - Pure #FFFFFF background, 1px #E2E8F0 border, 14px border radius
+ * - Subdued elevation, clean header with title and action
  */
 const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} }) => (
   <Paper
     variant="outlined"
     sx={{
       p: 3,
-      borderRadius: "12px",
+      borderRadius: "14px",
       borderColor: DESIGN_TOKENS.line[200],
       backgroundColor: "#FFFFFF",
       boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
       height: "100%",
       display: "flex",
       flexDirection: "column",
+      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+      "&:hover": {
+        boxShadow: "0 6px 18px -4px rgba(15, 23, 42, 0.06)",
+        borderColor: DESIGN_TOKENS.line[300],
+      },
       ...sx,
     }}
   >
@@ -82,7 +87,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        mb: 2,
+        mb: 2.25,
       }}
     >
       <Box sx={{ minWidth: 0, pr: 1.5 }}>
@@ -141,32 +146,36 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
 
 /**
  * Super-clean Empty State inside Cards
- * Uses verbatim specification strings with subtle iconography
+ * Subtle container with pastel icon badge and friendly messaging
  */
 const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null }) => (
   <Box
     sx={{
-      py: 5,
-      px: 2,
+      py: 4,
+      px: 3,
       textAlign: "center",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
+      bgcolor: DESIGN_TOKENS.surface[50],
+      borderRadius: "12px",
+      border: `1px dashed ${DESIGN_TOKENS.line[200]}`,
+      my: 0.5,
     }}
   >
     <Box
       sx={{
         width: 44,
         height: 44,
-        borderRadius: "50%",
-        bgcolor: DESIGN_TOKENS.surface[50],
-        border: "1px solid",
-        borderColor: DESIGN_TOKENS.line[200],
+        borderRadius: "12px",
+        bgcolor: "#FFFFFF",
+        border: `1px solid ${DESIGN_TOKENS.line[200]}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: DESIGN_TOKENS.text.secondary,
+        color: DESIGN_TOKENS.brand[600],
+        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         mb: 1.5,
       }}
     >
@@ -179,11 +188,12 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
     <Typography
       variant="body2"
       sx={{
-        fontWeight: 500,
-        color: DESIGN_TOKENS.text.secondary,
-        fontSize: "0.875rem",
+        fontWeight: 600,
+        color: DESIGN_TOKENS.text.primary,
+        fontSize: "0.9375rem",
         maxWidth: 380,
-        lineHeight: 1.5,
+        lineHeight: 1.4,
+        mb: subtext ? 0.5 : 0,
       }}
     >
       {message}
@@ -192,16 +202,17 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
       <Typography
         variant="caption"
         sx={{
-          color: DESIGN_TOKENS.text.disabled || "#94A3B8",
-          mt: 0.5,
+          color: DESIGN_TOKENS.text.secondary,
+          maxWidth: 360,
           display: "block",
-          fontSize: "0.75rem",
+          fontSize: "0.8125rem",
+          lineHeight: 1.45,
         }}
       >
         {subtext}
       </Typography>
     )}
-    {action && <Box sx={{ mt: 2 }}>{action}</Box>}
+    {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
   </Box>
 );
 
@@ -426,13 +437,30 @@ export const DashboardPage = () => {
   // Security gate quick-entry state
   const [passCodeInput, setPassCodeInput] = useState("");
 
+  // Role-specific plain-language greeting subtitles
+  const roleSubtitles = {
+    [ROLES.SUPER_ADMIN]:
+      "Manage residential complexes, administrative accounts, and platform operations.",
+    [ROLES.BUILDING_ADMIN]:
+      "Monitor flat occupancies, active service work orders, and billing collections.",
+    [ROLES.MANAGER]:
+      "Triage incoming maintenance requests, assign technicians, and track resident arrivals.",
+    [ROLES.ACCOUNTANT]:
+      "Track monthly maintenance fee collections, overdue invoices, and operational expenses.",
+    [ROLES.MAINTENANCE_STAFF]:
+      "View and resolve your assigned work orders and emergency repair requests.",
+    [ROLES.SECURITY_STAFF]:
+      "Verify visitor passes, manage gate entries, and monitor visitors inside the premises.",
+    [ROLES.OWNER]: "View your flat maintenance dues, service work orders, and community notices.",
+    [ROLES.TENANT]: "View your flat maintenance dues, service work orders, and community notices.",
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       {/* Header */}
       <PageHeader
         title={`Good day, ${user?.firstName || "Resident"}`}
-        subtitle={`${ROLE_LABELS[role] || role} • Digital Operations & Lobby`}
-        breadcrumbs={[{ label: "Overview" }]}
+        subtitle={roleSubtitles[role] || "Welcome to your operations overview."}
         action={
           (role === ROLES.OWNER || role === ROLES.TENANT) && (
             <Stack direction="row" spacing={1.5}>
@@ -481,8 +509,10 @@ export const DashboardPage = () => {
               <StatCard
                 value={buildings.length}
                 label="Total Buildings"
-                delta="Active managed properties"
+                delta="Registered residential complexes"
                 icon={<DomainIcon />}
+                iconBg="#EEF2FF"
+                iconColor={DESIGN_TOKENS.brand[600]}
                 isHero={buildings.length > 0}
               />
             </Grid>
@@ -492,6 +522,8 @@ export const DashboardPage = () => {
                 label="Active Administrators"
                 delta="Assigned building operators"
                 icon={<SupervisorAccountIcon />}
+                iconBg="#ECFDF5"
+                iconColor="#059669"
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -500,6 +532,8 @@ export const DashboardPage = () => {
                 label="Platform Residents"
                 delta="Registered owners & tenants"
                 icon={<PeopleIcon />}
+                iconBg="#F5F3FF"
+                iconColor="#7C3AED"
               />
             </Grid>
           </Grid>
@@ -514,6 +548,8 @@ export const DashboardPage = () => {
                 label="Occupancy Rate"
                 delta={`${occupiedFlats} occupied, ${vacantFlats} vacant`}
                 icon={<HomeWorkIcon />}
+                iconBg="#ECFDF5"
+                iconColor="#059669"
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -522,6 +558,8 @@ export const DashboardPage = () => {
                 label="Active Work Orders"
                 delta={`${openRequests.length} awaiting dispatch`}
                 icon={<BuildIcon />}
+                iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
+                iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
                 isHero={openRequests.length > 0}
               />
             </Grid>
@@ -531,6 +569,8 @@ export const DashboardPage = () => {
                 label="This Month's Collection Rate"
                 delta={`${paidInvoices.length} of ${invoices.length} invoices paid`}
                 icon={<AccountBalanceWalletIcon />}
+                iconBg="#EEF2FF"
+                iconColor={DESIGN_TOKENS.brand[600]}
               />
             </Grid>
           </Grid>
@@ -545,6 +585,8 @@ export const DashboardPage = () => {
                 label="Open Work Orders"
                 delta="Tickets currently open"
                 icon={<BuildIcon />}
+                iconBg="#FEF3C7"
+                iconColor="#B45309"
                 isHero={openRequests.length > 0}
               />
             </Grid>
@@ -554,6 +596,8 @@ export const DashboardPage = () => {
                 label="Unassigned Tickets"
                 delta="Requires technician assignment"
                 icon={<AssignmentLateIcon />}
+                iconBg={unassignedRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
+                iconColor={unassignedRequests.length > 0 ? "#DC2626" : "#059669"}
                 isHero={unassignedRequests.length > 0}
               />
             </Grid>
@@ -563,6 +607,8 @@ export const DashboardPage = () => {
                 label="High / Urgent Priority"
                 delta="Requires immediate dispatch"
                 icon={<WarningAmberIcon />}
+                iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#F1F5F9"}
+                iconColor={urgentRequests.length > 0 ? "#DC2626" : "#64748B"}
               />
             </Grid>
           </Grid>
@@ -577,6 +623,8 @@ export const DashboardPage = () => {
                 label="Collection Rate"
                 delta={`${paidInvoices.length} settled this billing period`}
                 icon={<TrendingUpIcon />}
+                iconBg="#ECFDF5"
+                iconColor="#059669"
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -589,6 +637,8 @@ export const DashboardPage = () => {
                     : "Zero overdue dues"
                 }
                 icon={<ReceiptLongIcon />}
+                iconBg={overdueInvoices.length > 0 ? "#FEE2E2" : "#ECFDF5"}
+                iconColor={overdueInvoices.length > 0 ? "#DC2626" : "#059669"}
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -598,6 +648,8 @@ export const DashboardPage = () => {
                 label="Pending Expense Approvals"
                 delta="Awaiting financial review"
                 icon={<PendingActionsIcon />}
+                iconBg="#FEF3C7"
+                iconColor="#B45309"
               />
             </Grid>
           </Grid>
@@ -612,6 +664,8 @@ export const DashboardPage = () => {
                 label="Assigned Work Orders"
                 delta="Prioritized duty queue"
                 icon={<BuildIcon />}
+                iconBg="#EEF2FF"
+                iconColor={DESIGN_TOKENS.brand[600]}
                 isHero={true}
               />
             </Grid>
@@ -621,6 +675,8 @@ export const DashboardPage = () => {
                 label="Emergency / High Urgency"
                 delta="Requires immediate attention"
                 icon={<WarningAmberIcon />}
+                iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
+                iconColor={urgentRequests.length > 0 ? "#DC2626" : "#059669"}
               />
             </Grid>
           </Grid>
@@ -635,6 +691,8 @@ export const DashboardPage = () => {
                 label="Expected Arrivals Today"
                 delta="Pre-approved resident passes"
                 icon={<BadgeIcon />}
+                iconBg="#EEF2FF"
+                iconColor={DESIGN_TOKENS.brand[600]}
                 isHero={true}
               />
             </Grid>
@@ -644,6 +702,8 @@ export const DashboardPage = () => {
                 label="Currently Inside Premises"
                 delta="Active visitor passes"
                 icon={<DoorSlidingIcon />}
+                iconBg="#ECFDF5"
+                iconColor="#059669"
               />
             </Grid>
           </Grid>
@@ -664,6 +724,8 @@ export const DashboardPage = () => {
                     : "All maintenance dues settled"
                 }
                 icon={<ReceiptIcon />}
+                iconBg={overdueInvoices.length > 0 ? "#FEE2E2" : "#ECFDF5"}
+                iconColor={overdueInvoices.length > 0 ? "#DC2626" : "#059669"}
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -673,6 +735,8 @@ export const DashboardPage = () => {
                 label="Open Work Orders"
                 delta="Active service tickets in your flat"
                 icon={<BuildIcon />}
+                iconBg="#EEF2FF"
+                iconColor={DESIGN_TOKENS.brand[600]}
               />
             </Grid>
             {role === ROLES.OWNER && (
@@ -682,6 +746,8 @@ export const DashboardPage = () => {
                   label="Community Bulletins"
                   delta="Official notices from management"
                   icon={<CampaignIcon />}
+                  iconBg="#FEF3C7"
+                  iconColor="#B45309"
                 />
               </Grid>
             )}
@@ -699,7 +765,7 @@ export const DashboardPage = () => {
       {role === ROLES.SUPER_ADMIN && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Left Column: Recently Added Buildings */}
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} md={6}>
             <DashboardCard
               title="Managed Properties"
               subtitle="Residential buildings set up on the platform"
@@ -747,42 +813,53 @@ export const DashboardPage = () => {
             </DashboardCard>
           </Grid>
 
-          {/* Right Column: Platform Growth Chart & Recent Admin Activity */}
-          <Grid item xs={12} lg={5}>
-            <Stack spacing={3}>
-              <TrendChart
-                title="Platform Growth"
-                subtitle="New buildings and resident registrations over time"
-                metric={`${buildings.length} Properties`}
-                color={DESIGN_TOKENS.brand[600]}
-                data={[1, 2, 2, 3, 3, buildings.length || 4]}
-                labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
-              />
+          {/* Right Column: Platform Growth Chart */}
+          <Grid item xs={12} md={6}>
+            <TrendChart
+              title="Platform Growth"
+              subtitle="New buildings and resident registrations over time"
+              metric={`${buildings.length} Properties`}
+              color={DESIGN_TOKENS.brand[600]}
+              data={buildings.length === 0 ? [0, 0, 0, 0, 0, 0] : [1, 2, 2, 3, 3, buildings.length]}
+              labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+              emptyMessage="No properties registered yet"
+            />
+          </Grid>
 
-              <DashboardCard
-                title="Recent Admin Activity"
-                subtitle="Recent changes made by administrators"
-                action="View Logs"
-                actionLink="/audit-logs"
-              >
-                {auditLogs.length === 0 ? (
-                  <DashboardEmptyState message="No activity in this range." />
-                ) : (
-                  <Stack spacing={1}>
-                    {auditLogs.slice(0, 4).map((log) => (
+          {/* Bottom Full-Width Card: Recent Admin Activity */}
+          <Grid item xs={12}>
+            <DashboardCard
+              title="Recent Admin Activity"
+              subtitle="Recent changes made by administrators"
+              action="View Logs"
+              actionLink="/audit-logs"
+            >
+              {auditLogs.length === 0 ? (
+                <DashboardEmptyState
+                  message="No administrative changes recorded yet."
+                  subtext="Building setups, user updates, and permission changes will appear in this audit trail."
+                />
+              ) : (
+                <Grid container spacing={1.5}>
+                  {auditLogs.slice(0, 6).map((log) => (
+                    <Grid item xs={12} sm={6} md={4} key={log._id || log.id}>
                       <Box
-                        key={log._id || log.id}
                         sx={{
-                          p: "10px 12px",
-                          borderRadius: "8px",
+                          p: "12px 14px",
+                          borderRadius: "10px",
                           bgcolor: DESIGN_TOKENS.surface[50],
                           border: "1px solid #F1F5F9",
+                          height: "100%",
                         }}
                       >
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.25 }}>
                           <Typography
                             variant="subtitle2"
-                            sx={{ fontWeight: 600, fontSize: "0.8125rem" }}
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: "0.8125rem",
+                              color: DESIGN_TOKENS.text.primary,
+                            }}
                           >
                             {log.action || "SYSTEM_CHANGE"}
                           </Typography>
@@ -801,11 +878,11 @@ export const DashboardPage = () => {
                           {log.ipAddress || "Internal"})
                         </Typography>
                       </Box>
-                    ))}
-                  </Stack>
-                )}
-              </DashboardCard>
-            </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </DashboardCard>
           </Grid>
         </Grid>
       )}
@@ -816,7 +893,7 @@ export const DashboardPage = () => {
       {role === ROLES.BUILDING_ADMIN && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Left Column: Work Orders Needing Attention */}
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} md={7}>
             <DashboardCard
               title="Work Orders Needing Attention"
               subtitle="Requests waiting to be reviewed or assigned"
@@ -873,35 +950,37 @@ export const DashboardPage = () => {
             </DashboardCard>
           </Grid>
 
-          {/* Right Column: Collections Trend & Latest Notices */}
-          <Grid item xs={12} lg={5}>
-            <Stack spacing={3}>
-              <TrendChart
-                title="Collections Trend"
-                subtitle="Percentage of billed fees collected this month"
-                metric={`${collectionRate}% Paid`}
-                color={DESIGN_TOKENS.brand[600]}
-                data={[68, 72, 79, 82, 86, collectionRate]}
-                labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
-                emptyMessage="No payments recorded yet this period"
-              />
+          {/* Right Column: Collections Trend */}
+          <Grid item xs={12} md={5}>
+            <TrendChart
+              title="Collections Trend"
+              subtitle="Percentage of billed fees collected this month"
+              metric={`${collectionRate}% Paid`}
+              color={DESIGN_TOKENS.brand[600]}
+              data={[68, 72, 79, 82, 86, collectionRate]}
+              labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+              emptyMessage="No payments recorded yet this period"
+            />
+          </Grid>
 
-              <DashboardCard
-                title="Latest Notices"
-                subtitle="Published announcements"
-                action="All Notices"
-                actionLink="/notices"
-              >
-                {notices.length === 0 ? (
-                  /* VERBATIM PROMPT EMPTY STATE */
-                  <DashboardEmptyState message="No notices published yet." />
-                ) : (
-                  <Stack spacing={1.25}>
-                    {notices.slice(0, 2).map((notice) => (
+          {/* Bottom Full-Width Card: Latest Notices */}
+          <Grid item xs={12}>
+            <DashboardCard
+              title="Latest Notices"
+              subtitle="Published announcements"
+              action="All Notices"
+              actionLink="/notices"
+            >
+              {notices.length === 0 ? (
+                /* VERBATIM PROMPT EMPTY STATE */
+                <DashboardEmptyState message="No notices published yet." />
+              ) : (
+                <Grid container spacing={2}>
+                  {notices.slice(0, 4).map((notice) => (
+                    <Grid item xs={12} sm={6} key={notice._id}>
                       <Box
-                        key={notice._id}
                         sx={{
-                          p: "12px 14px",
+                          p: "14px 16px",
                           borderRadius: "10px",
                           bgcolor:
                             notice.priority === "URGENT_EMERGENCY"
@@ -910,6 +989,7 @@ export const DashboardPage = () => {
                           border: "1px solid",
                           borderColor:
                             notice.priority === "URGENT_EMERGENCY" ? "#FDE68A" : "#F1F5F9",
+                          height: "100%",
                         }}
                       >
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
@@ -948,11 +1028,11 @@ export const DashboardPage = () => {
                           {notice.content}
                         </Typography>
                       </Box>
-                    ))}
-                  </Stack>
-                )}
-              </DashboardCard>
-            </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </DashboardCard>
           </Grid>
         </Grid>
       )}
@@ -963,7 +1043,7 @@ export const DashboardPage = () => {
       {role === ROLES.MANAGER && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Primary Triage Queue Card */}
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} md={7}>
             <DashboardCard
               title="Triage & Assignment Queue"
               subtitle="Select any ticket to assign a technician"
@@ -1009,79 +1089,81 @@ export const DashboardPage = () => {
             </DashboardCard>
           </Grid>
 
-          {/* Side Cards: Staff Availability & Today's Move-ins/Move-outs */}
-          <Grid item xs={12} lg={5}>
-            <Stack spacing={3}>
-              {/* Staff Availability Card */}
-              <DashboardCard
-                title="Staff Availability"
-                subtitle="Technicians currently on shift and ready for jobs"
-                action="Manage Staff"
-                actionLink="/staff"
-              >
-                <Stack spacing={1}>
-                  {(staff.length > 0
-                    ? staff.slice(0, 3)
-                    : [
-                        { name: "Electrical Specialist", shift: "Morning", status: "AVAILABLE" },
-                        { name: "Plumbing Technician", shift: "General", status: "AVAILABLE" },
-                      ]
-                  ).map((s, idx) => (
-                    <Box
-                      key={s._id || idx}
-                      sx={{
-                        p: "10px 12px",
-                        borderRadius: "8px",
-                        bgcolor: DESIGN_TOKENS.surface[50],
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {s.name || s.trade || "Technician"}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                          {s.shift || "Active"} shift, {s.trade || "General"}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label="Available"
-                        size="small"
-                        sx={{
-                          bgcolor: "#ECFDF5",
-                          color: "#047857",
-                          fontWeight: 600,
-                          fontSize: "0.6875rem",
-                        }}
-                      />
+          {/* Right Column: Staff Availability */}
+          <Grid item xs={12} md={5}>
+            <DashboardCard
+              title="Staff Availability"
+              subtitle="Technicians currently on shift and ready for jobs"
+              action="Manage Staff"
+              actionLink="/staff"
+            >
+              <Stack spacing={1}>
+                {(staff.length > 0
+                  ? staff.slice(0, 4)
+                  : [
+                      { name: "Electrical Specialist", shift: "Morning", status: "AVAILABLE" },
+                      { name: "Plumbing Technician", shift: "General", status: "AVAILABLE" },
+                    ]
+                ).map((s, idx) => (
+                  <Box
+                    key={s._id || idx}
+                    sx={{
+                      p: "10px 12px",
+                      borderRadius: "8px",
+                      bgcolor: DESIGN_TOKENS.surface[50],
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {s.name || s.trade || "Technician"}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
+                        {s.shift || "Active"} shift, {s.trade || "General"}
+                      </Typography>
                     </Box>
-                  ))}
-                </Stack>
-              </DashboardCard>
+                    <Chip
+                      label="Available"
+                      size="small"
+                      sx={{
+                        bgcolor: "#ECFDF5",
+                        color: "#047857",
+                        fontWeight: 600,
+                        fontSize: "0.6875rem",
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Stack>
+            </DashboardCard>
+          </Grid>
 
-              {/* Move-ins & Move-outs Card */}
-              <DashboardCard
-                title="Today's Move-ins / Move-outs"
-                subtitle="Scheduled resident arrivals and departures"
-                action="Tenant Roster"
-                actionLink="/tenants"
-              >
-                {tenants.length === 0 ? (
-                  <DashboardEmptyState message="No resident transitions scheduled for today." />
-                ) : (
-                  <Stack spacing={1}>
-                    {tenants.slice(0, 2).map((t) => (
+          {/* Bottom Full-Width Card: Move-ins & Move-outs */}
+          <Grid item xs={12}>
+            <DashboardCard
+              title="Today's Move-ins / Move-outs"
+              subtitle="Scheduled resident arrivals and departures"
+              action="Tenant Roster"
+              actionLink="/tenants"
+            >
+              {tenants.length === 0 ? (
+                <DashboardEmptyState message="No resident transitions scheduled for today." />
+              ) : (
+                <Grid container spacing={2}>
+                  {tenants.slice(0, 4).map((t) => (
+                    <Grid item xs={12} sm={6} key={t._id || t.id}>
                       <Box
-                        key={t._id || t.id}
                         sx={{
-                          p: "10px 12px",
-                          borderRadius: "8px",
+                          p: "12px 14px",
+                          borderRadius: "10px",
                           bgcolor: DESIGN_TOKENS.surface[50],
+                          border: "1px solid #F1F5F9",
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
+                          height: "100%",
                         }}
                       >
                         <Box>
@@ -1105,11 +1187,11 @@ export const DashboardPage = () => {
                           }}
                         />
                       </Box>
-                    ))}
-                  </Stack>
-                )}
-              </DashboardCard>
-            </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </DashboardCard>
           </Grid>
         </Grid>
       )}

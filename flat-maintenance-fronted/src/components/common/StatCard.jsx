@@ -20,10 +20,16 @@ export const StatCard = ({
   label,
   delta,
   icon = null,
+  iconBg = null,
+  iconColor = null,
   isHero = false,
   action = null,
   sx = {},
 }) => {
+  const resolvedBg = iconBg || (isHero ? "rgba(67, 56, 202, 0.08)" : "#F1F5F9");
+  const resolvedColor =
+    iconColor || (isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.secondary);
+
   return (
     <Card
       sx={{
@@ -33,16 +39,17 @@ export const StatCard = ({
         justifyContent: "space-between",
         border: "1px solid",
         borderColor: isHero ? "rgba(67, 56, 202, 0.25)" : DESIGN_TOKENS.line[200],
-        borderRadius: "12px",
+        borderRadius: "14px",
         backgroundColor: "#FFFFFF",
         boxShadow: isHero
-          ? "0 1px 3px rgba(67, 56, 202, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04)"
+          ? "0 1px 3px rgba(67, 56, 202, 0.08), 0 4px 12px rgba(67, 56, 202, 0.04)"
           : "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[300],
-          boxShadow: "0 4px 14px -2px rgba(15, 23, 42, 0.06)",
-          transform: "translateY(-1px)",
+          borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.brand[300],
+          boxShadow:
+            "0 10px 25px -5px rgba(15, 23, 42, 0.07), 0 8px 10px -6px rgba(15, 23, 42, 0.03)",
+          transform: "translateY(-2px)",
         },
         ...sx,
       }}
@@ -53,7 +60,7 @@ export const StatCard = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            mb: 1.25,
+            mb: 1.5,
           }}
         >
           <Box sx={{ minWidth: 0, pr: 1.5 }}>
@@ -65,7 +72,7 @@ export const StatCard = ({
                 color: DESIGN_TOKENS.text.secondary,
                 fontSize: "0.8125rem", // 13px per spec
                 lineHeight: 1.3,
-                mb: 0.5,
+                mb: 0.75,
               }}
             >
               {label}
@@ -73,8 +80,8 @@ export const StatCard = ({
             <Typography
               sx={{
                 fontFamily: FONT_UI,
-                fontSize: "1.75rem", // 28px per spec
-                lineHeight: 1.2,
+                fontSize: "1.875rem", // 30px bold numeral
+                lineHeight: 1.15,
                 fontWeight: 700,
                 color: DESIGN_TOKENS.text.primary,
                 letterSpacing: "-0.03em",
@@ -87,19 +94,22 @@ export const StatCard = ({
           {icon ? (
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "10px",
-                bgcolor: isHero ? "rgba(67, 56, 202, 0.08)" : DESIGN_TOKENS.surface[100],
-                color: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.secondary,
+                width: 44,
+                height: 44,
+                borderRadius: "12px",
+                bgcolor: resolvedBg,
+                color: resolvedColor,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                transition: "all 0.15s ease",
+                transition: "transform 0.2s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                },
               }}
             >
-              {React.cloneElement(icon, { sx: { fontSize: 20, ...icon.props?.sx } })}
+              {React.cloneElement(icon, { sx: { fontSize: 22, ...icon.props?.sx } })}
             </Box>
           ) : action ? (
             <Box>{action}</Box>
