@@ -4,7 +4,14 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const documentsApi = {
   getDocuments: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.DOCUMENTS.BASE, { params });
+    const allowedKeys = ["buildingId", "documentType", "visibility", "flatId"];
+    const cleanParams = Object.entries(params).reduce((acc, [key, val]) => {
+      if (allowedKeys.includes(key) && val !== undefined && val !== null && val !== "") {
+        acc[key] = val;
+      }
+      return acc;
+    }, {});
+    return await apiClient.get(API_ENDPOINTS.DOCUMENTS.BASE, { params: cleanParams });
   },
 
   uploadDocument: async (formData) => {
