@@ -12,61 +12,61 @@ export const SEMANTIC_CATEGORIES = Object.freeze({
 });
 
 /**
- * Semantic Color Pairs for Light & Dark modes
+ * Semantic Color Pairs for Light & Dark modes (Appendix §A.1)
  */
 export const SEMANTIC_STYLES = Object.freeze({
   light: {
     [SEMANTIC_CATEGORIES.NEUTRAL_PENDING]: {
-      color: "#8A8578",
-      backgroundColor: "#EFEBE0",
-      border: "1px solid rgba(138, 133, 120, 0.2)",
+      color: "#64748B", // text.secondary
+      backgroundColor: "#F1F5F9",
+      border: "1px solid #E2E8F0",
     },
     [SEMANTIC_CATEGORIES.IN_PROGRESS_ACTIVE]: {
-      color: "#2E5C8A", // info.600
-      backgroundColor: "#E7EEF6",
-      border: "1px solid rgba(46, 92, 138, 0.2)",
+      color: "#4338CA", // brand.600
+      backgroundColor: "#EEF2FF", // soft brand.50/100
+      border: "1px solid #C7D2FE",
     },
     [SEMANTIC_CATEGORIES.RESOLVED_POSITIVE]: {
-      color: "#2E7D5B", // evergreen.600
-      backgroundColor: "#E4EFE8",
-      border: "1px solid rgba(46, 125, 91, 0.2)",
+      color: "#15803D", // accent.green dark
+      backgroundColor: "#DCFCE7",
+      border: "1px solid #BBF7D0",
     },
     [SEMANTIC_CATEGORIES.ATTENTION_OVERDUE]: {
-      color: "#B7791F", // warning.600
-      backgroundColor: "#F6EEDF",
-      border: "1px solid rgba(183, 121, 31, 0.2)",
+      color: "#B45309", // accent.amber dark
+      backgroundColor: "#FEF3C7",
+      border: "1px solid #FDE68A",
     },
     [SEMANTIC_CATEGORIES.REJECTED_NEGATIVE]: {
-      color: "#B3261E", // danger.600
-      backgroundColor: "#F6E7E5",
-      border: "1px solid rgba(179, 38, 30, 0.2)",
+      color: "#DC2626", // danger.600
+      backgroundColor: "#FEE2E2",
+      border: "1px solid #FECACA",
     },
   },
   dark: {
     [SEMANTIC_CATEGORIES.NEUTRAL_PENDING]: {
-      color: "#D6D1C4",
-      backgroundColor: "#2E2C26",
-      border: "1px solid rgba(214, 209, 196, 0.2)",
+      color: "#94A3B8",
+      backgroundColor: "#1E293B",
+      border: "1px solid #334155",
     },
     [SEMANTIC_CATEGORIES.IN_PROGRESS_ACTIVE]: {
-      color: "#8AB4F8",
-      backgroundColor: "#172A42",
-      border: "1px solid rgba(138, 180, 248, 0.2)",
+      color: "#A5B4FC",
+      backgroundColor: "#1E1B4B",
+      border: "1px solid #3730A3",
     },
     [SEMANTIC_CATEGORIES.RESOLVED_POSITIVE]: {
-      color: "#81C995",
-      backgroundColor: "#133526",
-      border: "1px solid rgba(129, 201, 149, 0.2)",
+      color: "#86EFAC",
+      backgroundColor: "#064E3B",
+      border: "1px solid #059669",
     },
     [SEMANTIC_CATEGORIES.ATTENTION_OVERDUE]: {
-      color: "#FDD663",
-      backgroundColor: "#423214",
-      border: "1px solid rgba(253, 214, 99, 0.2)",
+      color: "#FDE047",
+      backgroundColor: "#78350F",
+      border: "1px solid #B45309",
     },
     [SEMANTIC_CATEGORIES.REJECTED_NEGATIVE]: {
-      color: "#F28B82",
-      backgroundColor: "#421815",
-      border: "1px solid rgba(242, 139, 130, 0.2)",
+      color: "#FCA5A5",
+      backgroundColor: "#7F1D1D",
+      border: "1px solid #DC2626",
     },
   },
 });

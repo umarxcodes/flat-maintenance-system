@@ -1,91 +1,113 @@
 // =====================  THEME COLOR PALETTES (APPENDIX §A.1)  ===============
 
 /**
- * Exact Design System Tokens from Appendix §A.1
+ * Exact Design System Tokens from Appendix §A.1 (Figma Reference)
  */
 export const DESIGN_TOKENS = Object.freeze({
-  ink: {
-    900: "#14213D", // Deep indigo-navy: Sidebar, headers, primary buttons, primary text
-    700: "#28345A", // Hover/active state of ink surfaces
+  brand: {
+    900: "#1E1B4B", // Deep indigo/navy — sidebar background, brand banner
+    800: "#2E2A72",
+    700: "#3730A3",
+    600: "#4338CA", // Primary interactive indigo — buttons, links, active nav item
+    500: "#6366F1",
+    100: "#E0E7FF", // Soft indigo tint — selected/hover nav background, badge background
+    50: "#EEF2FF",
   },
-  evergreen: {
-    600: "#2E7D5B", // Secondary brand color: community/growth, resolved/paid/active, active nav
-    400: "#48A87E", // Dark mode tint
-  },
-  brass: {
-    500: "#C08A3E", // Tertiary accent: premium highlight only (max 1 per screen)
-    400: "#E2AC5E", // Dark mode tint
-  },
-  paper: {
-    50: "#F6F4EF", // App background: warm off-white
-    0: "#FFFFFF", // Card/surface background
+  surface: {
+    0: "#FFFFFF", // Primary dashboard canvas and card background
+    50: "#F8FAFC", // App shell background behind cards, subtle section dividers
+    100: "#F1F5F9",
   },
   line: {
-    200: "#E4E0D6", // Hairline borders and dividers: warm-toned
+    200: "#E2E8F0", // Card borders, table dividers, input borders — cool neutral grey
+    300: "#CBD5E1",
   },
   text: {
-    primary: "#1B1F27",
-    secondary: "#5B5F6B",
+    primary: "#0F172A", // Primary body/heading text on light surfaces
+    secondary: "#64748B", // Secondary/meta text, table sub-labels, placeholder
+    disabled: "#94A3B8",
+    inverse: "#FFFFFF",
   },
-  semantic: {
-    danger: "#B3261E",
-    warning: "#B7791F",
-    info: "#2E5C8A",
+  accent: {
+    blue: "#3B82F6", // Primary chart/trend-line color and info highlights
+    green: "#22C55E", // Positive/success semantic — paid, resolved, active
+    amber: "#F59E0B", // Warning/attention semantic
+  },
+  danger: {
+    600: "#DC2626", // Errors, destructive actions, rejected/overdue
+    50: "#FEE2E2",
+  },
+  // Backward compatibility aliases for existing references
+  ink: {
+    900: "#1E1B4B",
+    700: "#3730A3",
+  },
+  evergreen: {
+    600: "#4338CA",
+    400: "#6366F1",
+  },
+  brass: {
+    500: "#F59E0B",
+    400: "#FBBF24",
+  },
+  paper: {
+    50: "#F8FAFC",
+    0: "#FFFFFF",
   },
 });
 
 export const lightPalette = {
   mode: "light",
   primary: {
-    main: DESIGN_TOKENS.ink[900], // #14213D
-    light: DESIGN_TOKENS.ink[700], // #28345A
-    dark: "#0C1527",
+    main: DESIGN_TOKENS.brand[600], // #4338CA (Clean interactive indigo)
+    light: DESIGN_TOKENS.brand[500], // #6366F1
+    dark: DESIGN_TOKENS.brand[900], // #1E1B4B
     contrastText: "#FFFFFF",
   },
   secondary: {
-    main: DESIGN_TOKENS.evergreen[600], // #2E7D5B
-    light: "#3B946E",
-    dark: "#1E583F",
+    main: DESIGN_TOKENS.brand[900], // #1E1B4B
+    light: DESIGN_TOKENS.brand[700],
+    dark: "#131033",
     contrastText: "#FFFFFF",
   },
   accent: {
-    main: DESIGN_TOKENS.brass[500], // #C08A3E
-    light: "#D8A256",
-    dark: "#9E6D29",
+    main: DESIGN_TOKENS.accent.blue, // #3B82F6
+    light: "#60A5FA",
+    dark: "#1D4ED8",
     contrastText: "#FFFFFF",
   },
   background: {
-    default: DESIGN_TOKENS.paper[50], // #F6F4EF - warm off-white
-    paper: DESIGN_TOKENS.paper[0], // #FFFFFF - card surface
+    default: DESIGN_TOKENS.surface[50], // #F8FAFC - crisp light app canvas
+    paper: DESIGN_TOKENS.surface[0], // #FFFFFF - crisp white card surface
   },
   text: {
-    primary: DESIGN_TOKENS.text.primary, // #1B1F27
-    secondary: DESIGN_TOKENS.text.secondary, // #5B5F6B
-    disabled: "#8C919D",
+    primary: DESIGN_TOKENS.text.primary, // #0F172A
+    secondary: DESIGN_TOKENS.text.secondary, // #64748B
+    disabled: DESIGN_TOKENS.text.disabled,
   },
-  divider: DESIGN_TOKENS.line[200], // #E4E0D6 - warm hairline
+  divider: DESIGN_TOKENS.line[200], // #E2E8F0 - crisp modern line
   success: {
-    main: DESIGN_TOKENS.evergreen[600], // #2E7D5B
-    light: "#E4EFE8",
-    dark: "#1E583F",
+    main: DESIGN_TOKENS.accent.green, // #22C55E
+    light: "#DCFCE7",
+    dark: "#15803D",
     contrastText: "#FFFFFF",
   },
   warning: {
-    main: DESIGN_TOKENS.semantic.warning, // #B7791F
-    light: "#F6EEDF",
-    dark: "#8C5810",
+    main: DESIGN_TOKENS.accent.amber, // #F59E0B
+    light: "#FEF3C7",
+    dark: "#B45309",
     contrastText: "#FFFFFF",
   },
   error: {
-    main: DESIGN_TOKENS.semantic.danger, // #B3261E
-    light: "#F6E7E5",
-    dark: "#8B1B15",
+    main: DESIGN_TOKENS.danger[600], // #DC2626
+    light: "#FEE2E2",
+    dark: "#991B1B",
     contrastText: "#FFFFFF",
   },
   info: {
-    main: DESIGN_TOKENS.semantic.info, // #2E5C8A
-    light: "#E7EEF6",
-    dark: "#1B3B5C",
+    main: DESIGN_TOKENS.accent.blue, // #3B82F6
+    light: "#DBEAFE",
+    dark: "#1D4ED8",
     contrastText: "#FFFFFF",
   },
 };

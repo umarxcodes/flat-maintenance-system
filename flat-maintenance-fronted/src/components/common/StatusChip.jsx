@@ -35,7 +35,7 @@ export const StatusChip = ({ status, size = "small" }) => {
         fontWeight: 600,
         fontSize: "0.75rem",
         height: size === "small" ? 24 : 28,
-        borderRadius: "4px", // 4px on small inline chips per Appendix §A.3
+        borderRadius: "999px", // 999px (fully rounded) on status pills/badges per Appendix §A.3
         color: style.color,
         backgroundColor: style.backgroundColor,
         border: style.border,

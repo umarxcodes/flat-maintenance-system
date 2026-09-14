@@ -57,9 +57,10 @@ export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null })
             variant="h1"
             component="h1"
             sx={{
-              fontSize: { xs: "1.625rem", sm: "2rem" },
-              lineHeight: { xs: 1.25, sm: 1.25 },
-              fontWeight: 500,
+              fontSize: { xs: "1.5rem", sm: "1.75rem" },
+              lineHeight: { xs: 1.25, sm: 1.3 },
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
               color: "text.primary",
             }}
           >

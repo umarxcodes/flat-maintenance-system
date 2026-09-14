@@ -58,8 +58,12 @@ export const DataTable = ({
                   align={column.align || "left"}
                   sx={{
                     minWidth: column.minWidth,
-                    bgcolor: "background.paper",
-                    fontWeight: 700,
+                    bgcolor: "#F8FAFC",
+                    color: "text.secondary",
+                    fontWeight: 600,
+                    fontSize: "0.8125rem",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                   }}
                 >
                   {column.label}

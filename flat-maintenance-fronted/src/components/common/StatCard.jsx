@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { FONT_DISPLAY, FONT_UI } from "../../theme/typography.js";
+import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 /**
@@ -23,13 +23,16 @@ export const StatCard = ({ value, label, delta, isHero = false, action = null, s
         flexDirection: "column",
         justifyContent: "space-between",
         border: "1px solid",
-        borderColor: isHero ? DESIGN_TOKENS.brass[500] : "divider",
+        borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200],
+        borderRadius: "12px",
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "background.paper",
-        transition: "border-color 0.15s ease",
+        backgroundColor: "#FFFFFF",
+        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+        transition: "all 0.15s ease",
         "&:hover": {
-          borderColor: isHero ? DESIGN_TOKENS.brass[500] : "text.secondary",
+          borderColor: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[300],
+          boxShadow: "0 4px 12px rgba(15, 23, 42, 0.08)",
         },
         ...sx,
       }}
@@ -42,22 +45,27 @@ export const StatCard = ({ value, label, delta, isHero = false, action = null, s
             left: 0,
             right: 0,
             height: 3,
-            backgroundColor: DESIGN_TOKENS.brass[500],
+            backgroundColor: DESIGN_TOKENS.brand[600],
           }}
         />
       )}
 
-      <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
+      <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
         <Box
-          sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 0.5,
+          }}
         >
           <Typography
             sx={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: { xs: "2rem", sm: "2.5rem" },
-              lineHeight: 1.1,
-              fontWeight: 500,
-              color: isHero ? DESIGN_TOKENS.brass[500] : "text.primary",
+              fontFamily: FONT_UI,
+              fontSize: { xs: "1.75rem", sm: "2rem" },
+              lineHeight: 1.15,
+              fontWeight: 700,
+              color: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.primary,
               letterSpacing: "-0.02em",
             }}
           >

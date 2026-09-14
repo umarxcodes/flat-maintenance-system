@@ -1,4 +1,4 @@
-// =====================  LOGIN PAGE  ===========================
+// =====================  LOGIN PAGE (SUPER CLEAN FIGMA SPEC)  ===========================
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -10,78 +10,84 @@ import Link from "@mui/material/Link";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
-import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import Tooltip from "@mui/material/Tooltip";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemText from "@mui/material/ListItemText";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import BoltIcon from "@mui/icons-material/Bolt";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLoginMutation } from "../../features/auth/hooks/use-auth-mutations.js";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email"),
   password: z.string().min(1, "Password is required"),
 });
 
-const DEMO_ACCOUNTS = [
+const DEMO_ROLES = [
   {
-    label: "Super Admin",
+    role: "Super Admin",
     email: "muhammadumar.codes@gmail.com",
     password: "umarkhan",
-    color: "#7C3AED",
+    description: "System-wide administrative authority",
   },
   {
-    label: "Bldg Admin",
+    role: "Building Admin",
     email: "admin.greenwood@society.local",
     password: "Password123!",
-    color: "#1D4ED8",
+    description: "Society & building manager",
   },
   {
-    label: "Manager",
+    role: "Manager",
     email: "manager.sarah@society.local",
     password: "Password123!",
-    color: "#0369A1",
+    description: "Operations & triage management",
   },
   {
-    label: "Accountant",
+    role: "Accountant",
     email: "accountant.dave@society.local",
     password: "Password123!",
-    color: "#047857",
+    description: "Invoicing, payments & expenses",
   },
   {
-    label: "Maintenance",
+    role: "Maintenance Staff",
     email: "tech.carlos@society.local",
     password: "Password123!",
-    color: "#B45309",
+    description: "Assigned tasks & work orders",
   },
   {
-    label: "Security",
+    role: "Security Staff",
     email: "guard.ahmed@society.local",
     password: "Password123!",
-    color: "#7C2D12",
+    description: "Gate terminal & visitor check-in",
   },
   {
-    label: "Owner",
+    role: "Owner",
     email: "owner.elena@society.local",
     password: "Password123!",
-    color: "#9D174D",
+    description: "Property owner portal & dues",
   },
   {
-    label: "Tenant",
+    role: "Tenant",
     email: "tenant.marcus@society.local",
     password: "Password123!",
-    color: "#065F46",
+    description: "Resident portal & maintenance requests",
   },
 ];
 
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [demoMenuAnchor, setDemoMenuAnchor] = useState(null);
+  const [selectedDemoRole, setSelectedDemoRole] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
@@ -101,9 +107,11 @@ export const LoginPage = () => {
 
   const loginMutation = useLoginMutation();
 
-  const fillDemo = (account) => {
+  const handleSelectDemo = (account) => {
     setValue("email", account.email, { shouldValidate: true });
     setValue("password", account.password, { shouldValidate: true });
+    setSelectedDemoRole(account.role);
+    setDemoMenuAnchor(null);
   };
 
   const onSubmit = (values) => {
@@ -116,85 +124,39 @@ export const LoginPage = () => {
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Box sx={{ mb: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 3.5 }}>
         <Typography
           variant="h2"
           sx={{
-            fontFamily: "Fraunces, serif",
-            fontSize: "1.375rem",
-            fontWeight: 500,
-            mb: 0.5,
+            fontWeight: 700,
+            fontSize: "1.5rem",
+            color: DESIGN_TOKENS.text.primary,
+            letterSpacing: "-0.02em",
+            mb: 0.75,
           }}
         >
-          Resident &amp; Staff Sign In
+          Welcome back
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Enter your registered credentials to access your portal
-        </Typography>
-      </Box>
-
-      {/* Quick-fill Demo Credentials */}
-      <Box
-        sx={{
-          mb: 2.5,
-          p: 1.5,
-          borderRadius: "10px",
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "grey.50",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.25 }}>
-          <BoltIcon sx={{ fontSize: 14, color: "warning.main" }} />
-          <Typography variant="caption" fontWeight={600} color="text.secondary" letterSpacing={0.5}>
-            QUICK DEMO LOGIN
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-          {DEMO_ACCOUNTS.map((account) => (
-            <Tooltip key={account.email} title={account.email} placement="top" arrow>
-              <Chip
-                label={account.label}
-                size="small"
-                onClick={() => fillDemo(account)}
-                sx={{
-                  fontWeight: 600,
-                  fontSize: "0.7rem",
-                  cursor: "pointer",
-                  color: account.color,
-                  borderColor: account.color,
-                  bgcolor: `${account.color}12`,
-                  "&:hover": {
-                    bgcolor: `${account.color}22`,
-                  },
-                }}
-                variant="outlined"
-              />
-            </Tooltip>
-          ))}
-        </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-          Click any role chip to auto-fill credentials, then press Sign In.
+        <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary }}>
+          Enter your credentials to access your society workspace
         </Typography>
       </Box>
 
-      <Divider sx={{ mb: 2.5 }}>
-        <Typography variant="caption" color="text.secondary">
-          or enter manually
-        </Typography>
-      </Divider>
-
+      {/* Backend / Network Error */}
       {loginMutation.isError && (
-        <Alert severity="error" sx={{ mb: 2.5 }}>
-          {loginMutation.error?.message || "Invalid email or password."}
+        <Alert severity="error" sx={{ mb: 3, borderRadius: "8px" }}>
+          {loginMutation.error?.message || "Invalid email or password. Please try again."}
         </Alert>
       )}
 
+      {/* Form Fields */}
       <Stack spacing={2.5}>
         <TextField
-          label="Email Address"
+          label="Email address"
           fullWidth
           autoComplete="email"
+          placeholder="name@society.local"
           error={Boolean(errors.email)}
           helperText={errors.email?.message}
           {...register("email")}
@@ -202,7 +164,7 @@ export const LoginPage = () => {
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailOutlinedIcon fontSize="small" color="action" />
+                  <EmailOutlinedIcon sx={{ fontSize: 20, color: "text.secondary" }} />
                 </InputAdornment>
               ),
             },
@@ -214,6 +176,7 @@ export const LoginPage = () => {
           type={showPassword ? "text" : "password"}
           fullWidth
           autoComplete="current-password"
+          placeholder="••••••••"
           error={Boolean(errors.password)}
           helperText={errors.password?.message}
           {...register("password")}
@@ -221,7 +184,7 @@ export const LoginPage = () => {
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockOutlinedIcon fontSize="small" color="action" />
+                  <LockOutlinedIcon sx={{ fontSize: 20, color: "text.secondary" }} />
                 </InputAdornment>
               ),
               endAdornment: (
@@ -233,9 +196,9 @@ export const LoginPage = () => {
                     size="small"
                   >
                     {showPassword ? (
-                      <VisibilityOff fontSize="small" />
+                      <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
                     ) : (
-                      <Visibility fontSize="small" />
+                      <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
                     )}
                   </IconButton>
                 </InputAdornment>
@@ -248,11 +211,15 @@ export const LoginPage = () => {
           <Link
             component={RouterLink}
             to="/forgot-password"
-            variant="caption"
-            color="primary"
-            underline="hover"
+            variant="body2"
+            sx={{
+              color: DESIGN_TOKENS.brand[600],
+              fontWeight: 500,
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
+            }}
           >
-            Forgot your password?
+            Forgot password?
           </Link>
         </Box>
 
@@ -265,11 +232,109 @@ export const LoginPage = () => {
           startIcon={
             loginMutation.isPending ? <CircularProgress size={18} color="inherit" /> : null
           }
-          sx={{ py: 1.25, fontWeight: 700 }}
+          sx={{
+            py: 1.3,
+            fontSize: "0.9375rem",
+            fontWeight: 600,
+            borderRadius: "8px",
+            bgcolor: DESIGN_TOKENS.brand[600],
+            "&:hover": {
+              bgcolor: DESIGN_TOKENS.brand[700],
+            },
+          }}
         >
-          {loginMutation.isPending ? "Signing in..." : "Sign in to digital lobby"}
+          {loginMutation.isPending ? "Signing in..." : "Sign In"}
         </Button>
       </Stack>
+
+      {/* Super Clean Demo Switcher at Bottom */}
+      <Divider sx={{ my: 3 }}>
+        <Typography variant="caption" sx={{ color: "text.secondary", px: 1, fontWeight: 500 }}>
+          Quick Evaluation
+        </Typography>
+      </Divider>
+
+      <Box sx={{ textAlign: "center" }}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={(e) => setDemoMenuAnchor(e.currentTarget)}
+          endIcon={<KeyboardArrowDownRoundedIcon />}
+          startIcon={<BoltRoundedIcon sx={{ color: DESIGN_TOKENS.brand[600] }} />}
+          sx={{
+            borderColor: DESIGN_TOKENS.line[200],
+            color: DESIGN_TOKENS.text.primary,
+            bgcolor: DESIGN_TOKENS.surface[50],
+            py: 0.8,
+            px: 2,
+            fontSize: "0.8125rem",
+            fontWeight: 500,
+            "&:hover": {
+              borderColor: DESIGN_TOKENS.brand[600],
+              bgcolor: DESIGN_TOKENS.brand[50],
+            },
+          }}
+        >
+          {selectedDemoRole ? `Autofilled: ${selectedDemoRole}` : "Select Demo Account to Test"}
+        </Button>
+
+        <Menu
+          anchorEl={demoMenuAnchor}
+          open={Boolean(demoMenuAnchor)}
+          onClose={() => setDemoMenuAnchor(null)}
+          transformOrigin={{ horizontal: "center", vertical: "top" }}
+          anchorOrigin={{ horizontal: "center", vertical: "bottom" }}
+          slotProps={{
+            paper: {
+              sx: {
+                width: 320,
+                maxHeight: 380,
+                mt: 1,
+                borderRadius: "12px",
+                border: "1px solid",
+                borderColor: DESIGN_TOKENS.line[200],
+                boxShadow: "0 8px 24px rgba(15, 23, 42, 0.1)",
+              },
+            },
+          }}
+        >
+          <Box sx={{ px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
+            <Typography variant="caption" fontWeight={600} color="text.secondary">
+              ONE-CLICK TEST ACCOUNTS
+            </Typography>
+          </Box>
+          {DEMO_ROLES.map((account) => (
+            <MenuItem
+              key={account.email}
+              onClick={() => handleSelectDemo(account)}
+              selected={selectedDemoRole === account.role}
+              sx={{
+                py: 1.25,
+                px: 2,
+                gap: 1.5,
+                "&:hover": { bgcolor: DESIGN_TOKENS.brand[50] },
+                "&.Mui-selected": { bgcolor: DESIGN_TOKENS.brand[100] },
+              }}
+            >
+              <ListItemText
+                primary={
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                    {account.role}
+                  </Typography>
+                }
+                secondary={
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    {account.email}
+                  </Typography>
+                }
+              />
+              {selectedDemoRole === account.role && (
+                <CheckCircleRoundedIcon sx={{ fontSize: 18, color: DESIGN_TOKENS.brand[600] }} />
+              )}
+            </MenuItem>
+          ))}
+        </Menu>
+      </Box>
     </Box>
   );
 };
