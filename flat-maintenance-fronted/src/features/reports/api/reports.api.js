@@ -4,15 +4,22 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const reportsApi = {
   getMaintenanceCollections: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.REPORTS.MAINTENANCE_COLLECTIONS, { params });
+    const cleanParams = {};
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    if (params.period) cleanParams.period = params.period;
+    return await apiClient.get(API_ENDPOINTS.REPORTS.MAINTENANCE_COLLECTIONS, { params: cleanParams });
   },
 
   getStaffPerformance: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.REPORTS.STAFF_PERFORMANCE, { params });
+    const cleanParams = {};
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    return await apiClient.get(API_ENDPOINTS.REPORTS.STAFF_PERFORMANCE, { params: cleanParams });
   },
 
   getComplaintSla: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.REPORTS.COMPLAINT_SLA, { params });
+    const cleanParams = {};
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    return await apiClient.get(API_ENDPOINTS.REPORTS.COMPLAINT_SLA, { params: cleanParams });
   },
 };
 

@@ -7,7 +7,7 @@ export const useMaintenanceCollectionsReport = (params = {}) => {
   return useQuery({
     queryKey: queryKeys.reports.maintenanceCollections(params),
     queryFn: () => reportsApi.getMaintenanceCollections(params),
-    enabled: Boolean(params.buildingId),
+    enabled: Boolean(params.buildingId && params.period),
   });
 };
 
