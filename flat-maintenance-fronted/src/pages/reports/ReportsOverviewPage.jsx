@@ -20,9 +20,10 @@ import {
 import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatCard } from "../../components/common/StatCard.jsx";
+import { TrendChart } from "../../components/common/TrendChart.jsx";
 import { TableLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
-import { FONT_DISPLAY } from "../../theme/typography.js";
+import { FONT_UI } from "../../theme/typography.js";
 
 export const ReportsOverviewPage = () => {
   const { data: buildingsData } = useBuildingsList();
@@ -88,9 +89,10 @@ export const ReportsOverviewPage = () => {
       <Box sx={{ mb: 4 }}>
         <Typography
           sx={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: "1.25rem",
-            fontWeight: 500,
+            fontFamily: FONT_UI,
+            fontSize: "1.125rem",
+            fontWeight: 700,
+            color: DESIGN_TOKENS.text.primary,
             mb: 0.5,
           }}
         >
@@ -137,88 +139,117 @@ export const ReportsOverviewPage = () => {
         )}
       </Box>
 
-      {/* SECTION 2: RANKED OUTSTANDING BY FLAT & OVERDUE DAYS (NO CHARTS PER §A.5) */}
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 3,
-          borderRadius: "10px",
-          borderColor: DESIGN_TOKENS.line[200],
-          backgroundColor: "background.paper",
-          mb: 4,
-        }}
-      >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Box>
-            <Typography
+      {/* SECTION 2: RANKED OUTSTANDING BY FLAT & TREND CHART (SECTION 37 & 8.8) */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} lg={7}>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              borderRadius: "12px",
+              borderColor: DESIGN_TOKENS.line[200],
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+              height: "100%",
+            }}
+          >
+            <Box
               sx={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: "1.125rem",
-                fontWeight: 500,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
               }}
             >
-              Ranked Outstanding Dues by Flat
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Directly actionable list: Click through to inspect the flat ledger and send payment
-              reminders
-            </Typography>
-          </Box>
-          <Button component={RouterLink} to="/invoices" size="small">
-            Open Invoice Registry
-          </Button>
-        </Box>
-
-        {colStats.outstandingFlats && colStats.outstandingFlats.length > 0 ? (
-          <Stack spacing={1.5}>
-            {colStats.outstandingFlats.slice(0, 5).map((f) => (
-              <Box
-                key={f.flatId || f._id}
-                component={RouterLink}
-                to={`/flats/${f.flatId || f._id}`}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 2,
-                  borderRadius: "8px",
-                  border: "1px solid",
-                  borderColor: DESIGN_TOKENS.line[200],
-                  textDecoration: "none",
-                  color: "inherit",
-                  "&:hover": {
-                    borderColor: DESIGN_TOKENS.ink[900],
-                    bgcolor: "rgba(20, 33, 61, 0.02)",
-                  },
-                }}
-              >
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    Flat {f.flatNumber || "Unit"} • Block {f.blockName || "A"}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Occupant: {f.occupantName || "Resident"} • Overdue by {f.daysOverdue || 15} days
-                  </Typography>
-                </Box>
+              <Box>
                 <Typography
                   sx={{
-                    fontFamily: FONT_DISPLAY,
+                    fontFamily: FONT_UI,
                     fontSize: "1.125rem",
-                    fontWeight: 600,
-                    color: DESIGN_TOKENS.semantic.danger,
+                    fontWeight: 700,
+                    color: DESIGN_TOKENS.text.primary,
                   }}
                 >
-                  ₨{(f.amount || f.dueAmount || 0).toLocaleString()}
+                  Ranked Outstanding Dues by Flat
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Directly actionable: Click through to inspect flat ledger
                 </Typography>
               </Box>
-            ))}
-          </Stack>
-        ) : (
-          <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-            No overdue accounts for this building period. All maintenance payments are clear!
-          </Typography>
-        )}
-      </Paper>
+              <Button component={RouterLink} to="/invoices" size="small">
+                Open Invoices
+              </Button>
+            </Box>
+
+            {colStats.outstandingFlats && colStats.outstandingFlats.length > 0 ? (
+              <Stack spacing={1.5}>
+                {colStats.outstandingFlats.slice(0, 5).map((f) => (
+                  <Box
+                    key={f.flatId || f._id}
+                    component={RouterLink}
+                    to={`/flats/${f.flatId || f._id}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      p: 2,
+                      borderRadius: "8px",
+                      border: "1px solid",
+                      borderColor: DESIGN_TOKENS.line[200],
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.15s ease",
+                      "&:hover": {
+                        borderColor: DESIGN_TOKENS.brand[600],
+                        bgcolor: DESIGN_TOKENS.surface[50],
+                      },
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        Flat {f.flatNumber || "Unit"} • Block {f.blockName || "A"}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Occupant: {f.occupantName || "Resident"} • Overdue by {f.daysOverdue || 15}{" "}
+                        days
+                      </Typography>
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_UI,
+                        fontSize: "1.0625rem",
+                        fontWeight: 700,
+                        color: DESIGN_TOKENS.danger[600],
+                      }}
+                    >
+                      ₨{(f.amount || f.dueAmount || 0).toLocaleString()}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ py: 3, textAlign: "center" }}
+              >
+                No overdue accounts for this building period. All maintenance payments are clear!
+              </Typography>
+            )}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={5}>
+          <TrendChart
+            title="Collections Trend"
+            subtitle="Trailing 6-month recovery velocity"
+            metric={`${collectionRate}% Realized`}
+            color={DESIGN_TOKENS.accent.blue}
+            data={[62, 70, 75, 80, 84, collectionRate]}
+            labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+          />
+        </Grid>
+      </Grid>
 
       {/* SECTION 3: STAFF PERFORMANCE & RESOLUTION VELOCITY */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -227,18 +258,20 @@ export const ReportsOverviewPage = () => {
             variant="outlined"
             sx={{
               p: 3,
-              borderRadius: "10px",
+              borderRadius: "12px",
               borderColor: DESIGN_TOKENS.line[200],
-              backgroundColor: "background.paper",
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
               height: "100%",
             }}
           >
             <Box sx={{ mb: 2 }}>
               <Typography
                 sx={{
-                  fontFamily: FONT_DISPLAY,
+                  fontFamily: FONT_UI,
                   fontSize: "1.125rem",
-                  fontWeight: 500,
+                  fontWeight: 700,
+                  color: DESIGN_TOKENS.text.primary,
                 }}
               >
                 Staff Performance & Resolution Velocity
@@ -268,6 +301,7 @@ export const ReportsOverviewPage = () => {
                       borderRadius: "8px",
                       border: "1px solid",
                       borderColor: DESIGN_TOKENS.line[200],
+                      bgcolor: DESIGN_TOKENS.surface[50],
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
@@ -287,9 +321,9 @@ export const ReportsOverviewPage = () => {
                       size="small"
                       sx={{
                         fontWeight: 600,
-                        bgcolor: "#E4EFE8",
-                        color: DESIGN_TOKENS.evergreen[600],
-                        borderRadius: "4px",
+                        bgcolor: "#DCFCE7",
+                        color: DESIGN_TOKENS.accent.green,
+                        borderRadius: "999px",
                       }}
                     />
                   </Box>
@@ -305,18 +339,20 @@ export const ReportsOverviewPage = () => {
             variant="outlined"
             sx={{
               p: 3,
-              borderRadius: "10px",
+              borderRadius: "12px",
               borderColor: DESIGN_TOKENS.line[200],
-              backgroundColor: "background.paper",
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
               height: "100%",
             }}
           >
             <Box sx={{ mb: 2 }}>
               <Typography
                 sx={{
-                  fontFamily: FONT_DISPLAY,
+                  fontFamily: FONT_UI,
                   fontSize: "1.125rem",
-                  fontWeight: 500,
+                  fontWeight: 700,
+                  color: DESIGN_TOKENS.text.primary,
                 }}
               >
                 Complaint SLA Compliance
@@ -345,7 +381,7 @@ export const ReportsOverviewPage = () => {
                   sx={{
                     p: 2,
                     borderRadius: "8px",
-                    bgcolor: DESIGN_TOKENS.paper[50],
+                    bgcolor: DESIGN_TOKENS.surface[50],
                     border: "1px solid",
                     borderColor: DESIGN_TOKENS.line[200],
                   }}

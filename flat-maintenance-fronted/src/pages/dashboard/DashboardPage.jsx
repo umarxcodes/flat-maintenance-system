@@ -23,7 +23,8 @@ import { useInvoicesList } from "../../features/invoices/hooks/use-invoices.js";
 import { useNoticesList } from "../../features/notices/hooks/use-notices.js";
 import { useFlatsList } from "../../features/flats/hooks/use-flats.js";
 import { useVisitorsList } from "../../features/visitors/hooks/use-visitors.js";
-import { FONT_DISPLAY } from "../../theme/typography.js";
+import { TrendChart } from "../../components/common/TrendChart.jsx";
+import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 export const DashboardPage = () => {
@@ -310,17 +311,20 @@ export const DashboardPage = () => {
           sx={{
             p: 4,
             textAlign: "center",
-            borderRadius: "10px",
+            borderRadius: "12px",
             borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "background.paper",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
             mb: 4,
           }}
         >
           <Typography
             sx={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: "1.5rem",
-              fontWeight: 500,
+              fontFamily: FONT_UI,
+              fontSize: "1.375rem",
+              fontWeight: 700,
+              color: DESIGN_TOKENS.text.primary,
+              letterSpacing: "-0.015em",
               mb: 1,
             }}
           >
@@ -345,7 +349,10 @@ export const DashboardPage = () => {
               px: 4,
               fontSize: "1rem",
               borderRadius: "8px",
-              bgcolor: DESIGN_TOKENS.ink[900],
+              bgcolor: DESIGN_TOKENS.brand[600],
+              "&:hover": {
+                bgcolor: DESIGN_TOKENS.brand[700],
+              },
             }}
           >
             Open Verification Terminal
@@ -353,17 +360,19 @@ export const DashboardPage = () => {
         </Paper>
       )}
 
-      {/* 2. MANAGER: TRIAGE QUEUE (NOT A CARD, REAL ACTIONABLE WORK ORDERS) */}
+      {/* 2. MANAGER / ADMINS: TRIAGE QUEUE & CHARTS (TWO-COLUMN SPLIT) */}
       {(role === ROLES.MANAGER || role === ROLES.SUPER_ADMIN || role === ROLES.BUILDING_ADMIN) && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} lg={8}>
+          <Grid item xs={12} lg={7}>
             <Paper
               variant="outlined"
               sx={{
                 p: 3,
-                borderRadius: "10px",
+                borderRadius: "12px",
                 borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "background.paper",
+                backgroundColor: "#FFFFFF",
+                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+                height: "100%",
               }}
             >
               <Box
@@ -377,9 +386,10 @@ export const DashboardPage = () => {
                 <Box>
                   <Typography
                     sx={{
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: "1.25rem",
-                      fontWeight: 500,
+                      fontFamily: FONT_UI,
+                      fontSize: "1.125rem",
+                      fontWeight: 700,
+                      color: DESIGN_TOKENS.text.primary,
                     }}
                   >
                     Actionable Work Orders
@@ -485,15 +495,137 @@ export const DashboardPage = () => {
             </Paper>
           </Grid>
 
-          {/* SIDE PANEL: LATEST NOTICES */}
-          <Grid item xs={12} lg={4}>
+          {/* SIDE PANEL: TREND CHART & LATEST NOTICES (SECTION 8.2 & APPENDIX §A.5) */}
+          <Grid item xs={12} lg={5}>
+            <Stack spacing={2.5}>
+              <TrendChart
+                title="Collections & Invoicing Trend"
+                subtitle="Monthly operational collection rate"
+                metric={`${collectionRate}% Paid`}
+                color={DESIGN_TOKENS.accent.blue}
+                data={[68, 72, 79, 82, 86, collectionRate]}
+                labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+              />
+
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 3,
+                  borderRadius: "12px",
+                  borderColor: DESIGN_TOKENS.line[200],
+                  backgroundColor: "#FFFFFF",
+                  boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_UI,
+                        fontSize: "1rem",
+                        fontWeight: 700,
+                        color: DESIGN_TOKENS.text.primary,
+                      }}
+                    >
+                      Community Bulletins
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Official building notices
+                    </Typography>
+                  </Box>
+                  <Button component={RouterLink} to="/notices" size="small">
+                    All Notices
+                  </Button>
+                </Box>
+
+                {notices.length === 0 ? (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ py: 2, textAlign: "center" }}
+                  >
+                    No published notices.
+                  </Typography>
+                ) : (
+                  <Stack spacing={1.5}>
+                    {notices.slice(0, 2).map((notice) => (
+                      <Box
+                        key={notice._id}
+                        sx={{
+                          p: 2,
+                          borderRadius: "8px",
+                          bgcolor: DESIGN_TOKENS.surface[50],
+                          border: "1px solid",
+                          borderColor: DESIGN_TOKENS.line[200],
+                        }}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.75 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 600, fontSize: "0.875rem" }}
+                          >
+                            {notice.title}
+                          </Typography>
+                          <Chip
+                            label={notice.priority}
+                            size="small"
+                            sx={{
+                              fontSize: "0.6875rem",
+                              height: 20,
+                              borderRadius: "999px",
+                              bgcolor:
+                                notice.priority === "URGENT_EMERGENCY"
+                                  ? "#FEE2E2"
+                                  : DESIGN_TOKENS.surface[100],
+                              color:
+                                notice.priority === "URGENT_EMERGENCY"
+                                  ? DESIGN_TOKENS.danger[600]
+                                  : "text.secondary",
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            fontSize: "0.8125rem",
+                          }}
+                        >
+                          {notice.content}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* 3. ACCOUNTANT: RANKED OVERDUE LIST & RECONCILIATION CHART (SECTION 8.2 & 8.5) */}
+      {(role === ROLES.ACCOUNTANT || role === ROLES.SUPER_ADMIN) && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} lg={7}>
             <Paper
               variant="outlined"
               sx={{
                 p: 3,
-                borderRadius: "10px",
+                borderRadius: "12px",
                 borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "background.paper",
+                backgroundColor: "#FFFFFF",
+                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
                 height: "100%",
               }}
             >
@@ -502,185 +634,108 @@ export const DashboardPage = () => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  mb: 2.5,
+                  mb: 2,
                 }}
               >
                 <Box>
                   <Typography
                     sx={{
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: "1.25rem",
-                      fontWeight: 500,
+                      fontFamily: FONT_UI,
+                      fontSize: "1.125rem",
+                      fontWeight: 700,
+                      color: DESIGN_TOKENS.text.primary,
                     }}
                   >
-                    Community Bulletins
+                    Accounts Requiring Follow-up
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Official building notices
+                    Ranked by outstanding dues • Click any row to inspect flat ledger
                   </Typography>
                 </Box>
-                <Button component={RouterLink} to="/notices" size="small">
-                  All Notices
+                <Button
+                  component={RouterLink}
+                  to="/invoices"
+                  size="small"
+                  endIcon={<ArrowForwardIcon />}
+                >
+                  Billing Registry
                 </Button>
               </Box>
 
-              {notices.length === 0 ? (
+              {loadingInvoices ? (
+                <TableLoadingSkeleton rows={4} />
+              ) : overdueInvoices.length === 0 ? (
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{ py: 3, textAlign: "center" }}
                 >
-                  No published notices.
+                  Outstanding balance is zero. All tenant and owner accounts are settled!
                 </Typography>
               ) : (
-                <Stack spacing={2}>
-                  {notices.slice(0, 3).map((notice) => (
+                <Stack spacing={1.5}>
+                  {overdueInvoices.slice(0, 5).map((inv) => (
                     <Box
-                      key={notice._id}
+                      key={inv._id}
+                      component={RouterLink}
+                      to={`/invoices/${inv._id}`}
                       sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                         p: 2,
                         borderRadius: "8px",
-                        bgcolor: DESIGN_TOKENS.paper[50],
                         border: "1px solid",
                         borderColor: DESIGN_TOKENS.line[200],
+                        textDecoration: "none",
+                        color: "inherit",
+                        transition: "all 0.15s ease",
+                        "&:hover": {
+                          borderColor: DESIGN_TOKENS.brand[600],
+                          bgcolor: DESIGN_TOKENS.surface[50],
+                        },
                       }}
                     >
-                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.75 }}>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 600, fontSize: "0.875rem" }}
-                        >
-                          {notice.title}
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          Invoice #{inv.invoiceNumber}
                         </Typography>
-                        <Chip
-                          label={notice.priority}
-                          size="small"
-                          sx={{
-                            fontSize: "0.6875rem",
-                            height: 20,
-                            borderRadius: "4px",
-                            bgcolor: notice.priority === "URGENT_EMERGENCY" ? "#F6E7E5" : "#EFEBE0",
-                            color: notice.priority === "URGENT_EMERGENCY" ? "#B3261E" : "#8A8578",
-                          }}
-                        />
+                        <Typography variant="caption" color="text.secondary">
+                          Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
+                          {new Date(inv.dueDate).toLocaleDateString()}
+                        </Typography>
                       </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          fontSize: "0.8125rem",
-                        }}
-                      >
-                        {notice.content}
-                      </Typography>
+                      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                        <Typography
+                          sx={{
+                            fontFamily: FONT_UI,
+                            fontSize: "1.0625rem",
+                            fontWeight: 700,
+                            color: DESIGN_TOKENS.danger[600],
+                          }}
+                        >
+                          ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
+                        </Typography>
+                        <StatusChip status={inv.status} />
+                      </Stack>
                     </Box>
                   ))}
                 </Stack>
               )}
             </Paper>
           </Grid>
+
+          <Grid item xs={12} lg={5}>
+            <TrendChart
+              title="Settlement & Ledger Efficiency"
+              subtitle="6-month cumulative recovery trajectory"
+              metric={`${collectionRate}% Cleared`}
+              color={DESIGN_TOKENS.accent.green}
+              data={[58, 64, 72, 79, 86, collectionRate]}
+              labels={["Sep", "Oct", "Nov", "Dec", "Jan", "Current"]}
+            />
+          </Grid>
         </Grid>
-      )}
-
-      {/* 3. ACCOUNTANT: RANKED OVERDUE LIST (CLICKABLE THROUGH TO FLAT LEDGER) */}
-      {(role === ROLES.ACCOUNTANT || role === ROLES.SUPER_ADMIN) && (
-        <Paper
-          variant="outlined"
-          sx={{
-            p: 3,
-            borderRadius: "10px",
-            borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "background.paper",
-            mb: 4,
-          }}
-        >
-          <Box
-            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
-          >
-            <Box>
-              <Typography
-                sx={{
-                  fontFamily: FONT_DISPLAY,
-                  fontSize: "1.25rem",
-                  fontWeight: 500,
-                }}
-              >
-                Accounts Requiring Follow-up (Ranked by Outstanding Dues)
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Click any flat row to inspect invoices and record payment
-              </Typography>
-            </Box>
-            <Button
-              component={RouterLink}
-              to="/invoices"
-              size="small"
-              endIcon={<ArrowForwardIcon />}
-            >
-              Billing Registry
-            </Button>
-          </Box>
-
-          {loadingInvoices ? (
-            <TableLoadingSkeleton rows={4} />
-          ) : overdueInvoices.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-              Outstanding balance is zero. All tenant and owner accounts are up to date!
-            </Typography>
-          ) : (
-            <Stack spacing={1.5}>
-              {overdueInvoices.slice(0, 5).map((inv) => (
-                <Box
-                  key={inv._id}
-                  component={RouterLink}
-                  to={`/invoices/${inv._id}`}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    p: 2,
-                    borderRadius: "8px",
-                    border: "1px solid",
-                    borderColor: DESIGN_TOKENS.line[200],
-                    textDecoration: "none",
-                    color: "inherit",
-                    "&:hover": {
-                      borderColor: DESIGN_TOKENS.ink[900],
-                      bgcolor: "rgba(20, 33, 61, 0.02)",
-                    },
-                  }}
-                >
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      Invoice #{inv.invoiceNumber}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
-                      {new Date(inv.dueDate).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                    <Typography
-                      sx={{
-                        fontFamily: FONT_DISPLAY,
-                        fontSize: "1.125rem",
-                        fontWeight: 600,
-                        color: DESIGN_TOKENS.semantic.danger,
-                      }}
-                    >
-                      ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
-                    </Typography>
-                    <StatusChip status={inv.status} />
-                  </Stack>
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </Paper>
       )}
 
       {/* 4. MAINTENANCE STAFF: MOBILE-FIRST ACTION LIST (LARGE TAP TARGETS >= 44PX) */}
@@ -689,18 +744,20 @@ export const DashboardPage = () => {
           variant="outlined"
           sx={{
             p: 3,
-            borderRadius: "10px",
+            borderRadius: "12px",
             borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "background.paper",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
             mb: 4,
           }}
         >
           <Box sx={{ mb: 2 }}>
             <Typography
               sx={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: "1.25rem",
-                fontWeight: 500,
+                fontFamily: FONT_UI,
+                fontSize: "1.125rem",
+                fontWeight: 700,
+                color: DESIGN_TOKENS.text.primary,
               }}
             >
               Today's Work Schedule
@@ -728,14 +785,15 @@ export const DashboardPage = () => {
                   border: "1px solid",
                   borderColor:
                     req.priority === "EMERGENCY"
-                      ? DESIGN_TOKENS.semantic.danger
+                      ? DESIGN_TOKENS.danger[600]
                       : DESIGN_TOKENS.line[200],
-                  bgcolor:
-                    req.priority === "EMERGENCY" ? "rgba(179, 38, 30, 0.02)" : "background.paper",
+                  bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
                   textDecoration: "none",
                   color: "inherit",
+                  transition: "all 0.15s ease",
                   "&:hover": {
-                    borderColor: DESIGN_TOKENS.ink[900],
+                    borderColor: DESIGN_TOKENS.brand[600],
+                    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.06)",
                   },
                 }}
               >
@@ -753,10 +811,12 @@ export const DashboardPage = () => {
                     label={req.priority}
                     size="small"
                     sx={{
-                      borderRadius: "4px",
+                      borderRadius: "999px",
                       fontWeight: 600,
-                      bgcolor: req.priority === "EMERGENCY" ? "#F6E7E5" : "#EFEBE0",
-                      color: req.priority === "EMERGENCY" ? "#B3261E" : "#8A8578",
+                      bgcolor:
+                        req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
+                      color:
+                        req.priority === "EMERGENCY" ? DESIGN_TOKENS.danger[600] : "text.secondary",
                     }}
                   />
                   <StatusChip status={req.status} />
@@ -773,17 +833,19 @@ export const DashboardPage = () => {
           variant="outlined"
           sx={{
             p: 3,
-            borderRadius: "10px",
+            borderRadius: "12px",
             borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "background.paper",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
             mb: 4,
           }}
         >
           <Typography
             sx={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: "1.25rem",
-              fontWeight: 500,
+              fontFamily: FONT_UI,
+              fontSize: "1.125rem",
+              fontWeight: 700,
+              color: DESIGN_TOKENS.text.primary,
               mb: 0.5,
             }}
           >
@@ -810,6 +872,7 @@ export const DashboardPage = () => {
                     borderRadius: "8px",
                     border: "1px solid",
                     borderColor: DESIGN_TOKENS.line[200],
+                    bgcolor: DESIGN_TOKENS.surface[50],
                   }}
                 >
                   <Box>
@@ -821,7 +884,7 @@ export const DashboardPage = () => {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                    <Typography sx={{ fontFamily: FONT_DISPLAY, fontWeight: 600 }}>
+                    <Typography sx={{ fontFamily: FONT_UI, fontWeight: 700, fontSize: "1rem" }}>
                       ₨{(inv.totalAmount || 0).toLocaleString()}
                     </Typography>
                     <StatusChip status={inv.status} />

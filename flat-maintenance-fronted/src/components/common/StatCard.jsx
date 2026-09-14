@@ -8,11 +8,11 @@ import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 /**
- * Visual Specification from Appendix §A.4:
- * - Large Fraunces numeral
- * - Inter label underneath
- * - Optional one-line delta written in words ("12 more than last month"), NEVER a sparkline or arrow icon.
- * - Optional brass tertiary highlight support if isHero=true (Appendix §A.1: at most one element per screen).
+ * Visual Specification from UI/UX Master Prompt Section 6:
+ * - Bold numeral (28px / 700) in Inter
+ * - Label beneath in text.secondary (14px / 600)
+ * - White surface.0 card with line.200 border and subtle elevation
+ * - Optional delta written in words beneath
  */
 export const StatCard = ({ value, label, delta, isHero = false, action = null, sx = {} }) => {
   return (
@@ -93,8 +93,8 @@ export const StatCard = ({ value, label, delta, isHero = false, action = null, s
               fontFamily: FONT_UI,
               display: "block",
               mt: 0.75,
-              color: isHero ? DESIGN_TOKENS.brass[500] : "text.secondary",
-              fontWeight: 400,
+              color: "text.secondary",
+              fontWeight: 500,
             }}
           >
             {delta}

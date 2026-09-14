@@ -12,20 +12,16 @@ import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import MenuIcon from "@mui/icons-material/Menu";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
-import { useColorMode } from "../../providers/theme-context.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { BuildingSelector } from "../common/BuildingSelector.jsx";
 
 export const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
-  const { mode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -80,15 +76,8 @@ export const Topbar = ({ onMenuClick }) => {
           <BuildingSelector />
         </Box>
 
-        {/* Right Side: Theme Switcher, Notifications, and Profile */}
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          {/* Light / Dark Mode Toggle */}
-          <Tooltip title={mode === "light" ? "Switch to dark mode" : "Switch to light mode"}>
-            <IconButton onClick={toggleColorMode} color="inherit" size="small">
-              {mode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
-            </IconButton>
-          </Tooltip>
-
+        {/* Right Side: Notifications and Profile */}
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
           {/* Notifications Shortcut */}
           <Tooltip title="Notifications">
             <IconButton onClick={() => navigate("/notifications")} color="inherit" size="small">
