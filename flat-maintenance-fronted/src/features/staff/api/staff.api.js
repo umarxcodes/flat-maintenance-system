@@ -4,7 +4,17 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const staffApi = {
   getStaff: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.STAFF.BASE, { params });
+    const cleanParams = {};
+    if (params.page) cleanParams.page = params.page;
+    if (params.limit) cleanParams.limit = params.limit;
+    if (params.buildingId) cleanParams.buildingId = params.buildingId;
+    if (params.category) cleanParams.category = params.category;
+    if (params.subCategory) cleanParams.subCategory = params.subCategory;
+    if (params.assignedShift) cleanParams.assignedShift = params.assignedShift;
+    if (params.status) cleanParams.status = params.status;
+    if (params.availability) cleanParams.availability = params.availability;
+    if (params.search) cleanParams.search = params.search;
+    return await apiClient.get(API_ENDPOINTS.STAFF.BASE, { params: cleanParams });
   },
 
   getStaffById: async (id) => {
