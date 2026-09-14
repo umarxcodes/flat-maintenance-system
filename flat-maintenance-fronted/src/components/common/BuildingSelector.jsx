@@ -45,6 +45,13 @@ export const BuildingSelector = ({ buildings = [] }) => {
               <em>All Buildings</em>
             </MenuItem>
           )}
+          {selectValue &&
+            selectValue !== "ALL" &&
+            !buildings.some((b) => (b.id || b._id) === selectValue) && (
+              <MenuItem value={selectValue} disabled sx={{ display: "none" }}>
+                Active Building
+              </MenuItem>
+            )}
           {buildings.map((b) => (
             <MenuItem key={b.id || b._id} value={b.id || b._id}>
               {b.name}
