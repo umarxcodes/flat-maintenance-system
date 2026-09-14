@@ -92,7 +92,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Maintenance & facility",
+    category: "Maintenance & facilities",
     items: [
       {
         title: "Configurations",
@@ -132,7 +132,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Engagement & legal",
+    category: "Engagement & safety",
     items: [
       {
         title: "Complaints",
@@ -143,7 +143,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
       {
         title: "Reviews",
         href: "/reviews",
-        iconName: "RateReview",
+        iconName: "StarRate",
         permission: PERMISSIONS.REVIEW_READ,
       },
       {
@@ -156,29 +156,29 @@ export const NAVIGATION_CONFIG = Object.freeze([
         title: "Notifications",
         href: "/notifications",
         iconName: "Notifications",
-        permission: null, // Available to all
+        permission: PERMISSIONS.NOTIFICATION_READ,
       },
       {
-        title: "Visitors",
+        title: "Visitors & Passes",
         href: "/visitors",
-        iconName: "MeetingRoom",
+        iconName: "TransferWithinAStation",
         permission: PERMISSIONS.VISITOR_READ,
       },
       {
         title: "Documents",
         href: "/documents",
-        iconName: "Description",
+        iconName: "FolderShared",
         permission: PERMISSIONS.DOCUMENT_READ,
       },
     ],
   },
   {
-    category: "System intelligence",
+    category: "Reports & audit",
     items: [
       {
         title: "Reports",
         href: "/reports",
-        iconName: "Analytics",
+        iconName: "Assessment",
         permission: PERMISSIONS.REPORT_READ,
       },
       {

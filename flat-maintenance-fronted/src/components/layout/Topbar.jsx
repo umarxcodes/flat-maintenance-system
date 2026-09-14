@@ -15,16 +15,23 @@ import MenuIcon from "@mui/icons-material/Menu";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import Badge from "@mui/material/Badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { BuildingSelector } from "../common/BuildingSelector.jsx";
+
+import Badge from "@mui/material/Badge";
+import { useNotificationsList } from "../../features/notifications/hooks/use-notifications.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 export const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { data: notificationsData } = useNotificationsList();
+
+  const notifications =
+    notificationsData?.notifications || (Array.isArray(notificationsData) ? notificationsData : []);
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const [anchorEl, setAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
@@ -80,18 +87,25 @@ export const Topbar = ({ onMenuClick }) => {
 
         {/* Right Side: Notifications and Profile */}
         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-          {/* Notifications Shortcut with brand.600 badge */}
+          {/* Notifications Shortcut */}
           <Tooltip title="Notifications">
             <IconButton onClick={() => navigate("/notifications")} color="inherit" size="small">
               <Badge
-                variant="dot"
+                badgeContent={unreadCount}
+                invisible={unreadCount === 0}
                 sx={{
                   "& .MuiBadge-badge": {
                     bgcolor: DESIGN_TOKENS.brand[600],
+                    color: "#FFFFFF",
+                    fontSize: "0.6875rem",
+                    fontWeight: 700,
+                    minWidth: 18,
+                    height: 18,
+                    px: 0.5,
                   },
                 }}
               >
-                <NotificationsNoneIcon />
+                <NotificationsNoneIcon sx={{ fontSize: 22 }} />
               </Badge>
             </IconButton>
           </Tooltip>
@@ -113,8 +127,7 @@ export const Topbar = ({ onMenuClick }) => {
               sx={{
                 width: 34,
                 height: 34,
-                bgcolor: DESIGN_TOKENS.brand[600], // brand.600 per Point 5
-                color: "#FFFFFF",
+                bgcolor: "primary.main",
                 fontSize: "0.875rem",
                 fontWeight: 600,
               }}

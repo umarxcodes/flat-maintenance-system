@@ -53,18 +53,19 @@ export const StatCard = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            mb: 1.5,
+            mb: 1.25,
           }}
         >
           <Box sx={{ minWidth: 0, pr: 1.5 }}>
             <Typography
+              variant="body2"
               sx={{
                 fontFamily: FONT_UI,
                 fontWeight: 500,
                 color: DESIGN_TOKENS.text.secondary,
-                fontSize: "0.8125rem", // 13px per spec: visibly recedes below the 28px numeral
+                fontSize: "0.8125rem", // 13px per spec
                 lineHeight: 1.3,
-                mb: 0.75,
+                mb: 0.5,
               }}
             >
               {label}
@@ -72,8 +73,8 @@ export const StatCard = ({
             <Typography
               sx={{
                 fontFamily: FONT_UI,
-                fontSize: "1.75rem", // 28px bold focal point per spec
-                lineHeight: 1.15,
+                fontSize: "1.75rem", // 28px per spec
+                lineHeight: 1.2,
                 fontWeight: 700,
                 color: DESIGN_TOKENS.text.primary,
                 letterSpacing: "-0.03em",
@@ -86,8 +87,8 @@ export const StatCard = ({
           {icon ? (
             <Box
               sx={{
-                width: 42,
-                height: 42,
+                width: 40,
+                height: 40,
                 borderRadius: "10px",
                 bgcolor: isHero ? "rgba(67, 56, 202, 0.08)" : DESIGN_TOKENS.surface[100],
                 color: isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.secondary,
@@ -98,7 +99,7 @@ export const StatCard = ({
                 transition: "all 0.15s ease",
               }}
             >
-              {React.cloneElement(icon, { sx: { fontSize: 22, ...icon.props?.sx } })}
+              {React.cloneElement(icon, { sx: { fontSize: 20, ...icon.props?.sx } })}
             </Box>
           ) : action ? (
             <Box>{action}</Box>
@@ -114,7 +115,8 @@ export const StatCard = ({
               display: "block",
               mt: 1,
               color: DESIGN_TOKENS.text.secondary,
-              fontSize: "0.8125rem",
+              fontSize: "0.875rem", // 14px per spec
+              fontWeight: 400,
               lineHeight: 1.4,
             }}
           >

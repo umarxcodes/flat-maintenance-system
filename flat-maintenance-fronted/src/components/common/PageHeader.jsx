@@ -68,13 +68,14 @@ export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null })
           </Typography>
           {subtitle && (
             <Typography
+              variant="body2"
               sx={{
-                mt: 0.5,
-                maxWidth: 640,
-                fontSize: "0.875rem", // 14px body/description text per hierarchy spec
+                fontSize: "0.875rem", // 14px per spec
                 fontWeight: 400,
                 color: "text.secondary",
-                lineHeight: 1.4,
+                mt: 0.5,
+                maxWidth: 640,
+                lineHeight: 1.5,
               }}
             >
               {subtitle}

@@ -66,7 +66,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
   <Paper
     variant="outlined"
     sx={{
-      p: { xs: 2.5, sm: 3 },
+      p: 3,
       borderRadius: "12px",
       borderColor: DESIGN_TOKENS.line[200],
       backgroundColor: "#FFFFFF",
@@ -82,14 +82,14 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        mb: 2.5,
+        mb: 2,
       }}
     >
       <Box sx={{ minWidth: 0, pr: 1.5 }}>
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1.125rem", // 18px per typography hierarchy spec
+            fontSize: "1.125rem", // 18px per spec
             fontWeight: 600,
             color: DESIGN_TOKENS.text.primary,
             letterSpacing: "-0.01em",
@@ -100,12 +100,12 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         </Typography>
         {subtitle && (
           <Typography
+            variant="body2"
             sx={{
-              fontFamily: FONT_UI,
               color: DESIGN_TOKENS.text.secondary,
               mt: 0.25,
               display: "block",
-              fontSize: "0.875rem", // 14px body/description text per hierarchy spec
+              fontSize: "0.875rem", // 14px per spec
               fontWeight: 400,
               lineHeight: 1.4,
             }}
@@ -126,11 +126,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
             color: DESIGN_TOKENS.brand[600],
             p: 0.5,
             minWidth: "auto",
-            "&:hover": {
-              bgcolor: "transparent",
-              color: DESIGN_TOKENS.brand[700],
-              textDecoration: "underline",
-            },
+            "&:hover": { bgcolor: "transparent", color: DESIGN_TOKENS.brand[700] },
           }}
         >
           {action || "View All"}
@@ -239,8 +235,8 @@ const DashboardListItem = ({
         color: "inherit",
         transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          borderColor: DESIGN_TOKENS.brand[600],
-          bgcolor: "rgba(67, 56, 202, 0.04)", // Soft brand hover tint per Point 5
+          borderColor: DESIGN_TOKENS.brand[300],
+          bgcolor: "rgba(67, 56, 202, 0.03)",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         },
         ...sx,
@@ -706,7 +702,7 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={7}>
             <DashboardCard
               title="Managed Properties"
-              subtitle="Recently provisioned residential buildings"
+              subtitle="Residential buildings set up on the platform"
               action="View All"
               actionLink="/buildings"
             >
@@ -742,7 +738,7 @@ export const DashboardPage = () => {
                       to={`/buildings/${b._id || b.id}`}
                       icon={<BusinessIcon />}
                       title={b.name}
-                      subtitle={`${b.address?.city || b.address?.street || "Residential Complex"} • ${b.totalFlats || 0} Flats`}
+                      subtitle={`${b.address?.city || b.address?.street || "Residential Complex"}, ${b.totalFlats || 0} flats`}
                       rightContent={<StatusChip status={b.status || "ACTIVE"} />}
                     />
                   ))}
@@ -756,7 +752,7 @@ export const DashboardPage = () => {
             <Stack spacing={3}>
               <TrendChart
                 title="Platform Growth"
-                subtitle="New buildings & resident onboarding"
+                subtitle="New buildings and resident registrations over time"
                 metric={`${buildings.length} Properties`}
                 color={DESIGN_TOKENS.brand[600]}
                 data={[1, 2, 2, 3, 3, buildings.length || 4]}
@@ -765,7 +761,7 @@ export const DashboardPage = () => {
 
               <DashboardCard
                 title="Recent Admin Activity"
-                subtitle="Audit logs from system administrators"
+                subtitle="Recent changes made by administrators"
                 action="View Logs"
                 actionLink="/audit-logs"
               >
@@ -801,8 +797,8 @@ export const DashboardPage = () => {
                           variant="caption"
                           sx={{ color: DESIGN_TOKENS.text.secondary, display: "block" }}
                         >
-                          Actor: {log.userEmail || log.userName || "Admin"} •{" "}
-                          {log.ipAddress || "Internal"}
+                          Actor: {log.userEmail || log.userName || "Admin"} (
+                          {log.ipAddress || "Internal"})
                         </Typography>
                       </Box>
                     ))}
@@ -823,7 +819,7 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={7}>
             <DashboardCard
               title="Work Orders Needing Attention"
-              subtitle="Actionable tickets requiring review or assignment"
+              subtitle="Requests waiting to be reviewed or assigned"
               action="View All"
               actionLink="/maintenance-requests"
             >
@@ -846,7 +842,7 @@ export const DashboardPage = () => {
                           : DESIGN_TOKENS.brand[600]
                       }
                       title={req.title}
-                      subtitle={`#${req.requestNumber || req._id?.slice(-6)} • ${req.category} • Flat: ${req.flatId?.flatNumber || "Assigned"}`}
+                      subtitle={`#${req.requestNumber || req._id?.slice(-6)}, ${req.category}, Flat ${req.flatId?.flatNumber || "Assigned"}`}
                       rightContent={
                         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                           <Chip
@@ -882,11 +878,12 @@ export const DashboardPage = () => {
             <Stack spacing={3}>
               <TrendChart
                 title="Collections Trend"
-                subtitle="Monthly operational collection rate"
+                subtitle="Percentage of billed fees collected this month"
                 metric={`${collectionRate}% Paid`}
                 color={DESIGN_TOKENS.brand[600]}
                 data={[68, 72, 79, 82, 86, collectionRate]}
                 labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+                emptyMessage="No payments recorded yet this period"
               />
 
               <DashboardCard
@@ -969,7 +966,7 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={7}>
             <DashboardCard
               title="Triage & Assignment Queue"
-              subtitle="Click any ticket to assign specialist technicians directly"
+              subtitle="Select any ticket to assign a technician"
               action="Work Order Registry"
               actionLink="/maintenance-requests"
             >
@@ -988,7 +985,7 @@ export const DashboardPage = () => {
                       iconBg={req.assignedStaffId ? "#ECFDF5" : "#FEF3C7"}
                       iconColor={req.assignedStaffId ? "#047857" : "#B45309"}
                       title={req.title}
-                      subtitle={`#${req.requestNumber || req._id?.slice(-6)} • ${req.category} • Flat: ${req.flatId?.flatNumber || "Assigned Unit"}`}
+                      subtitle={`#${req.requestNumber || req._id?.slice(-6)}, ${req.category}, Flat ${req.flatId?.flatNumber || "Assigned Unit"}`}
                       rightContent={
                         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                           <Chip
@@ -1018,7 +1015,7 @@ export const DashboardPage = () => {
               {/* Staff Availability Card */}
               <DashboardCard
                 title="Staff Availability"
-                subtitle="On-duty technicians available for assignment"
+                subtitle="Technicians currently on shift and ready for jobs"
                 action="Manage Staff"
                 actionLink="/staff"
               >
@@ -1046,7 +1043,7 @@ export const DashboardPage = () => {
                           {s.name || s.trade || "Technician"}
                         </Typography>
                         <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                          Shift: {s.shift || "Active"} • Trade: {s.trade || "General"}
+                          {s.shift || "Active"} shift, {s.trade || "General"}
                         </Typography>
                       </Box>
                       <Chip
@@ -1067,7 +1064,7 @@ export const DashboardPage = () => {
               {/* Move-ins & Move-outs Card */}
               <DashboardCard
                 title="Today's Move-ins / Move-outs"
-                subtitle="Resident arrival and departure schedules"
+                subtitle="Scheduled resident arrivals and departures"
                 action="Tenant Roster"
                 actionLink="/tenants"
               >
@@ -1095,7 +1092,7 @@ export const DashboardPage = () => {
                             variant="caption"
                             sx={{ color: DESIGN_TOKENS.text.secondary }}
                           >
-                            Flat: {t.flatId?.flatNumber || "Assigned"} • Active Tenancy
+                            Flat {t.flatId?.flatNumber || "Assigned"}, Active tenancy
                           </Typography>
                         </Box>
                         <Chip
@@ -1125,7 +1122,7 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={7}>
             <DashboardCard
               title="Ranked Overdue Accounts"
-              subtitle="Ranked by outstanding dues • Click any row to inspect flat ledger"
+              subtitle="Flats with unpaid dues. Select any row to view billing details"
               action="Billing Registry"
               actionLink="/invoices"
             >
@@ -1144,7 +1141,7 @@ export const DashboardPage = () => {
                       iconBg="#FEE2E2"
                       iconColor={DESIGN_TOKENS.danger[600]}
                       title={`Invoice #${inv.invoiceNumber}`}
-                      subtitle={`Period: ${inv.periodMonth}/${inv.periodYear} • Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                      subtitle={`Billing period: ${inv.periodMonth}/${inv.periodYear}, Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
                       rightContent={
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                           <Typography
@@ -1171,11 +1168,12 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={5}>
             <TrendChart
               title="Collections Trend"
-              subtitle="Monthly cumulative collection trajectory"
+              subtitle="How fees have been collected across recent months"
               metric={`${collectionRate}% Cleared`}
               color={DESIGN_TOKENS.accent.green}
               data={[58, 64, 72, 79, 86, collectionRate]}
               labels={["Sep", "Oct", "Nov", "Dec", "Jan", "Current"]}
+              emptyMessage="No payments recorded yet this period"
             />
           </Grid>
         </Grid>
@@ -1188,7 +1186,7 @@ export const DashboardPage = () => {
         <Box sx={{ mb: 4 }}>
           <DashboardCard
             title="My Work Orders — Today"
-            subtitle="Priority-ordered action items with touch-friendly status controls"
+            subtitle="Your assigned maintenance tasks for today"
           >
             {requests.length === 0 ? (
               /* VERBATIM PROMPT EMPTY STATE */
@@ -1207,7 +1205,7 @@ export const DashboardPage = () => {
                         : DESIGN_TOKENS.brand[600]
                     }
                     title={req.title}
-                    subtitle={`Unit: ${req.flatId?.flatNumber || "Assigned Unit"} • Category: ${req.category}`}
+                    subtitle={`Flat ${req.flatId?.flatNumber || "Assigned Unit"}, ${req.category}`}
                     sx={{
                       minHeight: 48,
                       borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#F1F5F9",
@@ -1248,7 +1246,7 @@ export const DashboardPage = () => {
           {/* Quick Check-in Terminal Card */}
           <DashboardCard
             title="Gate Terminal Quick Entry"
-            subtitle="Enter arriving visitor pass code or scan guest QR pass"
+            subtitle="Enter a 6-digit visitor code or check in guests"
           >
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ maxWidth: 540 }}>
               <TextField
@@ -1292,7 +1290,7 @@ export const DashboardPage = () => {
           {/* Currently Inside List */}
           <DashboardCard
             title="Currently Inside Premises"
-            subtitle="Active visitor passes requiring check-out upon exit"
+            subtitle="Visitors on site who need to be checked out upon leaving"
             action="Full Visitor Log"
             actionLink="/visitors"
           >
@@ -1308,7 +1306,7 @@ export const DashboardPage = () => {
                     key={v._id || v.id}
                     icon={<BadgeIcon />}
                     title={v.name}
-                    subtitle={`Destination: Flat ${v.flatId?.flatNumber || "Visiting Unit"} • Phone: ${v.phone || "—"}`}
+                    subtitle={`Visiting Flat ${v.flatId?.flatNumber || "Visiting Unit"}, Phone: ${v.phone || "—"}`}
                     rightContent={
                       <Button
                         variant="outlined"
@@ -1339,7 +1337,7 @@ export const DashboardPage = () => {
       {(role === ROLES.OWNER || role === ROLES.TENANT) && (
         <DashboardCard
           title={role === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
-          subtitle="Official monthly flat maintenance charges and receipts"
+          subtitle="Monthly maintenance bills and payment records for your flat"
           action="View Invoices"
           actionLink="/invoices"
           sx={{ mb: 4 }}

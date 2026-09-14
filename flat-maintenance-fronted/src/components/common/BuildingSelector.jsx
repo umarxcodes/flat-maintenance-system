@@ -38,8 +38,16 @@ export const BuildingSelector = ({ buildings = [] }) => {
           displayEmpty
           sx={{
             fontSize: "0.8125rem",
+            fontWeight: 500,
             bgcolor: "background.paper",
-            "& .MuiSelect-select": { py: 0.75 },
+            borderRadius: "8px",
+            "& .MuiSelect-select": { py: 0.75, px: 1.25 },
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: DESIGN_TOKENS.line[200],
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: DESIGN_TOKENS.brand[400],
+            },
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
               borderColor: DESIGN_TOKENS.brand[600],
             },

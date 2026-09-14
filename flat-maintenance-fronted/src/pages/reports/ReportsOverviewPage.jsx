@@ -1,4 +1,4 @@
-// =====================  REPORTS & ANALYTICS (AUTHORITATIVE ELEVATION PASS)  ========
+// =====================  REPORTS & ANALYTICS (AUTHORITATIVE QA POLISH)  ========
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -11,8 +11,8 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import StarIcon from "@mui/icons-material/Star";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import StarIcon from "@mui/icons-material/Star";
 import { Link as RouterLink } from "react-router-dom";
 import {
   useMaintenanceCollectionsReport,
@@ -62,34 +62,28 @@ export const ReportsOverviewPage = () => {
   const breachedComplaints = slaStats.breachedCount || 0;
   const resolvedWithinSla = Math.max(0, totalComplaints - breachedComplaints);
 
-  // Collections trend data: if totalCollected is 0, feed empty array so TrendChart displays dedicated empty state
-  const trendData = totalCollected > 0 ? [62, 70, 75, 80, 84, collectionRate] : [0, 0, 0, 0, 0, 0];
+  // When totalCollected is 0, provide empty data so TrendChart displays dedicated empty state
+  const collectionsTrendData =
+    totalCollected > 0 ? [62, 70, 75, 80, 84, collectionRate] : [0, 0, 0, 0, 0, 0];
 
   return (
     <Box sx={{ width: "100%" }}>
-      {/* 1. Page Header: 28px title, 14px plain-language subtitle */}
       <PageHeader
         title="Operational & Financial Reports"
-        subtitle="What's been billed, collected, and is still owed across the community."
+        subtitle="Track monthly maintenance dues, technician resolution times, and resident complaints across your buildings."
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Reports" }]}
         action={
           <FormControl
             size="small"
             sx={{
               minWidth: 220,
-              bgcolor: "#FFFFFF",
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: DESIGN_TOKENS.brand[600],
+              "& .MuiOutlinedInput-root": {
+                "&:hover fieldset": { borderColor: DESIGN_TOKENS.brand[600] },
+                "&.Mui-focused fieldset": { borderColor: DESIGN_TOKENS.brand[600] },
               },
             }}
           >
-            <InputLabel
-              id="report-building-select-label"
-              sx={{ "&.Mui-focused": { color: DESIGN_TOKENS.brand[600] } }}
-            >
-              Building Scope
-            </InputLabel>
+            <InputLabel id="report-building-select-label">Building Scope</InputLabel>
             <Select
               labelId="report-building-select-label"
               value={activeBuildingId || ""}
@@ -106,25 +100,26 @@ export const ReportsOverviewPage = () => {
         }
       />
 
-      {/* SECTION 1: MAINTENANCE COLLECTIONS (Plain-language header & 18px heading) */}
+      {/* SECTION 1: MAINTENANCE COLLECTIONS (PLAIN-LANGUAGE REWRITE) */}
       <Box sx={{ mb: 4 }}>
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1.125rem", // 18px per hierarchy spec
-            fontWeight: 600,
+            fontSize: "1.125rem", // 18px per spec
+            fontWeight: 600, // weight 600 per spec
             color: DESIGN_TOKENS.text.primary,
-            mb: 0.25,
+            lineHeight: 1.3,
+            mb: 0.5,
           }}
         >
           Maintenance Collections for Period {currentPeriod}
         </Typography>
         <Typography
+          variant="body2"
           sx={{
-            fontFamily: FONT_UI,
-            fontSize: "0.875rem", // 14px body text
-            fontWeight: 400,
             color: DESIGN_TOKENS.text.secondary,
+            fontSize: "0.875rem", // 14px per spec
+            fontWeight: 400,
             display: "block",
             mb: 2.5,
           }}
@@ -155,6 +150,7 @@ export const ReportsOverviewPage = () => {
                 value={`₨${totalOutstanding.toLocaleString()}`}
                 label="Total Outstanding"
                 delta={totalOutstanding > 0 ? "Pending collection" : "Zero balance"}
+                isHero={totalOutstanding > 0}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -168,10 +164,9 @@ export const ReportsOverviewPage = () => {
         )}
       </Box>
 
-      {/* SECTION 2: RANKED OUTSTANDING BY FLAT & TREND CHART (Balanced 2-Column Pairing) */}
-      <Grid container spacing={3} sx={{ mb: 4 }} alignItems="stretch">
-        {/* Left Column: Ranked Outstanding Dues */}
-        <Grid item xs={12} lg={7} sx={{ display: "flex", flexDirection: "column" }}>
+      {/* SECTION 2: RANKED OUTSTANDING BY FLAT & TREND CHART */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} lg={7}>
           <Paper
             variant="outlined"
             sx={{
@@ -184,56 +179,61 @@ export const ReportsOverviewPage = () => {
               height: "100%",
               display: "flex",
               flexDirection: "column",
+              justifyContent: "space-between",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                mb: 2.5,
-              }}
-            >
-              <Box>
-                <Typography
-                  sx={{
-                    fontFamily: FONT_UI,
-                    fontSize: "1.125rem", // 18px per hierarchy spec
-                    fontWeight: 600,
-                    color: DESIGN_TOKENS.text.primary,
-                  }}
-                >
-                  Ranked Outstanding Dues by Flat
-                </Typography>
-                <Typography
-                  sx={{
-                    fontFamily: FONT_UI,
-                    fontSize: "0.875rem", // 14px
-                    fontWeight: 400,
-                    color: DESIGN_TOKENS.text.secondary,
-                    mt: 0.25,
-                  }}
-                >
-                  Flats with pending balances — click to inspect flat ledger
-                </Typography>
-              </Box>
-              <Button
-                component={RouterLink}
-                to="/invoices"
-                size="small"
-                endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            <Box>
+              <Box
                 sx={{
-                  color: DESIGN_TOKENS.brand[600], // brand.600 per Point 5
-                  fontWeight: 600,
-                  fontSize: "0.8125rem",
-                  "&:hover": { bgcolor: "transparent", textDecoration: "underline" },
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  mb: 2,
                 }}
               >
-                Open Invoices
-              </Button>
-            </Box>
+                <Box>
+                  <Typography
+                    sx={{
+                      fontFamily: FONT_UI,
+                      fontSize: "1.125rem", // 18px per spec
+                      fontWeight: 600, // weight 600 per spec
+                      color: DESIGN_TOKENS.text.primary,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Ranked Outstanding Dues by Flat
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: DESIGN_TOKENS.text.secondary,
+                      fontSize: "0.875rem", // 14px per spec
+                      fontWeight: 400,
+                      display: "block",
+                      mt: 0.25,
+                    }}
+                  >
+                    Click any flat to inspect its full ledger and payment records.
+                  </Typography>
+                </Box>
+                <Button
+                  component={RouterLink}
+                  to="/invoices"
+                  size="small"
+                  endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    color: DESIGN_TOKENS.brand[600],
+                    fontWeight: 600,
+                    fontSize: "0.8125rem",
+                    p: 0.5,
+                    minWidth: "auto",
+                    "&:hover": { bgcolor: "transparent", color: DESIGN_TOKENS.brand[700] },
+                  }}
+                >
+                  Open Invoices
+                </Button>
+              </Box>
 
-            <Box sx={{ flex: 1 }}>
               {colStats.outstandingFlats && colStats.outstandingFlats.length > 0 ? (
                 <Stack spacing={1.25}>
                   {colStats.outstandingFlats.slice(0, 5).map((f) => (
@@ -248,30 +248,31 @@ export const ReportsOverviewPage = () => {
                         p: "12px 14px",
                         borderRadius: "10px",
                         border: "1px solid #F1F5F9",
-                        bgcolor: "#FFFFFF",
                         textDecoration: "none",
                         color: "inherit",
                         transition: "all 0.15s ease",
                         "&:hover": {
-                          borderColor: DESIGN_TOKENS.brand[600],
-                          bgcolor: "rgba(67, 56, 202, 0.04)", // Soft brand tint per Point 5
+                          borderColor: DESIGN_TOKENS.brand[300],
+                          bgcolor: "rgba(67, 56, 202, 0.03)",
+                          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
                         },
                       }}
                     >
                       <Box>
                         <Typography
                           variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            color: DESIGN_TOKENS.text.primary,
-                            fontSize: "0.875rem",
-                          }}
+                          sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
                         >
                           Flat {f.flatNumber || "Unit"} • Block {f.blockName || "A"}
                         </Typography>
                         <Typography
                           variant="caption"
-                          sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
+                          sx={{
+                            color: DESIGN_TOKENS.text.secondary,
+                            fontSize: "0.75rem",
+                            display: "block",
+                            mt: 0.25,
+                          }}
                         >
                           Occupant: {f.occupantName || "Resident"} • Overdue by{" "}
                           {f.daysOverdue || 15} days
@@ -295,7 +296,11 @@ export const ReportsOverviewPage = () => {
                 <Box sx={{ py: 5, textAlign: "center" }}>
                   <Typography
                     variant="body2"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+                    sx={{
+                      color: DESIGN_TOKENS.text.secondary,
+                      fontWeight: 500,
+                      fontSize: "0.875rem",
+                    }}
                   >
                     No overdue accounts for this building period. All maintenance payments are
                     clear!
@@ -306,24 +311,23 @@ export const ReportsOverviewPage = () => {
           </Paper>
         </Grid>
 
-        {/* Right Column: Collections Trend (with zero-state handling) */}
-        <Grid item xs={12} lg={5} sx={{ display: "flex", flexDirection: "column" }}>
+        <Grid item xs={12} lg={5}>
           <TrendChart
             title="Collections Trend"
-            subtitle="6-month payment recovery trajectory"
-            metric={`${collectionRate}% Realized`}
+            subtitle="Monthly recovery trajectory across the complex."
+            metric={totalCollected > 0 ? `${collectionRate}% Realized` : "₨0 Collected"}
             color={DESIGN_TOKENS.accent.blue}
-            data={trendData}
+            data={collectionsTrendData}
             labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
             emptyMessage="No payments recorded yet this period"
           />
         </Grid>
       </Grid>
 
-      {/* SECTION 3 & 4: BALANCED 2-COLUMN PAIRING (Staff Performance & Complaint SLA) */}
-      <Grid container spacing={3} sx={{ mb: 4 }} alignItems="stretch">
-        {/* Left Column: Staff Performance & Resolution Times */}
-        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+      {/* SECTION 3: STAFF PERFORMANCE & COMPLAINT SLA COMPLIANCE (BALANCED 2-COLUMN RHYTHM) */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Left Column: Staff Performance */}
+        <Grid item xs={12} lg={6}>
           <Paper
             variant="outlined"
             sx={{
@@ -336,40 +340,47 @@ export const ReportsOverviewPage = () => {
               height: "100%",
               display: "flex",
               flexDirection: "column",
+              justifyContent: "space-between",
             }}
           >
-            <Box sx={{ mb: 2.5 }}>
-              <Typography
-                sx={{
-                  fontFamily: FONT_UI,
-                  fontSize: "1.125rem", // 18px per hierarchy spec
-                  fontWeight: 600,
-                  color: DESIGN_TOKENS.text.primary,
-                }}
-              >
-                Staff Performance & Resolution Times
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: FONT_UI,
-                  fontSize: "0.875rem", // 14px
-                  fontWeight: 400,
-                  color: DESIGN_TOKENS.text.secondary,
-                  mt: 0.25,
-                }}
-              >
-                Turnaround time and resident ratings by technician
-              </Typography>
-            </Box>
+            <Box>
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  sx={{
+                    fontFamily: FONT_UI,
+                    fontSize: "1.125rem", // 18px per spec
+                    fontWeight: 600, // weight 600 per spec
+                    color: DESIGN_TOKENS.text.primary,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  Staff Performance & Resolution Velocity
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: DESIGN_TOKENS.text.secondary,
+                    fontSize: "0.875rem", // 14px per spec
+                    fontWeight: 400,
+                    display: "block",
+                    mt: 0.25,
+                  }}
+                >
+                  Technician ranking by ticket turnaround time and resident rating
+                </Typography>
+              </Box>
 
-            <Box sx={{ flex: 1 }}>
               {isStaffLoading ? (
                 <TableLoadingSkeleton rows={3} />
               ) : staffStats.length === 0 ? (
                 <Box sx={{ py: 4, textAlign: "center" }}>
                   <Typography
                     variant="body2"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
+                    sx={{
+                      color: DESIGN_TOKENS.text.secondary,
+                      fontWeight: 500,
+                      fontSize: "0.875rem",
+                    }}
                   >
                     No performance data recorded for on-duty technicians this cycle.
                   </Typography>
@@ -389,20 +400,16 @@ export const ReportsOverviewPage = () => {
                         alignItems: "center",
                         transition: "all 0.15s ease",
                         "&:hover": {
-                          borderColor: DESIGN_TOKENS.brand[600],
-                          bgcolor: "rgba(67, 56, 202, 0.04)", // Soft brand hover per Point 5
+                          borderColor: DESIGN_TOKENS.brand[300],
+                          bgcolor: "rgba(67, 56, 202, 0.03)",
+                          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
                         },
                       }}
                     >
-                      {/* Meta text split into clean hierarchy per Point 7 */}
                       <Box>
                         <Typography
                           variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            color: DESIGN_TOKENS.text.primary,
-                            fontSize: "0.875rem",
-                          }}
+                          sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
                         >
                           {tech.fullName || tech.name}
                         </Typography>
@@ -421,32 +428,28 @@ export const ReportsOverviewPage = () => {
                           variant="caption"
                           sx={{
                             color: DESIGN_TOKENS.brand[600],
+                            fontSize: "0.75rem",
                             fontWeight: 500,
-                            fontSize: "0.72rem",
                           }}
                         >
-                          {tech.avgResolutionHours || 4}h average resolution time
+                          Average turnaround: {tech.avgResolutionHours || 4} hours
                         </Typography>
                       </Box>
-
-                      {/* Star Rating Pill matching StatusChip radius & padding per Point 7 */}
                       <Chip
                         icon={
-                          <StarIcon
-                            sx={{ fontSize: "14px !important", color: "#15803D !important" }}
-                          />
+                          <StarIcon sx={{ "&&": { fontSize: 13, color: "#15803D", mr: -0.5 } }} />
                         }
                         label={Number(tech.averageRating || 4.8).toFixed(1)}
                         size="small"
                         sx={{
-                          fontWeight: 600,
+                          fontWeight: 700,
                           fontSize: "0.75rem",
                           height: 24,
-                          borderRadius: "999px",
                           bgcolor: "#DCFCE7",
                           color: "#15803D",
                           border: "1px solid #BBF7D0",
-                          "& .MuiChip-label": { px: 1 },
+                          borderRadius: "999px",
+                          px: 0.5,
                         }}
                       />
                     </Box>
@@ -457,8 +460,8 @@ export const ReportsOverviewPage = () => {
           </Paper>
         </Grid>
 
-        {/* Right Column: Complaint SLA Deadlines (Side-by-Side per Point 6) */}
-        <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column" }}>
+        {/* Right Column: Complaint SLA Compliance */}
+        <Grid item xs={12} lg={6}>
           <Paper
             variant="outlined"
             sx={{
@@ -471,48 +474,51 @@ export const ReportsOverviewPage = () => {
               height: "100%",
               display: "flex",
               flexDirection: "column",
+              justifyContent: "space-between",
             }}
           >
-            <Box sx={{ mb: 2.5 }}>
-              <Typography
-                sx={{
-                  fontFamily: FONT_UI,
-                  fontSize: "1.125rem", // 18px per hierarchy spec
-                  fontWeight: 600,
-                  color: DESIGN_TOKENS.text.primary,
-                }}
-              >
-                Complaint SLA Deadlines
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: FONT_UI,
-                  fontSize: "0.875rem", // 14px
-                  fontWeight: 400,
-                  color: DESIGN_TOKENS.text.secondary,
-                  mt: 0.25,
-                }}
-              >
-                How complaints performed against their resolution deadline.
-              </Typography>
-            </Box>
+            <Box>
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  sx={{
+                    fontFamily: FONT_UI,
+                    fontSize: "1.125rem", // 18px per spec
+                    fontWeight: 600, // weight 600 per spec
+                    color: DESIGN_TOKENS.text.primary,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  Complaint SLA Compliance
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: DESIGN_TOKENS.text.secondary,
+                    fontSize: "0.875rem", // 14px per spec
+                    fontWeight: 400,
+                    display: "block",
+                    mt: 0.25,
+                  }}
+                >
+                  How complaints performed against their resolution deadline.
+                </Typography>
+              </Box>
 
-            <Box sx={{ flex: 1 }}>
               {isSlaLoading ? (
                 <TableLoadingSkeleton rows={3} />
               ) : (
                 <Stack spacing={2}>
                   <StatCard
                     value={`${resolvedWithinSla} of ${totalComplaints}`}
-                    label="Complaints Resolved Within Target"
+                    label="Complaints Resolved Within SLA"
                     delta={
                       breachedComplaints > 0
-                        ? `${breachedComplaints} complaints missed deadline this month`
-                        : "100% resolved within target deadline"
+                        ? `${breachedComplaints} complaints missed SLA deadline this month`
+                        : "100% compliant with building SLA standards"
                     }
+                    isHero={breachedComplaints > 0}
                   />
 
-                  {/* Policy Box in plain human language */}
                   <Box
                     sx={{
                       p: 2,
@@ -522,27 +528,26 @@ export const ReportsOverviewPage = () => {
                     }}
                   >
                     <Typography
-                      variant="body2"
+                      variant="subtitle2"
                       sx={{
                         fontWeight: 600,
-                        mb: 0.5,
+                        fontSize: "0.875rem",
                         color: DESIGN_TOKENS.text.primary,
-                        fontSize: "0.8125rem",
+                        mb: 0.5,
                       }}
                     >
-                      Resolution Deadline Policy
+                      Escalation Rule
                     </Typography>
                     <Typography
-                      variant="caption"
+                      variant="body2"
                       sx={{
                         color: DESIGN_TOKENS.text.secondary,
-                        fontSize: "0.75rem",
-                        lineHeight: 1.4,
-                        display: "block",
+                        fontSize: "0.8125rem",
+                        lineHeight: 1.5,
                       }}
                     >
-                      Complaints not acknowledged within 24 hours or unresolved past 72 hours are
-                      automatically assigned to the Building Manager for direct review.
+                      Complaints not picked up within 24 hours or unresolved after 3 days are
+                      directly escalated to the Building Manager.
                     </Typography>
                   </Box>
                 </Stack>
