@@ -37,6 +37,12 @@ export const DESIGN_TOKENS = Object.freeze({
     600: "#DC2626", // Errors, destructive actions, rejected/overdue
     50: "#FEE2E2",
   },
+  semantic: {
+    danger: "#DC2626",
+    success: "#22C55E",
+    warning: "#F59E0B",
+    info: "#3B82F6",
+  },
   // Backward compatibility aliases for existing references
   ink: {
     900: "#1E1B4B",

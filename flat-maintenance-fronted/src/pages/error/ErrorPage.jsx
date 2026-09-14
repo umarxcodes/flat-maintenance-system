@@ -21,6 +21,12 @@ export const ErrorPage = () => {
   const error = useRouteError();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (error) {
+      console.error("[Route Error Boundary Caught]:", error);
+    }
+  }, [error]);
+
   const errorMessage =
     error?.status === 404
       ? "The requested operational resource could not be found."
@@ -90,6 +96,43 @@ export const ErrorPage = () => {
         >
           {errorMessage}
         </Typography>
+
+        {import.meta.env.DEV && error && (
+          <Box
+            sx={{
+              textAlign: "left",
+              mb: 3,
+              p: 1.5,
+              bgcolor: "#FEF2F2",
+              border: "1px solid #FECACA",
+              borderRadius: "8px",
+              maxHeight: 180,
+              overflow: "auto",
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 700, color: DESIGN_TOKENS.danger[600], display: "block", mb: 0.5 }}
+            >
+              Development Error Info:
+            </Typography>
+            <Typography
+              variant="caption"
+              component="pre"
+              sx={{
+                fontFamily: "monospace",
+                fontSize: "0.75rem",
+                color: "#7F1D1D",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
+                m: 0,
+              }}
+            >
+              {error?.message || error?.statusText || String(error)}
+              {error?.stack && `\n\n${error.stack}`}
+            </Typography>
+          </Box>
+        )}
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} justifyContent="center">
           <Button

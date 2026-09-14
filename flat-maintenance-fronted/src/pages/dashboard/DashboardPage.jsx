@@ -454,7 +454,7 @@ export const DashboardPage = () => {
                                 : "action.hover",
                             color:
                               req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.semantic.danger
+                                ? DESIGN_TOKENS.danger[600]
                                 : DESIGN_TOKENS.ink[900],
                             display: "flex",
                             alignItems: "center",
@@ -702,7 +702,7 @@ export const DashboardPage = () => {
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
-                          {new Date(inv.dueDate).toLocaleDateString()}
+                          {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
                         </Typography>
                       </Box>
                       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
@@ -880,7 +880,7 @@ export const DashboardPage = () => {
                       Invoice #{inv.invoiceNumber}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Due: {new Date(inv.dueDate).toLocaleDateString()}
+                      Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
