@@ -53,11 +53,13 @@ import { VisitorVerifyPage } from "../pages/visitors/VisitorVerifyPage.jsx";
 import { DocumentsListPage } from "../pages/documents/DocumentsListPage.jsx";
 import { ReportsOverviewPage } from "../pages/reports/ReportsOverviewPage.jsx";
 import { AuditLogsListPage } from "../pages/audit-logs/AuditLogsListPage.jsx";
+import { ErrorPage } from "../pages/error/ErrorPage.jsx";
 
 export const router = createBrowserRouter([
   // Public Authentication Routes
   {
     element: <AuthLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: ROUTES.LOGIN, element: <LoginPage /> },
       { path: ROUTES.FORGOT_PASSWORD, element: <ForgotPasswordPage /> },
@@ -73,6 +75,7 @@ export const router = createBrowserRouter([
         <DashboardLayout />
       </AuthGuard>
     ),
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Navigate to={ROUTES.DASHBOARD} replace /> },
       { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
