@@ -1,5 +1,5 @@
 // =====================  ROLE-AWARE DASHBOARD (AUTHORITATIVE MASTER SPEC)  ===========
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
@@ -17,9 +17,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ApartmentIcon from "@mui/icons-material/Apartment";
-import DomainIcon from "@mui/icons-material/Domain";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
-import PeopleIcon from "@mui/icons-material/People";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -34,13 +32,15 @@ import DoorSlidingIcon from "@mui/icons-material/DoorSliding";
 import { Link as RouterLink, useNavigate, useOutletContext } from "react-router-dom";
 import { SuperAdminDashboardView } from "./components/SuperAdminDashboardView.jsx";
 import { useAuth } from "../../providers/auth-context.js";
-import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
+import { ROLES } from "../../lib/constants/roles.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatCard } from "../../components/common/StatCard.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { TableLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
 import { useMaintenanceRequestsList } from "../../features/maintenance-requests/hooks/use-maintenance-requests.js";
 import { useInvoicesList } from "../../features/invoices/hooks/use-invoices.js";
+import { usePaymentsList } from "../../features/payments/hooks/use-payments.js";
+import { useComplaintsList } from "../../features/complaints/hooks/use-complaints.js";
 import { useNoticesList } from "../../features/notices/hooks/use-notices.js";
 import { useFlatsList } from "../../features/flats/hooks/use-flats.js";
 import { useVisitorsList } from "../../features/visitors/hooks/use-visitors.js";
@@ -49,20 +49,14 @@ import { useUsersList } from "../../features/users/hooks/use-users.js";
 import { useAuditLogsList } from "../../features/audit-logs/hooks/use-audit-logs.js";
 import { useExpensesList } from "../../features/expenses/hooks/use-expenses.js";
 import { useStaffList } from "../../features/staff/hooks/use-staff.js";
-import { useTenantsList } from "../../features/tenants/hooks/use-tenants.js";
 import { TrendChart } from "../../components/common/TrendChart.jsx";
 import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 // =========================================================================
-// REUSABLE ULTRA-CLEAN CARD CONTAINERS & ROW PRESENTERS
+// REUSABLE CARD CONTAINERS & ROW PRESENTERS
 // =========================================================================
 
-/**
- * Clean Card Container matching modern SaaS standards:
- * - Pure #FFFFFF background, 1px #E2E8F0 border, 14px border radius
- * - Subdued elevation, clean header with title and action
- */
 const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} }) => (
   <Paper
     variant="outlined"
@@ -95,7 +89,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1.125rem", // 18px per spec
+            fontSize: "1.125rem",
             fontWeight: 600,
             color: DESIGN_TOKENS.text.primary,
             letterSpacing: "-0.01em",
@@ -111,7 +105,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
               color: DESIGN_TOKENS.text.secondary,
               mt: 0.25,
               display: "block",
-              fontSize: "0.875rem", // 14px per spec
+              fontSize: "0.875rem",
               fontWeight: 400,
               lineHeight: 1.4,
             }}
@@ -145,10 +139,6 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
   </Paper>
 );
 
-/**
- * Super-clean Empty State inside Cards
- * Subtle container with pastel icon badge and friendly messaging
- */
 const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null }) => (
   <Box
     sx={{
@@ -217,10 +207,6 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
   </Box>
 );
 
-/**
- * Clean List Row for Dashboard cards
- * Standardized padding, avatar box, typography, and hover interaction
- */
 const DashboardListItem = ({
   to,
   icon,
@@ -342,103 +328,190 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const role = user?.role || ROLES.TENANT;
 
-  // 1. Core Domain Queries
-  const { data: maintenanceData, isLoading: loadingMaintenance } = useMaintenanceRequestsList({
-    buildingId: activeBuildingId,
-    limit: 10,
-  });
-  const { data: invoicesData, isLoading: loadingInvoices } = useInvoicesList({
-    buildingId: activeBuildingId,
-    limit: 10,
-  });
-  const { data: noticesData } = useNoticesList({
-    buildingId: activeBuildingId,
-    limit: 4,
-  });
+  // Interactive Perspective Switcher State
+  const [selectedRoleView, setSelectedRoleView] = useState(null);
+  const effectiveRole = selectedRoleView || role;
+
+  // 1. Live Domain Queries (Full Datasets for Dashboard Computation)
+  const { data: buildingsData, isLoading: loadingBuildings } = useBuildingsList({ limit: 100 });
   const { data: flatsData } = useFlatsList({
-    buildingId: activeBuildingId,
+    buildingId: activeBuildingId || undefined,
     limit: 100,
   });
+  const { data: usersData, isLoading: loadingUsers } = useUsersList({ limit: 100 });
+  const { data: maintenanceData, isLoading: loadingMaintenance } = useMaintenanceRequestsList({
+    buildingId: activeBuildingId || undefined,
+    limit: 100,
+  });
+  const { data: complaintsData } = useComplaintsList({
+    buildingId: activeBuildingId || undefined,
+    limit: 100,
+  });
+  const { data: invoicesData, isLoading: loadingInvoices } = useInvoicesList({
+    buildingId: activeBuildingId || undefined,
+    limit: 100,
+  });
+  const { data: paymentsData } = usePaymentsList({ limit: 100 });
+  const { data: noticesData } = useNoticesList({
+    buildingId: activeBuildingId || undefined,
+    limit: 10,
+  });
   const { data: visitorsData, isLoading: loadingVisitors } = useVisitorsList({
-    buildingId: activeBuildingId,
-    limit: 20,
+    buildingId: activeBuildingId || undefined,
+    limit: 50,
   });
-
-  // 2. Role-specific Platform & Operations Queries
-  const isSuperAdmin = role === ROLES.SUPER_ADMIN;
-  const isManager = role === ROLES.MANAGER;
-  const isAccountant = role === ROLES.ACCOUNTANT;
-
-  const { data: buildingsData, isLoading: loadingBuildings } = useBuildingsList({
-    enabled: isSuperAdmin,
-  });
-  const { data: usersData } = useUsersList({
-    enabled: isSuperAdmin,
-  });
-  const { data: auditLogsData } = useAuditLogsList({
-    enabled: isSuperAdmin,
-    limit: 6,
-  });
+  const { data: auditLogsData } = useAuditLogsList({ limit: 10 });
   const { data: expensesData } = useExpensesList({
-    buildingId: activeBuildingId,
-    enabled: isAccountant,
+    buildingId: activeBuildingId || undefined,
+    limit: 50,
   });
   const { data: staffData } = useStaffList({
-    buildingId: activeBuildingId,
-    enabled: isManager,
+    buildingId: activeBuildingId || undefined,
+    limit: 50,
   });
   const { data: tenantsData } = useTenantsList({
-    buildingId: activeBuildingId,
-    enabled: isManager,
+    buildingId: activeBuildingId || undefined,
+    limit: 50,
   });
 
-  // Normalize arrays
-  const requests =
-    maintenanceData?.requests || (Array.isArray(maintenanceData) ? maintenanceData : []);
-  const invoices = invoicesData?.invoices || (Array.isArray(invoicesData) ? invoicesData : []);
-  const notices = noticesData?.notices || (Array.isArray(noticesData) ? noticesData : []);
-  const flats = flatsData?.flats || (Array.isArray(flatsData) ? flatsData : []);
-  const visitors = visitorsData?.visitors || (Array.isArray(visitorsData) ? visitorsData : []);
-  const buildings = buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []);
-  const users = usersData?.users || (Array.isArray(usersData) ? usersData : []);
-  const auditLogs = auditLogsData?.logs || (Array.isArray(auditLogsData) ? auditLogsData : []);
-  const expenses = expensesData?.expenses || (Array.isArray(expensesData) ? expensesData : []);
-  const staff = staffData?.staff || (Array.isArray(staffData) ? staffData : []);
-  const tenants = tenantsData?.tenants || (Array.isArray(tenantsData) ? tenantsData : []);
-
-  // Compute live operational metrics
-  const openRequests = requests.filter((r) => r.status === "OPEN" || r.status === "TRIAGED");
-  const unassignedRequests = requests.filter((r) => !r.assignedStaffId && r.status !== "RESOLVED");
-  const urgentRequests = requests.filter(
-    (r) => r.priority === "EMERGENCY" || r.priority === "HIGH"
+  // Normalize Arrays
+  const buildings = useMemo(
+    () => buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []),
+    [buildingsData]
   );
-  const occupiedFlats = flats.filter((f) => f.status === "OCCUPIED").length;
-  const vacantFlats = flats.filter((f) => f.status === "VACANT").length;
+  const flats = useMemo(
+    () => flatsData?.flats || (Array.isArray(flatsData) ? flatsData : []),
+    [flatsData]
+  );
+  const users = useMemo(
+    () => usersData?.users || (Array.isArray(usersData) ? usersData : []),
+    [usersData]
+  );
+  const requests = useMemo(
+    () => maintenanceData?.requests || (Array.isArray(maintenanceData) ? maintenanceData : []),
+    [maintenanceData]
+  );
+  const complaints = useMemo(
+    () => complaintsData?.complaints || (Array.isArray(complaintsData) ? complaintsData : []),
+    [complaintsData]
+  );
+  const invoices = useMemo(
+    () => invoicesData?.invoices || (Array.isArray(invoicesData) ? invoicesData : []),
+    [invoicesData]
+  );
+  const payments = useMemo(
+    () => paymentsData?.payments || (Array.isArray(paymentsData) ? paymentsData : []),
+    [paymentsData]
+  );
+  const notices = useMemo(
+    () => noticesData?.notices || (Array.isArray(noticesData) ? noticesData : []),
+    [noticesData]
+  );
+  const visitors = useMemo(
+    () => visitorsData?.visitors || (Array.isArray(visitorsData) ? visitorsData : []),
+    [visitorsData]
+  );
+  const auditLogs = useMemo(
+    () =>
+      auditLogsData?.auditLogs ||
+      auditLogsData?.logs ||
+      (Array.isArray(auditLogsData) ? auditLogsData : []),
+    [auditLogsData]
+  );
+  const expenses = useMemo(
+    () => expensesData?.expenses || (Array.isArray(expensesData) ? expensesData : []),
+    [expensesData]
+  );
+  const staff = useMemo(
+    () => staffData?.staff || (Array.isArray(staffData) ? staffData : []),
+    [staffData]
+  );
+
+  // Compute Live Operational Metrics (100% Real Backend Data)
+  const openRequests = useMemo(
+    () => requests.filter((r) => r.status === "OPEN" || r.status === "TRIAGED"),
+    [requests]
+  );
+  const unassignedRequests = useMemo(
+    () => requests.filter((r) => !r.assignedStaffId && r.status !== "RESOLVED"),
+    [requests]
+  );
+  const urgentRequests = useMemo(
+    () => requests.filter((r) => r.priority === "EMERGENCY" || r.priority === "HIGH"),
+    [requests]
+  );
+
+  const occupiedFlats = useMemo(() => flats.filter((f) => f.status === "OCCUPIED").length, [flats]);
+  const vacantFlats = useMemo(() => flats.filter((f) => f.status === "VACANT").length, [flats]);
   const totalFlats = flats.length || 1;
   const occupancyPct = Math.round((occupiedFlats / totalFlats) * 100);
 
-  const overdueInvoices = invoices.filter((i) => i.status === "OVERDUE");
-  const totalOverdueAmount = overdueInvoices.reduce(
-    (acc, curr) => acc + (curr.dueAmount || curr.totalAmount || 0),
-    0
+  const overdueInvoices = useMemo(
+    () => invoices.filter((i) => i.status === "OVERDUE"),
+    [invoices]
   );
-  const paidInvoices = invoices.filter((i) => i.status === "PAID");
-  const collectionRate =
-    invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
-  const pendingExpenses = expenses.filter((e) => e.status === "PENDING");
+  const totalOverdueAmount = useMemo(
+    () =>
+      overdueInvoices.reduce(
+        (acc, curr) => acc + (Number(curr.dueAmount) || Number(curr.totalAmount) || 0),
+        0
+      ),
+    [overdueInvoices]
+  );
+  const paidInvoices = useMemo(() => invoices.filter((i) => i.status === "PAID"), [invoices]);
+  const collectionRate = useMemo(
+    () => (invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 0),
+    [invoices, paidInvoices]
+  );
+
+  const pendingExpenses = useMemo(
+    () =>
+      expenses.filter((e) => e.status === "PENDING" || e.status === "PENDING_APPROVAL"),
+    [expenses]
+  );
 
   // Security staff visitor metrics
-  const expectedVisitors = visitors.filter((v) => v.status === "EXPECTED");
-  const checkedInVisitors = visitors.filter((v) => v.status === "CHECKED_IN");
-
-  // Super Admin metrics
-  const activeAdmins = users.filter((u) => u.role === ROLES.BUILDING_ADMIN);
-  const totalResidents = users.filter((u) => u.role === ROLES.OWNER || u.role === ROLES.TENANT);
+  const expectedVisitors = useMemo(
+    () => visitors.filter((v) => v.status === "EXPECTED"),
+    [visitors]
+  );
+  const checkedInVisitors = useMemo(
+    () => visitors.filter((v) => v.status === "CHECKED_IN"),
+    [visitors]
+  );
 
   // Security gate quick-entry state
   const [passCodeInput, setPassCodeInput] = useState("");
 
-  // Role-specific plain-language greeting subtitles
+  // Real Dynamic Collections Trend Calculation
+  const collectionsTrend = useMemo(() => {
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short" });
+      months.push({ key, label, totalBilled: 0, totalPaid: 0 });
+    }
+
+    invoices.forEach((inv) => {
+      const p = inv.billingPeriod || (inv.createdAt ? String(inv.createdAt).slice(0, 7) : "");
+      const target = months.find((m) => m.key === p);
+      if (target) {
+        target.totalBilled += Number(inv.totalAmount) || 0;
+        target.totalPaid +=
+          Number(inv.paidAmount) || (inv.status === "PAID" ? Number(inv.totalAmount) || 0 : 0);
+      }
+    });
+
+    return {
+      labels: months.map((m) => m.label),
+      rates: months.map((m) =>
+        m.totalBilled > 0 ? Math.round((m.totalPaid / m.totalBilled) * 100) : 0
+      ),
+    };
+  }, [invoices]);
+
   const roleSubtitles = {
     [ROLES.SUPER_ADMIN]:
       "Manage residential complexes, administrative accounts, and platform operations.",
@@ -458,26 +531,98 @@ export const DashboardPage = () => {
 
   const outletContext = useOutletContext();
 
-  // 1. SUPER ADMIN FIGMA SPECIFICATION VIEW
-  if (role === ROLES.SUPER_ADMIN) {
+  // 1. SUPER ADMIN EXECUTIVE CONSOLE VIEW (WITH 100% REAL DATA PROPS)
+  if (effectiveRole === ROLES.SUPER_ADMIN) {
     return (
       <SuperAdminDashboardView
         buildings={buildings}
+        flats={flats}
         users={users}
-        openRequests={openRequests}
+        invoices={invoices}
+        payments={payments}
+        requests={requests}
+        complaints={complaints}
+        auditLogs={auditLogs}
+        isLoading={loadingBuildings || loadingUsers || loadingInvoices}
+        selectedRoleView={selectedRoleView}
+        onSelectRoleView={setSelectedRoleView}
         onMenuClick={outletContext?.onMenuClick}
       />
     );
   }
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", pb: 4 }}>
+      {/* Perspective Switcher for Admins (Big Companies Multi-Perspective Suite) */}
+      {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.BUILDING_ADMIN) && (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 1,
+            mb: 2.5,
+            borderRadius: "12px",
+            borderColor: DESIGN_TOKENS.line[200],
+            bgcolor: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              color: DESIGN_TOKENS.text.secondary,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              px: 1,
+            }}
+          >
+            Dashboard Perspective:
+          </Typography>
+          {[
+            { id: ROLES.SUPER_ADMIN, label: "Super Admin (SaaS Console)" },
+            { id: ROLES.BUILDING_ADMIN, label: "Building Operations" },
+            { id: ROLES.MANAGER, label: "Work Order Dispatch" },
+            { id: ROLES.ACCOUNTANT, label: "Financial Ledger" },
+            { id: ROLES.SECURITY_STAFF, label: "Security Gate" },
+            { id: ROLES.TENANT, label: "Resident Portal" },
+          ].map((roleItem) => {
+            const isSelected = effectiveRole === roleItem.id;
+            return (
+              <Button
+                key={roleItem.id}
+                size="small"
+                onClick={() => setSelectedRoleView(roleItem.id)}
+                variant={isSelected ? "contained" : "text"}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: isSelected ? 700 : 500,
+                  fontSize: "0.8125rem",
+                  borderRadius: "8px",
+                  py: 0.5,
+                  px: 1.5,
+                  bgcolor: isSelected ? DESIGN_TOKENS.brand[600] : "transparent",
+                  color: isSelected ? "#FFFFFF" : DESIGN_TOKENS.text.secondary,
+                  "&:hover": {
+                    bgcolor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.surface[100],
+                  },
+                }}
+              >
+                {roleItem.label}
+              </Button>
+            );
+          })}
+        </Paper>
+      )}
+
       {/* Header */}
       <PageHeader
         title={`Good day, ${user?.firstName || "Resident"}`}
-        subtitle={roleSubtitles[role] || "Welcome to your operations overview."}
+        subtitle={roleSubtitles[effectiveRole] || "Welcome to your operations overview."}
         action={
-          (role === ROLES.OWNER || role === ROLES.TENANT) && (
+          (effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
             <Stack direction="row" spacing={1.5}>
               <Button
                 component={RouterLink}
@@ -517,45 +662,8 @@ export const DashboardPage = () => {
           ROLE-SPECIFIC STATCARD ROWS
           ========================================================================= */}
       <Box sx={{ mb: 4 }}>
-        {/* 1. SUPER ADMIN */}
-        {role === ROLES.SUPER_ADMIN && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={buildings.length}
-                label="Total Buildings"
-                delta="Registered residential complexes"
-                icon={<DomainIcon />}
-                iconBg="#EEF2FF"
-                iconColor={DESIGN_TOKENS.brand[600]}
-                isHero={buildings.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={activeAdmins.length}
-                label="Active Administrators"
-                delta="Assigned building operators"
-                icon={<SupervisorAccountIcon />}
-                iconBg="#ECFDF5"
-                iconColor="#059669"
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={totalResidents.length}
-                label="Platform Residents"
-                delta="Registered owners & tenants"
-                icon={<PeopleIcon />}
-                iconBg="#F5F3FF"
-                iconColor="#7C3AED"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 2. BUILDING ADMIN */}
-        {role === ROLES.BUILDING_ADMIN && (
+        {/* 1. BUILDING ADMIN */}
+        {effectiveRole === ROLES.BUILDING_ADMIN && (
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={4}>
               <StatCard
@@ -582,7 +690,7 @@ export const DashboardPage = () => {
               <StatCard
                 value={`${collectionRate}%`}
                 label="This Month's Collection Rate"
-                delta={`${paidInvoices.length} of ${invoices.length} invoices paid`}
+                delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
                 icon={<AccountBalanceWalletIcon />}
                 iconBg="#EEF2FF"
                 iconColor={DESIGN_TOKENS.brand[600]}
@@ -591,8 +699,8 @@ export const DashboardPage = () => {
           </Grid>
         )}
 
-        {/* 3. MANAGER */}
-        {role === ROLES.MANAGER && (
+        {/* 2. MANAGER */}
+        {effectiveRole === ROLES.MANAGER && (
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={4}>
               <StatCard
@@ -629,8 +737,8 @@ export const DashboardPage = () => {
           </Grid>
         )}
 
-        {/* 4. ACCOUNTANT */}
-        {role === ROLES.ACCOUNTANT && (
+        {/* 3. ACCOUNTANT */}
+        {effectiveRole === ROLES.ACCOUNTANT && (
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={4}>
               <StatCard
@@ -670,8 +778,8 @@ export const DashboardPage = () => {
           </Grid>
         )}
 
-        {/* 5. MAINTENANCE STAFF */}
-        {role === ROLES.MAINTENANCE_STAFF && (
+        {/* 4. MAINTENANCE STAFF */}
+        {effectiveRole === ROLES.MAINTENANCE_STAFF && (
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={6}>
               <StatCard
@@ -697,8 +805,8 @@ export const DashboardPage = () => {
           </Grid>
         )}
 
-        {/* 6. SECURITY STAFF */}
-        {role === ROLES.SECURITY_STAFF && (
+        {/* 5. SECURITY STAFF */}
+        {effectiveRole === ROLES.SECURITY_STAFF && (
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={6}>
               <StatCard
@@ -724,13 +832,15 @@ export const DashboardPage = () => {
           </Grid>
         )}
 
-        {/* 7. OWNER & TENANT RESIDENTS */}
-        {(role === ROLES.OWNER || role === ROLES.TENANT) && (
+        {/* 6. OWNER & TENANT RESIDENTS */}
+        {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
           <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={role === ROLES.OWNER ? 4 : 6}>
+            <Grid item xs={12} sm={effectiveRole === ROLES.OWNER ? 4 : 6}>
               <StatCard
                 value={
-                  overdueInvoices.length > 0 ? `₨${totalOverdueAmount.toLocaleString()}` : "₨0"
+                  overdueInvoices.length > 0
+                    ? `₨${totalOverdueAmount.toLocaleString()}`
+                    : "₨0"
                 }
                 label="Current Dues Status"
                 delta={
@@ -744,7 +854,7 @@ export const DashboardPage = () => {
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
-            <Grid item xs={12} sm={role === ROLES.OWNER ? 4 : 6}>
+            <Grid item xs={12} sm={effectiveRole === ROLES.OWNER ? 4 : 6}>
               <StatCard
                 value={requests.length}
                 label="Open Work Orders"
@@ -754,7 +864,7 @@ export const DashboardPage = () => {
                 iconColor={DESIGN_TOKENS.brand[600]}
               />
             </Grid>
-            {role === ROLES.OWNER && (
+            {effectiveRole === ROLES.OWNER && (
               <Grid item xs={12} sm={4}>
                 <StatCard
                   value={notices.length}
@@ -774,140 +884,10 @@ export const DashboardPage = () => {
           ROLE-SPECIFIC PRIMARY CONTENT PANELS
           ========================================================================= */}
 
-      {/* -------------------------------------------------------------------------
-          1. SUPER ADMIN: PLATFORM GROWTH, BUILDINGS LIST & AUDIT ACTIVITY
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.SUPER_ADMIN && (
+      {/* 1. BUILDING ADMIN: WORK ORDERS NEEDING ATTENTION & COLLECTIONS TREND */}
+      {effectiveRole === ROLES.BUILDING_ADMIN && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Left Column: Recently Added Buildings */}
-          <Grid item xs={12} md={6}>
-            <DashboardCard
-              title="Managed Properties"
-              subtitle="Residential buildings set up on the platform"
-              action="View All"
-              actionLink="/buildings"
-            >
-              {loadingBuildings ? (
-                <TableLoadingSkeleton rows={4} />
-              ) : buildings.length === 0 ? (
-                /* VERBATIM PROMPT EMPTY STATE */
-                <DashboardEmptyState
-                  icon={<ApartmentIcon />}
-                  message="No buildings yet — add your first building to get started"
-                  subtext="Provision properties, blocks, and assign building managers."
-                  action={
-                    <Button
-                      component={RouterLink}
-                      to="/buildings"
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      sx={{
-                        bgcolor: DESIGN_TOKENS.brand[600],
-                        fontWeight: 600,
-                        "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
-                      }}
-                    >
-                      Add Building
-                    </Button>
-                  }
-                />
-              ) : (
-                <Stack spacing={1}>
-                  {buildings.slice(0, 5).map((b) => (
-                    <DashboardListItem
-                      key={b._id || b.id}
-                      to={`/buildings/${b._id || b.id}`}
-                      icon={<BusinessIcon />}
-                      title={b.name}
-                      subtitle={`${b.address?.city || b.address?.street || "Residential Complex"}, ${b.totalFlats || 0} flats`}
-                      rightContent={<StatusChip status={b.status || "ACTIVE"} />}
-                    />
-                  ))}
-                </Stack>
-              )}
-            </DashboardCard>
-          </Grid>
-
-          {/* Right Column: Platform Growth Chart */}
-          <Grid item xs={12} md={6}>
-            <TrendChart
-              title="Platform Growth"
-              subtitle="New buildings and resident registrations over time"
-              metric={`${buildings.length} Properties`}
-              color={DESIGN_TOKENS.brand[600]}
-              data={buildings.length === 0 ? [0, 0, 0, 0, 0, 0] : [1, 2, 2, 3, 3, buildings.length]}
-              labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
-              emptyMessage="No properties registered yet"
-            />
-          </Grid>
-
-          {/* Bottom Full-Width Card: Recent Admin Activity */}
-          <Grid item xs={12}>
-            <DashboardCard
-              title="Recent Admin Activity"
-              subtitle="Recent changes made by administrators"
-              action="View Logs"
-              actionLink="/audit-logs"
-            >
-              {auditLogs.length === 0 ? (
-                <DashboardEmptyState
-                  message="No administrative changes recorded yet."
-                  subtext="Building setups, user updates, and permission changes will appear in this audit trail."
-                />
-              ) : (
-                <Grid container spacing={1.5}>
-                  {auditLogs.slice(0, 6).map((log) => (
-                    <Grid item xs={12} sm={6} md={4} key={log._id || log.id}>
-                      <Box
-                        sx={{
-                          p: "12px 14px",
-                          borderRadius: "10px",
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          border: "1px solid #F1F5F9",
-                          height: "100%",
-                        }}
-                      >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.25 }}>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: "0.8125rem",
-                              color: DESIGN_TOKENS.text.primary,
-                            }}
-                          >
-                            {log.action || "SYSTEM_CHANGE"}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
-                          >
-                            {log.createdAt ? new Date(log.createdAt).toLocaleDateString() : "Today"}
-                          </Typography>
-                        </Box>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: DESIGN_TOKENS.text.secondary, display: "block" }}
-                        >
-                          Actor: {log.userEmail || log.userName || "Admin"} (
-                          {log.ipAddress || "Internal"})
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </DashboardCard>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* -------------------------------------------------------------------------
-          2. BUILDING ADMIN: WORK ORDERS NEEDING ATTENTION, COLLECTIONS TREND & NOTICES
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.BUILDING_ADMIN && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Left Column: Work Orders Needing Attention */}
+          {/* Work Orders Needing Attention */}
           <Grid item xs={12} md={7}>
             <DashboardCard
               title="Work Orders Needing Attention"
@@ -918,7 +898,6 @@ export const DashboardPage = () => {
               {loadingMaintenance ? (
                 <TableLoadingSkeleton rows={4} />
               ) : openRequests.length === 0 ? (
-                /* VERBATIM PROMPT EMPTY STATE */
                 <DashboardEmptyState message="All caught up — no work orders need attention right now." />
               ) : (
                 <Stack spacing={1}>
@@ -965,29 +944,28 @@ export const DashboardPage = () => {
             </DashboardCard>
           </Grid>
 
-          {/* Right Column: Collections Trend */}
+          {/* Right Column: Collections Trend (100% Real Invoices Data) */}
           <Grid item xs={12} md={5}>
             <TrendChart
               title="Collections Trend"
-              subtitle="Percentage of billed fees collected this month"
+              subtitle="Percentage of billed fees collected across recent periods"
               metric={`${collectionRate}% Paid`}
               color={DESIGN_TOKENS.brand[600]}
-              data={[68, 72, 79, 82, 86, collectionRate]}
-              labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
+              data={collectionsTrend.rates}
+              labels={collectionsTrend.labels}
               emptyMessage="No payments recorded yet this period"
             />
           </Grid>
 
-          {/* Bottom Full-Width Card: Latest Notices */}
+          {/* Latest Notices */}
           <Grid item xs={12}>
             <DashboardCard
               title="Latest Notices"
-              subtitle="Published announcements"
+              subtitle="Published community announcements"
               action="All Notices"
               actionLink="/notices"
             >
               {notices.length === 0 ? (
-                /* VERBATIM PROMPT EMPTY STATE */
                 <DashboardEmptyState message="No notices published yet." />
               ) : (
                 <Grid container spacing={2}>
@@ -1052,12 +1030,9 @@ export const DashboardPage = () => {
         </Grid>
       )}
 
-      {/* -------------------------------------------------------------------------
-          3. MANAGER: PRIMARY TRIAGE QUEUE, STAFF AVAILABILITY & MOVE-INS/MOVE-OUTS
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.MANAGER && (
+      {/* 2. MANAGER: PRIMARY TRIAGE QUEUE & WORK ORDERS */}
+      {effectiveRole === ROLES.MANAGER && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Primary Triage Queue Card */}
           <Grid item xs={12} md={7}>
             <DashboardCard
               title="Triage & Assignment Queue"
@@ -1068,7 +1043,6 @@ export const DashboardPage = () => {
               {loadingMaintenance ? (
                 <TableLoadingSkeleton rows={4} />
               ) : openRequests.length === 0 ? (
-                /* VERBATIM PROMPT EMPTY STATE */
                 <DashboardEmptyState message="Nothing needs triage right now." />
               ) : (
                 <Stack spacing={1}>
@@ -1104,117 +1078,46 @@ export const DashboardPage = () => {
             </DashboardCard>
           </Grid>
 
-          {/* Right Column: Staff Availability */}
           <Grid item xs={12} md={5}>
             <DashboardCard
-              title="Staff Availability"
-              subtitle="Technicians currently on shift and ready for jobs"
+              title="Assigned Technical Staff"
+              subtitle="Operational staff roster"
               action="Manage Staff"
               actionLink="/staff"
             >
-              <Stack spacing={1}>
-                {(staff.length > 0
-                  ? staff.slice(0, 4)
-                  : [
-                      { name: "Electrical Specialist", shift: "Morning", status: "AVAILABLE" },
-                      { name: "Plumbing Technician", shift: "General", status: "AVAILABLE" },
-                    ]
-                ).map((s, idx) => (
-                  <Box
-                    key={s._id || idx}
-                    sx={{
-                      p: "10px 12px",
-                      borderRadius: "8px",
-                      bgcolor: DESIGN_TOKENS.surface[50],
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {s.name || s.trade || "Technician"}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                        {s.shift || "Active"} shift, {s.trade || "General"}
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label="Available"
-                      size="small"
-                      sx={{
-                        bgcolor: "#ECFDF5",
-                        color: "#047857",
-                        fontWeight: 600,
-                        fontSize: "0.6875rem",
-                      }}
-                    />
-                  </Box>
-                ))}
-              </Stack>
-            </DashboardCard>
-          </Grid>
-
-          {/* Bottom Full-Width Card: Move-ins & Move-outs */}
-          <Grid item xs={12}>
-            <DashboardCard
-              title="Today's Move-ins / Move-outs"
-              subtitle="Scheduled resident arrivals and departures"
-              action="Tenant Roster"
-              actionLink="/tenants"
-            >
-              {tenants.length === 0 ? (
-                <DashboardEmptyState message="No resident transitions scheduled for today." />
+              {staff.length === 0 ? (
+                <DashboardEmptyState message="No staff accounts registered yet." />
               ) : (
-                <Grid container spacing={2}>
-                  {tenants.slice(0, 4).map((t) => (
-                    <Grid item xs={12} sm={6} key={t._id || t.id}>
-                      <Box
-                        sx={{
-                          p: "12px 14px",
-                          borderRadius: "10px",
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          border: "1px solid #F1F5F9",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {t.user?.firstName || t.name || "Resident"}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: DESIGN_TOKENS.text.secondary }}
-                          >
-                            Flat {t.flatId?.flatNumber || "Assigned"}, Active tenancy
-                          </Typography>
-                        </Box>
+                <Stack spacing={1}>
+                  {staff.slice(0, 5).map((s) => (
+                    <DashboardListItem
+                      key={s._id || s.id}
+                      icon={<SupervisorAccountIcon />}
+                      title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.name || "Technician"}`}
+                      subtitle={`Specialty: ${s.department || s.role || "General Maintenance"}`}
+                      rightContent={
                         <Chip
-                          label="Resident"
+                          label={s.status || "ACTIVE"}
                           size="small"
                           sx={{
-                            bgcolor: DESIGN_TOKENS.surface[100],
-                            fontWeight: 600,
-                            fontSize: "0.6875rem",
+                            fontSize: "0.7rem",
+                            fontWeight: 700,
+                            bgcolor: "#DCFCE7",
+                            color: "#15803D",
                           }}
                         />
-                      </Box>
-                    </Grid>
+                      }
+                    />
                   ))}
-                </Grid>
+                </Stack>
               )}
             </DashboardCard>
           </Grid>
         </Grid>
       )}
 
-      {/* -------------------------------------------------------------------------
-          4. ACCOUNTANT: COLLECTIONS TREND & RANKED OVERDUE LIST
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.ACCOUNTANT && (
+      {/* 3. ACCOUNTANT: COLLECTIONS & OVERDUE LIST */}
+      {effectiveRole === ROLES.ACCOUNTANT && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} lg={7}>
             <DashboardCard
@@ -1226,7 +1129,6 @@ export const DashboardPage = () => {
               {loadingInvoices ? (
                 <TableLoadingSkeleton rows={4} />
               ) : overdueInvoices.length === 0 ? (
-                /* VERBATIM PROMPT EMPTY STATE */
                 <DashboardEmptyState message="No overdue invoices — collections are fully up to date." />
               ) : (
                 <Stack spacing={1}>
@@ -1238,7 +1140,7 @@ export const DashboardPage = () => {
                       iconBg="#FEE2E2"
                       iconColor={DESIGN_TOKENS.danger[600]}
                       title={`Invoice #${inv.invoiceNumber}`}
-                      subtitle={`Billing period: ${inv.periodMonth}/${inv.periodYear}, Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                      subtitle={`Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
                       rightContent={
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                           <Typography
@@ -1250,7 +1152,7 @@ export const DashboardPage = () => {
                               letterSpacing: "-0.01em",
                             }}
                           >
-                            ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
+                            ₨{(Number(inv.dueAmount) || Number(inv.totalAmount) || 0).toLocaleString()}
                           </Typography>
                           <StatusChip status={inv.status} />
                         </Stack>
@@ -1265,28 +1167,25 @@ export const DashboardPage = () => {
           <Grid item xs={12} lg={5}>
             <TrendChart
               title="Collections Trend"
-              subtitle="How fees have been collected across recent months"
+              subtitle="Percentage of billed fees collected across recent periods"
               metric={`${collectionRate}% Cleared`}
               color={DESIGN_TOKENS.accent.green}
-              data={[58, 64, 72, 79, 86, collectionRate]}
-              labels={["Sep", "Oct", "Nov", "Dec", "Jan", "Current"]}
+              data={collectionsTrend.rates}
+              labels={collectionsTrend.labels}
               emptyMessage="No payments recorded yet this period"
             />
           </Grid>
         </Grid>
       )}
 
-      {/* -------------------------------------------------------------------------
-          5. MAINTENANCE STAFF: ACTION LIST TODAY
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.MAINTENANCE_STAFF && (
+      {/* 4. MAINTENANCE STAFF: ACTION LIST TODAY */}
+      {effectiveRole === ROLES.MAINTENANCE_STAFF && (
         <Box sx={{ mb: 4 }}>
           <DashboardCard
             title="My Work Orders — Today"
             subtitle="Your assigned maintenance tasks for today"
           >
             {requests.length === 0 ? (
-              /* VERBATIM PROMPT EMPTY STATE */
               <DashboardEmptyState message="Nothing assigned to you today." />
             ) : (
               <Stack spacing={1.25}>
@@ -1335,12 +1234,9 @@ export const DashboardPage = () => {
         </Box>
       )}
 
-      {/* -------------------------------------------------------------------------
-          6. SECURITY STAFF: GATE TERMINAL & CURRENTLY-INSIDE ROSTER
-          ------------------------------------------------------------------------- */}
-      {role === ROLES.SECURITY_STAFF && (
+      {/* 5. SECURITY STAFF: GATE TERMINAL & ROSTER */}
+      {effectiveRole === ROLES.SECURITY_STAFF && (
         <Stack spacing={3} sx={{ mb: 4 }}>
-          {/* Quick Check-in Terminal Card */}
           <DashboardCard
             title="Gate Terminal Quick Entry"
             subtitle="Enter a 6-digit visitor code or check in guests"
@@ -1368,7 +1264,13 @@ export const DashboardPage = () => {
               />
               <Button
                 variant="contained"
-                onClick={() => navigate("/visitors/verify")}
+                onClick={() => {
+                  if (passCodeInput.trim()) {
+                    navigate(`/visitors/verify?code=${encodeURIComponent(passCodeInput.trim())}`);
+                  } else {
+                    navigate("/visitors/verify");
+                  }
+                }}
                 startIcon={<CheckCircleOutlinedIcon />}
                 sx={{
                   minHeight: 48,
@@ -1384,7 +1286,6 @@ export const DashboardPage = () => {
             </Stack>
           </DashboardCard>
 
-          {/* Currently Inside List */}
           <DashboardCard
             title="Currently Inside Premises"
             subtitle="Visitors on site who need to be checked out upon leaving"
@@ -1394,7 +1295,6 @@ export const DashboardPage = () => {
             {loadingVisitors ? (
               <TableLoadingSkeleton rows={3} />
             ) : checkedInVisitors.length === 0 ? (
-              /* VERBATIM PROMPT EMPTY STATE */
               <DashboardEmptyState message="No visitors currently inside." />
             ) : (
               <Stack spacing={1}>
@@ -1402,8 +1302,8 @@ export const DashboardPage = () => {
                   <DashboardListItem
                     key={v._id || v.id}
                     icon={<BadgeIcon />}
-                    title={v.name}
-                    subtitle={`Visiting Flat ${v.flatId?.flatNumber || "Visiting Unit"}, Phone: ${v.phone || "—"}`}
+                    title={v.visitorName || v.name || "Guest Visitor"}
+                    subtitle={`Visiting Flat ${v.flatId?.flatNumber || v.flat?.flatNumber || "Visiting Unit"}, Phone: ${v.visitorPhone || v.phone || "—"}`}
                     rightContent={
                       <Button
                         variant="outlined"
@@ -1411,7 +1311,7 @@ export const DashboardPage = () => {
                         startIcon={<ExitToAppIcon sx={{ fontSize: 16 }} />}
                         onClick={() => navigate("/visitors/verify")}
                         sx={{
-                          minHeight: 44, // >= 44px tap target per mobile-first spec
+                          minHeight: 44,
                           borderColor: DESIGN_TOKENS.line[200],
                           color: DESIGN_TOKENS.text.primary,
                           fontWeight: 600,
@@ -1428,12 +1328,10 @@ export const DashboardPage = () => {
         </Stack>
       )}
 
-      {/* -------------------------------------------------------------------------
-          7. RESIDENT (OWNER / TENANT): MY FLAT OVERVIEW & LEDGER
-          ------------------------------------------------------------------------- */}
-      {(role === ROLES.OWNER || role === ROLES.TENANT) && (
+      {/* 6. RESIDENT (OWNER / TENANT): MY FLAT OVERVIEW & INVOICES */}
+      {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
         <DashboardCard
-          title={role === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
+          title={effectiveRole === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
           subtitle="Monthly maintenance bills and payment records for your flat"
           action="View Invoices"
           actionLink="/invoices"
@@ -1461,7 +1359,7 @@ export const DashboardPage = () => {
                           letterSpacing: "-0.01em",
                         }}
                       >
-                        ₨{(inv.totalAmount || 0).toLocaleString()}
+                        ₨{(Number(inv.totalAmount) || 0).toLocaleString()}
                       </Typography>
                       <StatusChip status={inv.status} />
                     </Stack>

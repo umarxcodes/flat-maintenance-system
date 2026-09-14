@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// =====================  SUPER ADMIN EXECUTIVE CONSOLE  ============
+import React, { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
@@ -13,6 +14,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
+import Skeleton from "@mui/material/Skeleton";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
@@ -23,37 +26,38 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { useNavigate } from "react-router-dom";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import AddIcon from "@mui/icons-material/Add";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import HistoryIcon from "@mui/icons-material/History";
+import BusinessIcon from "@mui/icons-material/Business";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../providers/auth-context.js";
 import { FONT_UI } from "../../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../../theme/palette.js";
+import { formatCurrency } from "../../../utils/format-currency.js";
+import { ROLES } from "../../../lib/constants/roles.js";
 
-// Monthly data matching the exact Figma prototype curve
-const REVENUE_DATA = [
-  { month: "Jan", revenue: 1300000, label: "Rs. 1.3M" },
-  { month: "Feb", revenue: 1700000, label: "Rs. 1.7M" },
-  { month: "Mar", revenue: 2000000, label: "Rs. 2.0M" },
-  { month: "Apr", revenue: 1800000, label: "Rs. 1.8M" },
-  { month: "May", revenue: 2400000, label: "Rs. 2.4M" },
-  { month: "Jun", revenue: 2900000, label: "Rs. 2.9M" },
-  { month: "Jul", revenue: 2700000, label: "Rs. 2.7M" },
-  { month: "Aug", revenue: 3500000, label: "Rs. 3.5M" },
-  { month: "Sep", revenue: 4250000, label: "Rs. 4.25M" },
-];
-
-const DEFAULT_OCCUPANCY = [
-  { name: "Falcon Heights", pct: 93 },
-  { name: "Al-Noor Residency", pct: 87 },
-  { name: "Marina Towers", pct: 91 },
-  { name: "Creek Vista", pct: 88 },
-  { name: "Royal Orchards", pct: 76 },
-];
-
+/**
+ * Enterprise Super Admin Console
+ * Built for high-volume SaaS portfolio governance with 100% LIVE dynamic backend data.
+ */
 export const SuperAdminDashboardView = ({
   buildings = [],
+  flats = [],
   users = [],
-  openRequests = [],
+  invoices = [],
+  payments = [],
+  requests = [],
+  complaints = [],
+  auditLogs = [],
+  isLoading = false,
   onMenuClick,
+  selectedRoleView = null,
+  onSelectRoleView = null,
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -66,59 +70,209 @@ export const SuperAdminDashboardView = ({
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
 
+  const initials =
+    `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "SA";
+
+  // -------------------------------------------------------------------------
+  // 1. LIVE REVENUE DATA GENERATION (LAST 9 MONTHS)
+  // -------------------------------------------------------------------------
+  const revenueData = useMemo(() => {
+    const months = [];
+    const now = new Date();
+    for (let i = 8; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const monthLabel = d.toLocaleString("en-US", { month: "short" });
+      months.push({ key, month: monthLabel, revenue: 0 });
+    }
+
+    // Accumulate actual payments
+    payments.forEach((p) => {
+      const dateStr = p.paymentDate || p.createdAt;
+      if (!dateStr) return;
+      const key = String(dateStr).slice(0, 7);
+      const target = months.find((m) => m.key === key);
+      if (target) {
+        target.revenue += Number(p.amount) || 0;
+      }
+    });
+
+    // If payments table is empty, accumulate paid invoices
+    if (payments.length === 0) {
+      invoices.forEach((inv) => {
+        const key =
+          inv.billingPeriod ||
+          (inv.createdAt ? String(inv.createdAt).slice(0, 7) : "");
+        const target = months.find((m) => m.key === key);
+        if (target) {
+          target.revenue += Number(inv.paidAmount) || 0;
+        }
+      });
+    }
+
+    return months.map((m) => {
+      let label = `₨${m.revenue.toLocaleString()}`;
+      if (m.revenue >= 1000000) {
+        label = `₨${(m.revenue / 1000000).toFixed(1)}M`;
+      } else if (m.revenue >= 1000) {
+        label = `₨${(m.revenue / 1000).toFixed(0)}K`;
+      }
+      return {
+        ...m,
+        label,
+      };
+    });
+  }, [payments, invoices]);
+
+  // Export Real Data to CSV
   const handleExportCSV = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      ["Month,Platform Revenue (PKR)"]
-        .concat(REVENUE_DATA.map((d) => `${d.month},${d.revenue}`))
+      ["Month,Billing Period,Platform Revenue (PKR)"]
+        .concat(revenueData.map((d) => `${d.month},${d.key},${d.revenue}`))
         .join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "platform_revenue_ytd.csv");
+    link.setAttribute("download", `platform_revenue_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const initials =
-    `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "SA";
+  // -------------------------------------------------------------------------
+  // 2. DYNAMIC CHART COORDINATES CALCULATION
+  // -------------------------------------------------------------------------
+  const highestRevenue = useMemo(() => {
+    const max = Math.max(...revenueData.map((d) => d.revenue), 0);
+    return max > 0 ? max : 100000;
+  }, [revenueData]);
 
-  // Chart coordinates calculation
-  const maxRevenue = 5000000;
+  // Round max to comfortable milestone
+  const maxRevenue = useMemo(() => {
+    if (highestRevenue >= 1000000) {
+      return Math.ceil((highestRevenue * 1.25) / 500000) * 500000;
+    }
+    return Math.max(highestRevenue * 1.25, 100000);
+  }, [highestRevenue]);
+
   const chartHeight = 220;
   const chartWidth = 580;
   const paddingX = 35;
   const paddingY = 20;
 
-  const points = REVENUE_DATA.map((d, index) => {
-    const x = paddingX + (index / (REVENUE_DATA.length - 1)) * (chartWidth - paddingX * 2);
-    const y = chartHeight - paddingY - (d.revenue / maxRevenue) * (chartHeight - paddingY * 2);
-    return { x, y, ...d };
-  });
+  const points = useMemo(() => {
+    return revenueData.map((d, index) => {
+      const x = paddingX + (index / (revenueData.length - 1 || 1)) * (chartWidth - paddingX * 2);
+      const ratio = maxRevenue > 0 ? d.revenue / maxRevenue : 0;
+      const y = chartHeight - paddingY - ratio * (chartHeight - paddingY * 2);
+      return { x, y, ...d };
+    });
+  }, [revenueData, maxRevenue]);
 
   // Generate smooth SVG path
-  const pathD = points.reduce((acc, point, index, arr) => {
-    if (index === 0) return `M ${point.x} ${point.y}`;
-    const prev = arr[index - 1];
-    const cp1x = prev.x + (point.x - prev.x) / 2;
-    const cp1y = prev.y;
-    const cp2x = prev.x + (point.x - prev.x) / 2;
-    const cp2y = point.y;
-    return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${point.y}`;
-  }, "");
+  const pathD = useMemo(() => {
+    if (points.length === 0) return "";
+    return points.reduce((acc, point, index, arr) => {
+      if (index === 0) return `M ${point.x} ${point.y}`;
+      const prev = arr[index - 1];
+      const cp1x = prev.x + (point.x - prev.x) / 2;
+      const cp1y = prev.y;
+      const cp2x = prev.x + (point.x - prev.x) / 2;
+      const cp2y = point.y;
+      return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${point.y}`;
+    }, "");
+  }, [points]);
 
-  // Area under path
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${chartHeight - paddingY} L ${points[0].x} ${chartHeight - paddingY} Z`;
+  const areaD = useMemo(() => {
+    if (!pathD || points.length === 0) return "";
+    return `${pathD} L ${points[points.length - 1].x} ${chartHeight - paddingY} L ${points[0].x} ${chartHeight - paddingY} Z`;
+  }, [pathD, points]);
 
-  // Occupancy list fallback/merge
-  const occupancyList =
-    buildings.length > 0
-      ? buildings.slice(0, 5).map((b, idx) => ({
-          name: b.name || `Property ${idx + 1}`,
-          pct: DEFAULT_OCCUPANCY[idx]?.pct || 85,
-        }))
-      : DEFAULT_OCCUPANCY;
+  // Y-axis Dynamic Milestones
+  const yAxisMilestones = useMemo(() => {
+    const steps = [1, 0.75, 0.5, 0.25, 0];
+    return steps.map((step) => {
+      const val = maxRevenue * step;
+      let label = "₨0";
+      if (val >= 1000000) {
+        label = `₨${(val / 1000000).toFixed(1)}M`;
+      } else if (val >= 1000) {
+        label = `₨${(val / 1000).toFixed(0)}K`;
+      }
+      return label;
+    });
+  }, [maxRevenue]);
+
+  // -------------------------------------------------------------------------
+  // 3. DYNAMIC BUILDINGS OCCUPANCY CALCULATION
+  // -------------------------------------------------------------------------
+  const buildingOccupancyList = useMemo(() => {
+    if (!buildings.length) return [];
+    return buildings.slice(0, 5).map((b) => {
+      const bId = (b._id || b.id || "").toString();
+      const bFlats = flats.filter((f) => {
+        const id = (f.buildingId?._id || f.buildingId || "").toString();
+        return id === bId;
+      });
+      const totalUnits = bFlats.length || b.totalFlats || 0;
+      const occupiedUnits = bFlats.filter((f) => f.status === "OCCUPIED").length;
+      const pct = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+      return {
+        id: bId,
+        name: b.name || "Residential Complex",
+        totalUnits,
+        occupiedUnits,
+        pct,
+      };
+    });
+  }, [buildings, flats]);
+
+  // -------------------------------------------------------------------------
+  // 4. METRICS & COUNTS (100% REAL DATA)
+  // -------------------------------------------------------------------------
+  const totalRevenue = useMemo(() => {
+    const fromPayments = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+    if (fromPayments > 0) return fromPayments;
+    return invoices.reduce((acc, inv) => acc + (Number(inv.paidAmount) || 0), 0);
+  }, [payments, invoices]);
+
+  const openTicketsCount = useMemo(() => {
+    const activeReqs = requests.filter(
+      (r) => r.status !== "RESOLVED" && r.status !== "CANCELLED"
+    ).length;
+    const activeComps = complaints.filter(
+      (c) => c.status !== "RESOLVED" && c.status !== "CLOSED"
+    ).length;
+    return activeReqs + activeComps;
+  }, [requests, complaints]);
+
+  const urgentTicketsCount = useMemo(() => {
+    return requests.filter((r) => r.priority === "EMERGENCY" || r.priority === "HIGH").length;
+  }, [requests]);
+
+  const activeAdminsCount = useMemo(() => {
+    return users.filter((u) => u.role === ROLES.BUILDING_ADMIN).length;
+  }, [users]);
+
+  const residentsCount = useMemo(() => {
+    return users.filter((u) => u.role === ROLES.OWNER || u.role === ROLES.TENANT).length;
+  }, [users]);
+
+  const overdueInvoicesCount = useMemo(() => {
+    return invoices.filter((i) => i.status === "OVERDUE").length;
+  }, [invoices]);
+
+  // Dynamic Live Status Banner Text
+  const liveStatusText = useMemo(() => {
+    if (urgentTicketsCount > 0) {
+      return `Operational Alert: ${urgentTicketsCount} urgent maintenance requests requiring supervisor dispatch across registered complexes.`;
+    }
+    if (overdueInvoicesCount > 0) {
+      return `Billing Notice: ${overdueInvoicesCount} overdue resident invoices pending collection. Next automated cycle scheduled for the 1st.`;
+    }
+    return `System Status: Operational health optimal. ${buildings.length} residential complexes and ${users.length} authenticated users active.`;
+  }, [urgentTicketsCount, overdueInvoicesCount, buildings.length, users.length]);
 
   return (
     <Box sx={{ width: "100%", pb: 4 }}>
@@ -130,7 +284,7 @@ export const SuperAdminDashboardView = ({
           justifyContent: "space-between",
           alignItems: { xs: "flex-start", md: "center" },
           gap: 2,
-          mb: 3,
+          mb: 2.5,
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -171,7 +325,7 @@ export const SuperAdminDashboardView = ({
                 fontWeight: 400,
               }}
             >
-              System-wide maintenance registers and SaaS collection metrics.
+              Enterprise portfolio governance, SaaS financial collections, and live audit telemetry.
             </Typography>
           </Box>
         </Box>
@@ -184,7 +338,7 @@ export const SuperAdminDashboardView = ({
         >
           <TextField
             size="small"
-            placeholder="Search buildings, admins..."
+            placeholder="Search buildings, users..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -195,12 +349,12 @@ export const SuperAdminDashboardView = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "#94A3B8", fontSize: 19 }} />
+                  <SearchIcon sx={{ color: "#94A3B8", fontSize: 18 }} />
                 </InputAdornment>
               ),
             }}
             sx={{
-              width: { xs: "100%", sm: 260 },
+              width: { xs: "100%", sm: 240 },
               "& .MuiOutlinedInput-root": {
                 bgcolor: "#FFFFFF",
                 borderRadius: "10px",
@@ -212,7 +366,7 @@ export const SuperAdminDashboardView = ({
             }}
           />
 
-          <Tooltip title="Notifications">
+          <Tooltip title="View Notifications">
             <IconButton
               onClick={() => navigate("/notifications")}
               sx={{
@@ -294,11 +448,75 @@ export const SuperAdminDashboardView = ({
         </Stack>
       </Box>
 
-      {/* 2. Live Commission Status Banner */}
+      {/* 2. Interactive Enterprise Perspective Switcher */}
+      {onSelectRoleView && (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 1,
+            mb: 2.5,
+            borderRadius: "12px",
+            borderColor: "#E2E8F0",
+            bgcolor: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              color: "#64748B",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              px: 1,
+            }}
+          >
+            Dashboard Perspective:
+          </Typography>
+          {[
+            { id: ROLES.SUPER_ADMIN, label: "Super Admin (SaaS Console)" },
+            { id: ROLES.BUILDING_ADMIN, label: "Building Operations" },
+            { id: ROLES.MANAGER, label: "Work Order Dispatch" },
+            { id: ROLES.ACCOUNTANT, label: "Financial Ledger" },
+            { id: ROLES.SECURITY_STAFF, label: "Security Gate" },
+            { id: ROLES.TENANT, label: "Resident Portal" },
+          ].map((roleItem) => {
+            const isSelected = selectedRoleView === roleItem.id;
+            return (
+              <Button
+                key={roleItem.id}
+                size="small"
+                onClick={() => onSelectRoleView(roleItem.id)}
+                variant={isSelected ? "contained" : "text"}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: isSelected ? 700 : 500,
+                  fontSize: "0.8125rem",
+                  borderRadius: "8px",
+                  py: 0.5,
+                  px: 1.5,
+                  bgcolor: isSelected ? "#4F46E5" : "transparent",
+                  color: isSelected ? "#FFFFFF" : "#475569",
+                  "&:hover": {
+                    bgcolor: isSelected ? "#4338CA" : "#F1F5F9",
+                  },
+                }}
+              >
+                {roleItem.label}
+              </Button>
+            );
+          })}
+        </Paper>
+      )}
+
+      {/* 3. Live Operational Status Banner (100% Real Dynamic Text) */}
       <Box
         sx={{
-          bgcolor: "#EEF2FF",
-          border: "1px solid #E0E7FF",
+          bgcolor: urgentTicketsCount > 0 ? "#FEF2F2" : "#EEF2FF",
+          border: `1px solid ${urgentTicketsCount > 0 ? "#FECACA" : "#E0E7FF"}`,
           borderRadius: "10px",
           py: 1.25,
           px: 2,
@@ -310,11 +528,12 @@ export const SuperAdminDashboardView = ({
       >
         <Box
           sx={{
-            width: 7,
-            height: 7,
+            width: 8,
+            height: 8,
             borderRadius: "50%",
-            bgcolor: "#4F46E5",
+            bgcolor: urgentTicketsCount > 0 ? "#EF4444" : "#4F46E5",
             flexShrink: 0,
+            animation: urgentTicketsCount > 0 ? "pulse 2s infinite" : "none",
           }}
         />
         <Typography
@@ -322,16 +541,15 @@ export const SuperAdminDashboardView = ({
             fontFamily: FONT_UI,
             fontSize: "0.85rem",
             fontWeight: 500,
-            color: "#4338CA",
+            color: urgentTicketsCount > 0 ? "#B91C1C" : "#4338CA",
             lineHeight: 1.4,
           }}
         >
-          Live Commission Status: 9 urgent maintenance tickets resolved in Gulberg Heights. Next
-          automated collection cycle triggers on Nov 1st.
+          {liveStatusText}
         </Typography>
       </Box>
 
-      {/* 3. 4 StatCards Row */}
+      {/* 4. Four Executive StatCards Row */}
       <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
         {/* TOTAL BUILDINGS */}
         <Grid item xs={12} sm={6} md={3}>
@@ -347,11 +565,11 @@ export const SuperAdminDashboardView = ({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              transition: "transform 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)" },
             }}
           >
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Typography
                 sx={{
                   fontFamily: FONT_UI,
@@ -388,26 +606,22 @@ export const SuperAdminDashboardView = ({
                 lineHeight: 1.2,
               }}
             >
-              {buildings.length > 0 ? buildings.length : 12}
+              {isLoading ? <Skeleton width={60} /> : buildings.length}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
-              <Box
+              <Chip
+                label={buildings.length > 0 ? `${buildings.length} Active` : "None"}
+                size="small"
                 sx={{
                   bgcolor: "#DCFCE7",
                   color: "#15803D",
-                  px: 0.8,
-                  py: 0.25,
-                  borderRadius: "6px",
-                  fontSize: "0.75rem",
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
+                  fontSize: "0.72rem",
+                  height: 22,
                 }}
-              >
-                ↗ +2 new
-              </Box>
+              />
               <Typography sx={{ fontSize: "0.8125rem", color: "#64748B", fontFamily: FONT_UI }}>
-                Registered this month
+                Registered complexes
               </Typography>
             </Box>
           </Paper>
@@ -427,11 +641,11 @@ export const SuperAdminDashboardView = ({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              transition: "transform 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)" },
             }}
           >
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Typography
                 sx={{
                   fontFamily: FONT_UI,
@@ -448,8 +662,8 @@ export const SuperAdminDashboardView = ({
                   width: 32,
                   height: 32,
                   borderRadius: "8px",
-                  bgcolor: "#EEF2FF",
-                  color: "#4F46E5",
+                  bgcolor: "#F5F3FF",
+                  color: "#7C3AED",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -468,32 +682,28 @@ export const SuperAdminDashboardView = ({
                 lineHeight: 1.2,
               }}
             >
-              {users.length > 0 ? users.length.toLocaleString() : "1,847"}
+              {isLoading ? <Skeleton width={60} /> : users.length.toLocaleString()}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
-              <Box
+              <Chip
+                label={`${activeAdminsCount} Admins`}
+                size="small"
                 sx={{
-                  bgcolor: "#DCFCE7",
-                  color: "#15803D",
-                  px: 0.8,
-                  py: 0.25,
-                  borderRadius: "6px",
-                  fontSize: "0.75rem",
+                  bgcolor: "#E0E7FF",
+                  color: "#4338CA",
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
+                  fontSize: "0.72rem",
+                  height: 22,
                 }}
-              >
-                ↗ +14.2%
-              </Box>
+              />
               <Typography sx={{ fontSize: "0.8125rem", color: "#64748B", fontFamily: FONT_UI }}>
-                Residents & staff
+                {residentsCount} Residents
               </Typography>
             </Box>
           </Paper>
         </Grid>
 
-        {/* PLATFORM COLLECTION */}
+        {/* PLATFORM REVENUE */}
         <Grid item xs={12} sm={6} md={3}>
           <Paper
             variant="outlined"
@@ -507,11 +717,11 @@ export const SuperAdminDashboardView = ({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              transition: "transform 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)" },
             }}
           >
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Typography
                 sx={{
                   fontFamily: FONT_UI,
@@ -521,15 +731,15 @@ export const SuperAdminDashboardView = ({
                   letterSpacing: "0.04em",
                 }}
               >
-                PLATFORM COLLECTION
+                PLATFORM REVENUE
               </Typography>
               <Box
                 sx={{
                   width: 32,
                   height: 32,
                   borderRadius: "8px",
-                  bgcolor: "#EEF2FF",
-                  color: "#4F46E5",
+                  bgcolor: "#ECFDF5",
+                  color: "#059669",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -543,37 +753,33 @@ export const SuperAdminDashboardView = ({
                 fontFamily: FONT_UI,
                 fontSize: "1.75rem",
                 fontWeight: 700,
-                color: "#0F172A",
+                color: "#059669",
                 my: 0.75,
                 lineHeight: 1.2,
               }}
             >
-              Rs. 4,250,000
+              {isLoading ? <Skeleton width={100} /> : formatCurrency(totalRevenue)}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
-              <Box
+              <Chip
+                label={`${invoices.filter((i) => i.status === "PAID").length} Settled`}
+                size="small"
                 sx={{
                   bgcolor: "#DCFCE7",
                   color: "#15803D",
-                  px: 0.8,
-                  py: 0.25,
-                  borderRadius: "6px",
-                  fontSize: "0.75rem",
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
+                  fontSize: "0.72rem",
+                  height: 22,
                 }}
-              >
-                ↗ +28.4%
-              </Box>
+              />
               <Typography sx={{ fontSize: "0.8125rem", color: "#64748B", fontFamily: FONT_UI }}>
-                YTD commission fees
+                {overdueInvoicesCount > 0 ? `${overdueInvoicesCount} Overdue` : "All Current"}
               </Typography>
             </Box>
           </Paper>
         </Grid>
 
-        {/* OPEN COMPLAINTS */}
+        {/* OPEN TICKETS & COMPLAINTS */}
         <Grid item xs={12} sm={6} md={3}>
           <Paper
             variant="outlined"
@@ -587,11 +793,11 @@ export const SuperAdminDashboardView = ({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              transition: "transform 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)" },
             }}
           >
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Typography
                 sx={{
                   fontFamily: FONT_UI,
@@ -601,15 +807,15 @@ export const SuperAdminDashboardView = ({
                   letterSpacing: "0.04em",
                 }}
               >
-                OPEN COMPLAINTS
+                OPEN WORK ORDERS
               </Typography>
               <Box
                 sx={{
                   width: 32,
                   height: 32,
                   borderRadius: "8px",
-                  bgcolor: "#EEF2FF",
-                  color: "#4F46E5",
+                  bgcolor: "#FFFBEB",
+                  color: "#D97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -623,39 +829,35 @@ export const SuperAdminDashboardView = ({
                 fontFamily: FONT_UI,
                 fontSize: "1.75rem",
                 fontWeight: 700,
-                color: "#0F172A",
+                color: openTicketsCount > 0 ? "#D97706" : "#0F172A",
                 my: 0.75,
                 lineHeight: 1.2,
               }}
             >
-              {openRequests.length > 0 ? openRequests.length : 23}
+              {isLoading ? <Skeleton width={60} /> : openTicketsCount}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
-              <Box
+              <Chip
+                label={urgentTicketsCount > 0 ? `${urgentTicketsCount} Urgent` : "Low SLA"}
+                size="small"
                 sx={{
-                  bgcolor: "#FEF3C7",
-                  color: "#B45309",
-                  px: 0.8,
-                  py: 0.25,
-                  borderRadius: "6px",
-                  fontSize: "0.75rem",
+                  bgcolor: urgentTicketsCount > 0 ? "#FEE2E2" : "#FEF3C7",
+                  color: urgentTicketsCount > 0 ? "#DC2626" : "#B45309",
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
+                  fontSize: "0.72rem",
+                  height: 22,
                 }}
-              >
-                ↘ -8 resolved
-              </Box>
+              />
               <Typography sx={{ fontSize: "0.8125rem", color: "#64748B", fontFamily: FONT_UI }}>
-                Requires admin dispatch
+                Across all properties
               </Typography>
             </Box>
           </Paper>
         </Grid>
       </Grid>
 
-      {/* 4. Main Section: Platform Revenue (YTD) & Buildings by Occupancy */}
-      <Grid container spacing={2.5}>
+      {/* 5. Main Section: Platform Revenue (YTD) & Buildings by Occupancy */}
+      <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
         {/* Left Column: Platform Revenue (YTD) */}
         <Grid item xs={12} lg={7.5}>
           <Paper
@@ -699,7 +901,7 @@ export const SuperAdminDashboardView = ({
                     mt: 0.25,
                   }}
                 >
-                  Consolidated platform commission & subscription fees
+                  Dynamic aggregated collections across all residential complexes
                 </Typography>
               </Box>
               <Button
@@ -730,11 +932,11 @@ export const SuperAdminDashboardView = ({
             <Box sx={{ position: "relative", width: "100%", mt: 2, flex: 1, minHeight: 260 }}>
               {/* Y-Axis Labels & Gridlines */}
               <Box sx={{ position: "absolute", left: 0, top: 0, bottom: 28, width: "100%" }}>
-                {["Rs. 5M", "Rs. 3.8M", "Rs. 2.5M", "Rs. 1.3M", "Rs. 0M"].map((lbl, idx) => {
+                {yAxisMilestones.map((lbl, idx) => {
                   const topPct = (idx / 4) * 85;
                   return (
                     <Box
-                      key={lbl}
+                      key={`${lbl}-${idx}`}
                       sx={{
                         position: "absolute",
                         top: `${topPct}%`,
@@ -749,7 +951,7 @@ export const SuperAdminDashboardView = ({
                           fontSize: "0.75rem",
                           color: "#94A3B8",
                           fontFamily: FONT_UI,
-                          width: 54,
+                          width: 58,
                           flexShrink: 0,
                           textAlign: "left",
                         }}
@@ -768,7 +970,7 @@ export const SuperAdminDashboardView = ({
               </Box>
 
               {/* Responsive SVG Chart */}
-              <Box sx={{ ml: "56px", height: "calc(100% - 28px)", position: "relative" }}>
+              <Box sx={{ ml: "60px", height: "calc(100% - 28px)", position: "relative" }}>
                 <svg
                   viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                   preserveAspectRatio="none"
@@ -776,26 +978,28 @@ export const SuperAdminDashboardView = ({
                 >
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.12" />
+                      <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.15" />
                       <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.0" />
                     </linearGradient>
                   </defs>
 
                   {/* Gradient Area Fill */}
-                  <path d={areaD} fill="url(#revenueGradient)" />
+                  {areaD && <path d={areaD} fill="url(#revenueGradient)" />}
 
                   {/* Smooth Line Curve */}
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="#4F46E5"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  {pathD && (
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="#4F46E5"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
 
                   {/* Interactive Nodes */}
-                  {points.map((pt, idx) => {
+                  {points.map((pt) => {
                     const isHovered = hoveredPoint?.month === pt.month;
                     return (
                       <g key={pt.month}>
@@ -852,13 +1056,13 @@ export const SuperAdminDashboardView = ({
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  pl: "56px",
+                  pl: "60px",
                   pt: 1,
                 }}
               >
-                {REVENUE_DATA.map((d) => (
+                {revenueData.map((d) => (
                   <Typography
-                    key={d.month}
+                    key={d.key}
                     sx={{
                       fontSize: "0.75rem",
                       color: "#64748B",
@@ -875,7 +1079,7 @@ export const SuperAdminDashboardView = ({
           </Paper>
         </Grid>
 
-        {/* Right Column: Buildings by Occupancy */}
+        {/* Right Column: Buildings by Occupancy (100% Real Live Flats Data) */}
         <Grid item xs={12} lg={4.5}>
           <Paper
             variant="outlined"
@@ -891,7 +1095,7 @@ export const SuperAdminDashboardView = ({
             }}
           >
             {/* Card Header */}
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 2.5 }}>
               <Typography
                 sx={{
                   fontFamily: FONT_UI,
@@ -910,76 +1114,329 @@ export const SuperAdminDashboardView = ({
                   mt: 0.25,
                 }}
               >
-                Live booking states across high-density registers
+                Live resident occupancy ratios per residential register
               </Typography>
             </Box>
 
             {/* Occupancy List */}
-            <Stack spacing={3} sx={{ flex: 1, justifyContent: "center" }}>
-              {occupancyList.map((item) => (
-                <Box key={item.name}>
+            {buildingOccupancyList.length === 0 ? (
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  p: 3,
+                  bgcolor: "#F8FAFC",
+                  borderRadius: "12px",
+                  border: "1px dashed #CBD5E1",
+                  textAlign: "center",
+                }}
+              >
+                <BusinessIcon sx={{ fontSize: 36, color: "#94A3B8", mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                  No Buildings Registered Yet
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5, mb: 2 }}>
+                  Add your first residential complex to begin tracking occupancy.
+                </Typography>
+                <Button
+                  component={RouterLink}
+                  to="/buildings"
+                  variant="contained"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  sx={{ bgcolor: "#4F46E5", textTransform: "none", borderRadius: "8px" }}
+                >
+                  Register Building
+                </Button>
+              </Box>
+            ) : (
+              <Stack spacing={2.5} sx={{ flex: 1, justifyContent: "center" }}>
+                {buildingOccupancyList.map((item) => (
+                  <Box key={item.id || item.name}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 0.75,
+                      }}
+                    >
+                      <Typography
+                        component={RouterLink}
+                        to={`/buildings/${item.id}`}
+                        sx={{
+                          fontFamily: FONT_UI,
+                          fontSize: "0.875rem",
+                          fontWeight: 600,
+                          color: "#0F172A",
+                          textDecoration: "none",
+                          minWidth: { xs: 110, sm: 130 },
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          "&:hover": { color: "#4F46E5" },
+                        }}
+                      >
+                        {item.name}
+                      </Typography>
+
+                      {/* Progress Bar in Middle */}
+                      <Box
+                        sx={{
+                          flex: 1,
+                          mx: 2,
+                          height: 6,
+                          bgcolor: "#F1F5F9",
+                          borderRadius: "999px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: `${item.pct}%`,
+                            height: "100%",
+                            bgcolor: item.pct > 75 ? "#10B981" : "#4F46E5",
+                            borderRadius: "999px",
+                            transition: "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                        />
+                      </Box>
+
+                      {/* Percentage Text */}
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_UI,
+                          fontSize: "0.8125rem",
+                          fontWeight: 600,
+                          color: "#475569",
+                          minWidth: 90,
+                          textAlign: "right",
+                        }}
+                      >
+                        {item.pct}% ({item.occupiedUnits}/{item.totalUnits})
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* 6. Lower Enterprise Section: Managed Properties & Compliance Trail */}
+      <Grid container spacing={2.5}>
+        {/* Managed Complexes Portfolio */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              borderRadius: "14px",
+              borderColor: "#E2E8F0",
+              bgcolor: "#FFFFFF",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: "1.125rem", color: "#0F172A" }}>
+                  Managed Complexes
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748B", mt: 0.25 }}>
+                  Provisioned residential properties and occupancy
+                </Typography>
+              </Box>
+              <Button
+                component={RouterLink}
+                to="/buildings"
+                size="small"
+                endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                sx={{ fontWeight: 600, color: "#4F46E5", textTransform: "none" }}
+              >
+                View All
+              </Button>
+            </Box>
+
+            {buildings.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: "center", bgcolor: "#F8FAFC", borderRadius: "10px" }}>
+                <Typography variant="body2" sx={{ color: "#64748B" }}>
+                  No complexes configured yet.
+                </Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.5} sx={{ flex: 1 }}>
+                {buildings.slice(0, 4).map((b) => (
                   <Box
+                    key={b._id || b.id}
+                    component={RouterLink}
+                    to={`/buildings/${b._id || b.id}`}
                     sx={{
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      mb: 0.75,
+                      p: 1.5,
+                      borderRadius: "10px",
+                      border: "1px solid #F1F5F9",
+                      bgcolor: "#FFFFFF",
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.15s ease",
+                      "&:hover": {
+                        borderColor: "#CBD5E1",
+                        bgcolor: "#F8FAFC",
+                        transform: "translateX(2px)",
+                      },
                     }}
                   >
-                    <Typography
-                      sx={{
-                        fontFamily: FONT_UI,
-                        fontSize: "0.875rem",
-                        fontWeight: 600,
-                        color: "#0F172A",
-                        minWidth: { xs: 120, sm: 140 },
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {item.name}
-                    </Typography>
-
-                    {/* Progress Bar in Middle */}
-                    <Box
-                      sx={{
-                        flex: 1,
-                        mx: 2,
-                        height: 6,
-                        bgcolor: "#F1F5F9",
-                        borderRadius: "999px",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <Stack direction="row" spacing={1.5} alignItems="center">
                       <Box
                         sx={{
-                          width: `${item.pct}%`,
-                          height: "100%",
-                          bgcolor: "#4F46E5",
-                          borderRadius: "999px",
-                          transition: "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                          width: 36,
+                          height: 36,
+                          borderRadius: "8px",
+                          bgcolor: "#EEF2FF",
+                          color: "#4F46E5",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                      />
-                    </Box>
-
-                    {/* Percentage Text */}
-                    <Typography
+                      >
+                        <ApartmentOutlinedIcon fontSize="small" />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                          {b.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B" }}>
+                          {b.address?.city || b.address?.street || "Residential Complex"} •{" "}
+                          {b.totalFlats || 0} units
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Chip
+                      label={b.status || "ACTIVE"}
+                      size="small"
                       sx={{
-                        fontFamily: FONT_UI,
-                        fontSize: "0.8125rem",
-                        fontWeight: 600,
-                        color: "#475569",
-                        minWidth: 80,
-                        textAlign: "right",
+                        fontSize: "0.6875rem",
+                        fontWeight: 700,
+                        bgcolor: b.status === "ACTIVE" ? "#DCFCE7" : "#FEF3C7",
+                        color: b.status === "ACTIVE" ? "#15803D" : "#B45309",
+                        borderRadius: "6px",
                       }}
-                    >
-                      {item.pct}% Booked
+                    />
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* Recent Audit & Compliance Activity */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              borderRadius: "14px",
+              borderColor: "#E2E8F0",
+              bgcolor: "#FFFFFF",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: "1.125rem", color: "#0F172A" }}>
+                  Compliance & Security Trail
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748B", mt: 0.25 }}>
+                  Immutable record of mutations and administrative actions
+                </Typography>
+              </Box>
+              <Button
+                component={RouterLink}
+                to="/audit-logs"
+                size="small"
+                endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                sx={{ fontWeight: 600, color: "#4F46E5", textTransform: "none" }}
+              >
+                Inspect Logs
+              </Button>
+            </Box>
+
+            {auditLogs.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: "center", bgcolor: "#F8FAFC", borderRadius: "10px" }}>
+                <Typography variant="body2" sx={{ color: "#64748B" }}>
+                  No audit log entries recorded yet.
+                </Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.5} sx={{ flex: 1 }}>
+                {auditLogs.slice(0, 4).map((log) => (
+                  <Box
+                    key={log._id || log.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      p: 1.5,
+                      borderRadius: "10px",
+                      border: "1px solid #F1F5F9",
+                      bgcolor: "#F8FAFC",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "8px",
+                          bgcolor: "#F5F3FF",
+                          color: "#7C3AED",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <ShieldOutlinedIcon fontSize="small" />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#0F172A" }}>
+                          {log.action ? log.action.replace(/_/g, " ") : "AUDIT_MUTATION"}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B" }}>
+                          Role: {log.actorRole || "SYSTEM"} • {log.ipAddress || "127.0.0.1"}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontFamily: "monospace" }}>
+                      {log.createdAt ? new Date(log.createdAt).toLocaleDateString() : "Today"}
                     </Typography>
                   </Box>
-                </Box>
-              ))}
-            </Stack>
+                ))}
+              </Stack>
+            )}
           </Paper>
         </Grid>
       </Grid>
