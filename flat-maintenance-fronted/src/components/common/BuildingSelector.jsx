@@ -8,6 +8,8 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLES } from "../../lib/constants/roles.js";
 
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+
 export const BuildingSelector = ({ buildings = [] }) => {
   const { user, activeBuildingId, switchBuilding } = useAuth();
 
@@ -28,7 +30,7 @@ export const BuildingSelector = ({ buildings = [] }) => {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <ApartmentIcon fontSize="small" sx={{ color: "text.secondary" }} />
+      <ApartmentIcon fontSize="small" sx={{ color: DESIGN_TOKENS.brand[600] }} />
       <FormControl size="small" sx={{ minWidth: 160 }}>
         <Select
           value={selectValue}
@@ -38,6 +40,9 @@ export const BuildingSelector = ({ buildings = [] }) => {
             fontSize: "0.8125rem",
             bgcolor: "background.paper",
             "& .MuiSelect-select": { py: 0.75 },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: DESIGN_TOKENS.brand[600],
+            },
           }}
         >
           {isSuperAdmin && (

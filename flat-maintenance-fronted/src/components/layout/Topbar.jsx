@@ -15,10 +15,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import Badge from "@mui/material/Badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { BuildingSelector } from "../common/BuildingSelector.jsx";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 export const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
@@ -78,10 +80,19 @@ export const Topbar = ({ onMenuClick }) => {
 
         {/* Right Side: Notifications and Profile */}
         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-          {/* Notifications Shortcut */}
+          {/* Notifications Shortcut with brand.600 badge */}
           <Tooltip title="Notifications">
             <IconButton onClick={() => navigate("/notifications")} color="inherit" size="small">
-              <NotificationsNoneIcon />
+              <Badge
+                variant="dot"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    bgcolor: DESIGN_TOKENS.brand[600],
+                  },
+                }}
+              >
+                <NotificationsNoneIcon />
+              </Badge>
             </IconButton>
           </Tooltip>
 
@@ -102,7 +113,8 @@ export const Topbar = ({ onMenuClick }) => {
               sx={{
                 width: 34,
                 height: 34,
-                bgcolor: "primary.main",
+                bgcolor: DESIGN_TOKENS.brand[600], // brand.600 per Point 5
+                color: "#FFFFFF",
                 fontSize: "0.875rem",
                 fontWeight: 600,
               }}

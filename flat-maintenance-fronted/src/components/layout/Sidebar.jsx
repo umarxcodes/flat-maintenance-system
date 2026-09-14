@@ -157,15 +157,15 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
                 disableSticky
                 sx={{
                   bgcolor: "transparent",
-                  fontSize: "0.7rem",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  color: "rgba(255, 255, 255, 0.4)",
-                  lineHeight: "26px",
+                  fontSize: "0.75rem", // 12px per spec
+                  fontWeight: 500,
+                  textTransform: "none", // Sentence case, no all-caps shouting
+                  letterSpacing: "normal", // No letter-spacing
+                  color: "rgba(203, 213, 225, 0.55)", // Muted lavender/slate
+                  lineHeight: "24px",
                   px: 2.5,
-                  mt: 1.5,
-                  mb: 0.25,
+                  mt: 2,
+                  mb: 0.5,
                   fontFamily: FONT_UI,
                 }}
               >

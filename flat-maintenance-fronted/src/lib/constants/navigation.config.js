@@ -17,7 +17,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Access & Security",
+    category: "Access & security",
     items: [
       {
         title: "Users",
@@ -40,7 +40,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Property Management",
+    category: "Property management",
     items: [
       {
         title: "Buildings",
@@ -69,7 +69,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Community & People",
+    category: "Community & people",
     items: [
       {
         title: "Owners",
@@ -92,7 +92,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Maintenance & Facility",
+    category: "Maintenance & facility",
     items: [
       {
         title: "Configurations",
@@ -109,7 +109,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Billing & Finance",
+    category: "Billing & finance",
     items: [
       {
         title: "Invoices",
@@ -132,7 +132,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Engagement & Safety",
+    category: "Engagement & legal",
     items: [
       {
         title: "Complaints",
@@ -143,7 +143,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
       {
         title: "Reviews",
         href: "/reviews",
-        iconName: "StarRate",
+        iconName: "RateReview",
         permission: PERMISSIONS.REVIEW_READ,
       },
       {
@@ -156,29 +156,29 @@ export const NAVIGATION_CONFIG = Object.freeze([
         title: "Notifications",
         href: "/notifications",
         iconName: "Notifications",
-        permission: PERMISSIONS.NOTIFICATION_READ,
+        permission: null, // Available to all
       },
       {
-        title: "Visitors & Passes",
+        title: "Visitors",
         href: "/visitors",
-        iconName: "TransferWithinAStation",
+        iconName: "MeetingRoom",
         permission: PERMISSIONS.VISITOR_READ,
       },
       {
         title: "Documents",
         href: "/documents",
-        iconName: "FolderShared",
+        iconName: "Description",
         permission: PERMISSIONS.DOCUMENT_READ,
       },
     ],
   },
   {
-    category: "Governance & Intelligence",
+    category: "System intelligence",
     items: [
       {
         title: "Reports",
         href: "/reports",
-        iconName: "Assessment",
+        iconName: "Analytics",
         permission: PERMISSIONS.REPORT_READ,
       },
       {

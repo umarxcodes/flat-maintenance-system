@@ -89,7 +89,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1rem",
+            fontSize: "1.125rem", // 18px per typography hierarchy spec
             fontWeight: 600,
             color: DESIGN_TOKENS.text.primary,
             letterSpacing: "-0.01em",
@@ -100,12 +100,13 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         </Typography>
         {subtitle && (
           <Typography
-            variant="caption"
             sx={{
+              fontFamily: FONT_UI,
               color: DESIGN_TOKENS.text.secondary,
               mt: 0.25,
               display: "block",
-              fontSize: "0.8125rem",
+              fontSize: "0.875rem", // 14px body/description text per hierarchy spec
+              fontWeight: 400,
               lineHeight: 1.4,
             }}
           >
@@ -125,7 +126,11 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
             color: DESIGN_TOKENS.brand[600],
             p: 0.5,
             minWidth: "auto",
-            "&:hover": { bgcolor: "transparent", color: DESIGN_TOKENS.brand[700] },
+            "&:hover": {
+              bgcolor: "transparent",
+              color: DESIGN_TOKENS.brand[700],
+              textDecoration: "underline",
+            },
           }}
         >
           {action || "View All"}
@@ -234,8 +239,8 @@ const DashboardListItem = ({
         color: "inherit",
         transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          borderColor: DESIGN_TOKENS.line[200],
-          bgcolor: DESIGN_TOKENS.surface[50],
+          borderColor: DESIGN_TOKENS.brand[600],
+          bgcolor: "rgba(67, 56, 202, 0.04)", // Soft brand hover tint per Point 5
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         },
         ...sx,

@@ -58,12 +58,11 @@ export const StatCard = ({
         >
           <Box sx={{ minWidth: 0, pr: 1.5 }}>
             <Typography
-              variant="body2"
               sx={{
                 fontFamily: FONT_UI,
                 fontWeight: 500,
                 color: DESIGN_TOKENS.text.secondary,
-                fontSize: "0.875rem",
+                fontSize: "0.8125rem", // 13px per spec: visibly recedes below the 28px numeral
                 lineHeight: 1.3,
                 mb: 0.75,
               }}
@@ -73,7 +72,7 @@ export const StatCard = ({
             <Typography
               sx={{
                 fontFamily: FONT_UI,
-                fontSize: { xs: "1.75rem", sm: "2rem" },
+                fontSize: "1.75rem", // 28px bold focal point per spec
                 lineHeight: 1.15,
                 fontWeight: 700,
                 color: DESIGN_TOKENS.text.primary,
@@ -103,16 +102,6 @@ export const StatCard = ({
             </Box>
           ) : action ? (
             <Box>{action}</Box>
-          ) : isHero ? (
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                bgcolor: DESIGN_TOKENS.brand[600],
-                mt: 0.5,
-              }}
-            />
           ) : null}
         </Box>
 
