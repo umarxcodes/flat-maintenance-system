@@ -205,6 +205,8 @@ export const BuildingsListPage = () => {
         columns={columns}
         rows={buildings}
         isLoading={isLoading}
+        emptyTitle="No buildings match your filters."
+        emptyDescription="Try adjusting your search criteria or clear active filters."
         totalCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}

@@ -56,9 +56,8 @@ export const ForgotPasswordPage = () => {
 
       {submitted ? (
         <Stack spacing={3}>
-          <Alert severity="success">
-            If an account is registered with this email, password reset instructions have been
-            dispatched.
+          <Alert severity="success" sx={{ borderRadius: "8px" }}>
+            If that email is registered, a reset link is on its way.
           </Alert>
           <Button
             component={RouterLink}

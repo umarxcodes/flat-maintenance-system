@@ -268,6 +268,7 @@ export const ComplaintsListPage = () => {
           setRowsPerPage(r);
           setPage(0);
         }}
+        emptyTitle="No grievances reported."
       />
 
       {/* File Complaint Modal */}

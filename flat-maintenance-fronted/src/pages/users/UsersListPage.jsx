@@ -267,6 +267,8 @@ export const UsersListPage = () => {
         columns={columns}
         rows={users}
         isLoading={isLoading}
+        emptyTitle="No admins yet."
+        emptyDescription="Invite an administrator or create a new user account to get started."
         totalCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}
@@ -341,7 +343,7 @@ export const UsersListPage = () => {
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={inviteMutation.isPending}>
-              {inviteMutation.isPending ? "Sending..." : "Send Invitation"}
+              {inviteMutation.isPending ? "Sending..." : "Send invite"}
             </Button>
           </DialogActions>
         </Box>
@@ -350,11 +352,13 @@ export const UsersListPage = () => {
       {/* Status Toggle Confirmation */}
       <ConfirmDialog
         open={Boolean(statusDialogUser)}
-        title="Confirm Status Change"
-        description={`Are you sure you want to ${
-          statusDialogUser?.status === STATUSES.USER.ACTIVE ? "deactivate" : "activate"
-        } ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`}
-        confirmLabel={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Deactivate" : "Activate"}
+        title="Confirm User Deactivation"
+        description={
+          statusDialogUser?.status === STATUSES.USER.ACTIVE
+            ? `${statusDialogUser?.firstName} ${statusDialogUser?.lastName} will lose access immediately and be unassigned from their building. This can't be undone.`
+            : `Are you sure you want to activate ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`
+        }
+        confirmLabel={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Remove" : "Activate"}
         confirmColor={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "error" : "primary"}
         isLoading={updateStatusMutation.isPending}
         onConfirm={handleToggleStatusConfirm}

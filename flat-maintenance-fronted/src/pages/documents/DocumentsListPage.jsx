@@ -227,6 +227,7 @@ export const DocumentsListPage = () => {
           setRowsPerPage(r);
           setPage(0);
         }}
+        emptyTitle="No documents uploaded yet."
       />
 
       {/* Upload Document Modal */}

@@ -150,6 +150,8 @@ export const FloorsListPage = () => {
         columns={columns}
         rows={floors}
         isLoading={isLoading}
+        emptyTitle="This block has no floors yet — add one to get started."
+        emptyDescription="Register new floor levels to configure flat allocations."
         totalCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}

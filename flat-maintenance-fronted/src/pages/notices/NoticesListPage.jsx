@@ -248,6 +248,7 @@ export const NoticesListPage = () => {
           setRowsPerPage(r);
           setPage(0);
         }}
+        emptyTitle="No notices published yet."
       />
 
       {/* Publish Notice Modal */}

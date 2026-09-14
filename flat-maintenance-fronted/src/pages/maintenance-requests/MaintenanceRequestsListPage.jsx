@@ -341,6 +341,7 @@ export const MaintenanceRequestsListPage = () => {
           setRowsPerPage(r);
           setPage(0);
         }}
+        emptyTitle="No open work orders."
       />
 
       {/* Create Request Modal */}

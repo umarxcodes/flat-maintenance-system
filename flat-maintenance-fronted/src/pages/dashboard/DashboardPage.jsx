@@ -1,5 +1,5 @@
 // =====================  ROLE-AWARE DASHBOARD (AUTHORITATIVE MASTER SPEC)  ===========
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
@@ -17,6 +17,20 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ApartmentIcon from "@mui/icons-material/Apartment";
+import DomainIcon from "@mui/icons-material/Domain";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
+import PeopleIcon from "@mui/icons-material/People";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AssignmentLateIcon from "@mui/icons-material/AssignmentLate";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import BadgeIcon from "@mui/icons-material/Badge";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import DoorSlidingIcon from "@mui/icons-material/DoorSliding";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
@@ -38,6 +52,277 @@ import { useTenantsList } from "../../features/tenants/hooks/use-tenants.js";
 import { TrendChart } from "../../components/common/TrendChart.jsx";
 import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
+
+// =========================================================================
+// REUSABLE ULTRA-CLEAN CARD CONTAINERS & ROW PRESENTERS
+// =========================================================================
+
+/**
+ * Clean Card Container matching Figma tokens:
+ * - Pure #FFFFFF background, 1px #E2E8F0 border, 12px border radius
+ * - Subdued SaaS elevation, clean header with title and action
+ */
+const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} }) => (
+  <Paper
+    variant="outlined"
+    sx={{
+      p: { xs: 2.5, sm: 3 },
+      borderRadius: "12px",
+      borderColor: DESIGN_TOKENS.line[200],
+      backgroundColor: "#FFFFFF",
+      boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      ...sx,
+    }}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        mb: 2.5,
+      }}
+    >
+      <Box sx={{ minWidth: 0, pr: 1.5 }}>
+        <Typography
+          sx={{
+            fontFamily: FONT_UI,
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: DESIGN_TOKENS.text.primary,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.3,
+          }}
+        >
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: DESIGN_TOKENS.text.secondary,
+              mt: 0.25,
+              display: "block",
+              fontSize: "0.8125rem",
+              lineHeight: 1.4,
+            }}
+          >
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+      {actionLink ? (
+        <Button
+          component={RouterLink}
+          to={actionLink}
+          size="small"
+          endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+          sx={{
+            fontWeight: 600,
+            fontSize: "0.8125rem",
+            color: DESIGN_TOKENS.brand[600],
+            p: 0.5,
+            minWidth: "auto",
+            "&:hover": { bgcolor: "transparent", color: DESIGN_TOKENS.brand[700] },
+          }}
+        >
+          {action || "View All"}
+        </Button>
+      ) : (
+        action
+      )}
+    </Box>
+    <Box sx={{ flex: 1 }}>{children}</Box>
+  </Paper>
+);
+
+/**
+ * Super-clean Empty State inside Cards
+ * Uses verbatim specification strings with subtle iconography
+ */
+const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null }) => (
+  <Box
+    sx={{
+      py: 5,
+      px: 2,
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Box
+      sx={{
+        width: 44,
+        height: 44,
+        borderRadius: "50%",
+        bgcolor: DESIGN_TOKENS.surface[50],
+        border: "1px solid",
+        borderColor: DESIGN_TOKENS.line[200],
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: DESIGN_TOKENS.text.secondary,
+        mb: 1.5,
+      }}
+    >
+      {icon ? (
+        React.cloneElement(icon, { sx: { fontSize: 22, ...icon.props?.sx } })
+      ) : (
+        <CheckCircleOutlinedIcon sx={{ fontSize: 22 }} />
+      )}
+    </Box>
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 500,
+        color: DESIGN_TOKENS.text.secondary,
+        fontSize: "0.875rem",
+        maxWidth: 380,
+        lineHeight: 1.5,
+      }}
+    >
+      {message}
+    </Typography>
+    {subtext && (
+      <Typography
+        variant="caption"
+        sx={{
+          color: DESIGN_TOKENS.text.disabled || "#94A3B8",
+          mt: 0.5,
+          display: "block",
+          fontSize: "0.75rem",
+        }}
+      >
+        {subtext}
+      </Typography>
+    )}
+    {action && <Box sx={{ mt: 2 }}>{action}</Box>}
+  </Box>
+);
+
+/**
+ * Clean List Row for Dashboard cards
+ * Standardized padding, avatar box, typography, and hover interaction
+ */
+const DashboardListItem = ({
+  to,
+  icon,
+  iconBg = DESIGN_TOKENS.brand[50],
+  iconColor = DESIGN_TOKENS.brand[600],
+  title,
+  subtitle,
+  rightContent,
+  onClick,
+  sx = {},
+}) => {
+  const content = (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        p: "12px 14px",
+        borderRadius: "10px",
+        border: "1px solid",
+        borderColor: "#F1F5F9",
+        bgcolor: "#FFFFFF",
+        textDecoration: "none",
+        color: "inherit",
+        transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+        "&:hover": {
+          borderColor: DESIGN_TOKENS.line[200],
+          bgcolor: DESIGN_TOKENS.surface[50],
+          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+        },
+        ...sx,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, mr: 1.5 }}>
+        {icon && (
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "8px",
+              bgcolor: iconBg,
+              color: iconColor,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            {React.cloneElement(icon, { sx: { fontSize: 18, ...icon.props?.sx } })}
+          </Box>
+        )}
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: DESIGN_TOKENS.text.primary,
+              fontSize: "0.875rem",
+              lineHeight: 1.35,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: DESIGN_TOKENS.text.secondary,
+                fontSize: "0.75rem",
+                display: "block",
+                mt: 0.25,
+                lineHeight: 1.3,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+      {rightContent && <Box sx={{ flexShrink: 0 }}>{rightContent}</Box>}
+    </Box>
+  );
+
+  if (to) {
+    return (
+      <Box
+        component={RouterLink}
+        to={to}
+        sx={{ textDecoration: "none", color: "inherit", display: "block" }}
+      >
+        {content}
+      </Box>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <Box onClick={onClick} sx={{ cursor: "pointer", display: "block" }}>
+        {content}
+      </Box>
+    );
+  }
+
+  return content;
+};
+
+// =========================================================================
+// MAIN DASHBOARD COMPONENT
+// =========================================================================
 
 export const DashboardPage = () => {
   const { user, activeBuildingId } = useAuth();
@@ -138,7 +423,7 @@ export const DashboardPage = () => {
   const totalResidents = users.filter((u) => u.role === ROLES.OWNER || u.role === ROLES.TENANT);
 
   // Security gate quick-entry state
-  const [passCodeInput, setPassCodeInput] = React.useState("");
+  const [passCodeInput, setPassCodeInput] = useState("");
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -196,6 +481,7 @@ export const DashboardPage = () => {
                 value={buildings.length}
                 label="Total Buildings"
                 delta="Active managed properties"
+                icon={<DomainIcon />}
                 isHero={buildings.length > 0}
               />
             </Grid>
@@ -204,6 +490,7 @@ export const DashboardPage = () => {
                 value={activeAdmins.length}
                 label="Active Administrators"
                 delta="Assigned building operators"
+                icon={<SupervisorAccountIcon />}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -211,6 +498,7 @@ export const DashboardPage = () => {
                 value={totalResidents.length}
                 label="Platform Residents"
                 delta="Registered owners & tenants"
+                icon={<PeopleIcon />}
               />
             </Grid>
           </Grid>
@@ -224,6 +512,7 @@ export const DashboardPage = () => {
                 value={`${occupancyPct}%`}
                 label="Occupancy Rate"
                 delta={`${occupiedFlats} occupied, ${vacantFlats} vacant`}
+                icon={<HomeWorkIcon />}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -231,6 +520,7 @@ export const DashboardPage = () => {
                 value={openRequests.length}
                 label="Active Work Orders"
                 delta={`${openRequests.length} awaiting dispatch`}
+                icon={<BuildIcon />}
                 isHero={openRequests.length > 0}
               />
             </Grid>
@@ -239,6 +529,7 @@ export const DashboardPage = () => {
                 value={`${collectionRate}%`}
                 label="This Month's Collection Rate"
                 delta={`${paidInvoices.length} of ${invoices.length} invoices paid`}
+                icon={<AccountBalanceWalletIcon />}
               />
             </Grid>
           </Grid>
@@ -252,6 +543,7 @@ export const DashboardPage = () => {
                 value={openRequests.length}
                 label="Open Work Orders"
                 delta="Tickets currently open"
+                icon={<BuildIcon />}
                 isHero={openRequests.length > 0}
               />
             </Grid>
@@ -260,6 +552,7 @@ export const DashboardPage = () => {
                 value={unassignedRequests.length}
                 label="Unassigned Tickets"
                 delta="Requires technician assignment"
+                icon={<AssignmentLateIcon />}
                 isHero={unassignedRequests.length > 0}
               />
             </Grid>
@@ -268,6 +561,7 @@ export const DashboardPage = () => {
                 value={urgentRequests.length}
                 label="High / Urgent Priority"
                 delta="Requires immediate dispatch"
+                icon={<WarningAmberIcon />}
               />
             </Grid>
           </Grid>
@@ -281,6 +575,7 @@ export const DashboardPage = () => {
                 value={`${collectionRate}%`}
                 label="Collection Rate"
                 delta={`${paidInvoices.length} settled this billing period`}
+                icon={<TrendingUpIcon />}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -292,6 +587,7 @@ export const DashboardPage = () => {
                     ? `₨${totalOverdueAmount.toLocaleString()} total pending`
                     : "Zero overdue dues"
                 }
+                icon={<ReceiptLongIcon />}
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -300,6 +596,7 @@ export const DashboardPage = () => {
                 value={pendingExpenses.length}
                 label="Pending Expense Approvals"
                 delta="Awaiting financial review"
+                icon={<PendingActionsIcon />}
               />
             </Grid>
           </Grid>
@@ -313,6 +610,7 @@ export const DashboardPage = () => {
                 value={requests.length}
                 label="Assigned Work Orders"
                 delta="Prioritized duty queue"
+                icon={<BuildIcon />}
                 isHero={true}
               />
             </Grid>
@@ -321,6 +619,7 @@ export const DashboardPage = () => {
                 value={urgentRequests.length}
                 label="Emergency / High Urgency"
                 delta="Requires immediate attention"
+                icon={<WarningAmberIcon />}
               />
             </Grid>
           </Grid>
@@ -334,6 +633,7 @@ export const DashboardPage = () => {
                 value={expectedVisitors.length}
                 label="Expected Arrivals Today"
                 delta="Pre-approved resident passes"
+                icon={<BadgeIcon />}
                 isHero={true}
               />
             </Grid>
@@ -342,6 +642,7 @@ export const DashboardPage = () => {
                 value={checkedInVisitors.length}
                 label="Currently Inside Premises"
                 delta="Active visitor passes"
+                icon={<DoorSlidingIcon />}
               />
             </Grid>
           </Grid>
@@ -361,6 +662,7 @@ export const DashboardPage = () => {
                     ? "Maintenance fee overdue"
                     : "All maintenance dues settled"
                 }
+                icon={<ReceiptIcon />}
                 isHero={overdueInvoices.length > 0}
               />
             </Grid>
@@ -369,6 +671,7 @@ export const DashboardPage = () => {
                 value={requests.length}
                 label="Open Work Orders"
                 delta="Active service tickets in your flat"
+                icon={<BuildIcon />}
               />
             </Grid>
             {role === ROLES.OWNER && (
@@ -377,6 +680,7 @@ export const DashboardPage = () => {
                   value={notices.length}
                   label="Community Bulletins"
                   delta="Official notices from management"
+                  icon={<CampaignIcon />}
                 />
               </Grid>
             )}
@@ -395,150 +699,51 @@ export const DashboardPage = () => {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Left Column: Recently Added Buildings */}
           <Grid item xs={12} lg={7}>
-            <Paper
-              variant="outlined"
-              sx={{
-                p: { xs: 2.5, sm: 3.5 },
-                borderRadius: "14px",
-                borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                height: "100%",
-              }}
+            <DashboardCard
+              title="Managed Properties"
+              subtitle="Recently provisioned residential buildings"
+              action="View All"
+              actionLink="/buildings"
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: FONT_UI,
-                      fontSize: "1.0625rem",
-                      fontWeight: 700,
-                      color: DESIGN_TOKENS.text.primary,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    Managed Properties
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                  >
-                    Recently provisioned residential buildings
-                  </Typography>
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to="/buildings"
-                  size="small"
-                  endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    color: DESIGN_TOKENS.brand[600],
-                  }}
-                >
-                  View All
-                </Button>
-              </Box>
-
               {loadingBuildings ? (
                 <TableLoadingSkeleton rows={4} />
               ) : buildings.length === 0 ? (
                 /* VERBATIM PROMPT EMPTY STATE */
-                <Box sx={{ py: 6, textAlign: "center" }}>
-                  <ApartmentIcon sx={{ fontSize: 44, color: DESIGN_TOKENS.line[300], mb: 1.5 }} />
-                  <Typography
-                    variant="body1"
-                    sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary, mb: 0.5 }}
-                  >
-                    No buildings yet — add your first building to get started
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, mb: 2.5 }}>
-                    Provision properties, blocks, and assign building managers.
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to="/buildings"
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    sx={{
-                      bgcolor: DESIGN_TOKENS.brand[600],
-                      fontWeight: 600,
-                      "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
-                    }}
-                  >
-                    Add Building
-                  </Button>
-                </Box>
+                <DashboardEmptyState
+                  icon={<ApartmentIcon />}
+                  message="No buildings yet — add your first building to get started"
+                  subtext="Provision properties, blocks, and assign building managers."
+                  action={
+                    <Button
+                      component={RouterLink}
+                      to="/buildings"
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        bgcolor: DESIGN_TOKENS.brand[600],
+                        fontWeight: 600,
+                        "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                      }}
+                    >
+                      Add Building
+                    </Button>
+                  }
+                />
               ) : (
                 <Stack spacing={1}>
                   {buildings.slice(0, 5).map((b) => (
-                    <Box
+                    <DashboardListItem
                       key={b._id || b.id}
-                      component={RouterLink}
                       to={`/buildings/${b._id || b.id}`}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 1.75,
-                        borderRadius: "10px",
-                        border: "1px solid #F1F5F9",
-                        bgcolor: "#FFFFFF",
-                        textDecoration: "none",
-                        color: "inherit",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: DESIGN_TOKENS.line[200],
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                        },
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.75 }}>
-                        <Box
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: "8px",
-                            bgcolor: DESIGN_TOKENS.brand[50],
-                            color: DESIGN_TOKENS.brand[600],
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <BusinessIcon sx={{ fontSize: 20 }} />
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
-                          >
-                            {b.name}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
-                          >
-                            {b.address?.city || b.address?.street || "Residential Complex"} •{" "}
-                            {b.totalFlats || 0} Flats
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <StatusChip status={b.status || "ACTIVE"} />
-                    </Box>
+                      icon={<BusinessIcon />}
+                      title={b.name}
+                      subtitle={`${b.address?.city || b.address?.street || "Residential Complex"} • ${b.totalFlats || 0} Flats`}
+                      rightContent={<StatusChip status={b.status || "ACTIVE"} />}
+                    />
                   ))}
                 </Stack>
               )}
-            </Paper>
+            </DashboardCard>
           </Grid>
 
           {/* Right Column: Platform Growth Chart & Recent Admin Activity */}
@@ -553,79 +758,27 @@ export const DashboardPage = () => {
                 labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
               />
 
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: { xs: 2.5, sm: 3.5 },
-                  borderRadius: "14px",
-                  borderColor: DESIGN_TOKENS.line[200],
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                }}
+              <DashboardCard
+                title="Recent Admin Activity"
+                subtitle="Audit logs from system administrators"
+                action="View Logs"
+                actionLink="/audit-logs"
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2.5,
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontFamily: FONT_UI,
-                        fontSize: "1.0625rem",
-                        fontWeight: 700,
-                        color: DESIGN_TOKENS.text.primary,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      Recent Admin Activity
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                    >
-                      Audit logs from system administrators
-                    </Typography>
-                  </Box>
-                  <Button
-                    component={RouterLink}
-                    to="/audit-logs"
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: "0.8125rem",
-                      color: DESIGN_TOKENS.brand[600],
-                    }}
-                  >
-                    View Logs
-                  </Button>
-                </Box>
-
                 {auditLogs.length === 0 ? (
-                  <Box sx={{ py: 4, textAlign: "center" }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                    >
-                      No recent activity recorded.
-                    </Typography>
-                  </Box>
+                  <DashboardEmptyState message="No activity in this range." />
                 ) : (
                   <Stack spacing={1}>
                     {auditLogs.slice(0, 4).map((log) => (
                       <Box
                         key={log._id || log.id}
                         sx={{
-                          p: 1.75,
-                          borderRadius: "10px",
+                          p: "10px 12px",
+                          borderRadius: "8px",
                           bgcolor: DESIGN_TOKENS.surface[50],
                           border: "1px solid #F1F5F9",
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.25 }}>
                           <Typography
                             variant="subtitle2"
                             sx={{ fontWeight: 600, fontSize: "0.8125rem" }}
@@ -650,190 +803,73 @@ export const DashboardPage = () => {
                     ))}
                   </Stack>
                 )}
-              </Paper>
+              </DashboardCard>
             </Stack>
           </Grid>
         </Grid>
       )}
 
       {/* -------------------------------------------------------------------------
-          2. BUILDING ADMIN: WORK ORDERS NEETING ATTENTION, COLLECTIONS TREND & NOTICES
+          2. BUILDING ADMIN: WORK ORDERS NEEDING ATTENTION, COLLECTIONS TREND & NOTICES
           ------------------------------------------------------------------------- */}
       {role === ROLES.BUILDING_ADMIN && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Left Column: Work Orders Needing Attention */}
           <Grid item xs={12} lg={7}>
-            <Paper
-              variant="outlined"
-              sx={{
-                p: { xs: 2.5, sm: 3.5 },
-                borderRadius: "14px",
-                borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                height: "100%",
-              }}
+            <DashboardCard
+              title="Work Orders Needing Attention"
+              subtitle="Actionable tickets requiring review or assignment"
+              action="View All"
+              actionLink="/maintenance-requests"
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: FONT_UI,
-                      fontSize: "1.0625rem",
-                      fontWeight: 700,
-                      color: DESIGN_TOKENS.text.primary,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    Work Orders Needing Attention
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                  >
-                    Actionable tickets requiring review or assignment
-                  </Typography>
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to="/maintenance-requests"
-                  size="small"
-                  endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    color: DESIGN_TOKENS.brand[600],
-                  }}
-                >
-                  View All
-                </Button>
-              </Box>
-
               {loadingMaintenance ? (
                 <TableLoadingSkeleton rows={4} />
               ) : openRequests.length === 0 ? (
                 /* VERBATIM PROMPT EMPTY STATE */
-                <Box sx={{ py: 6, textAlign: "center" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                  >
-                    All caught up — no work orders need attention right now.
-                  </Typography>
-                </Box>
+                <DashboardEmptyState message="All caught up — no work orders need attention right now." />
               ) : (
                 <Stack spacing={1}>
                   {openRequests.slice(0, 5).map((req) => (
-                    <Box
+                    <DashboardListItem
                       key={req._id}
-                      component={RouterLink}
                       to="/maintenance-requests"
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 1.75,
-                        borderRadius: "10px",
-                        border: "1px solid #F1F5F9",
-                        bgcolor: "#FFFFFF",
-                        textDecoration: "none",
-                        color: "inherit",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: DESIGN_TOKENS.line[200],
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1.75,
-                          minWidth: 0,
-                          mr: 2,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: "8px",
-                            bgcolor:
-                              req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
-                            color:
-                              req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.danger[600]
-                                : DESIGN_TOKENS.brand[600],
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <BuildIcon sx={{ fontSize: 18 }} />
-                        </Box>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Typography
-                            variant="body2"
+                      icon={<BuildIcon />}
+                      iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "rgba(67, 56, 202, 0.08)"}
+                      iconColor={
+                        req.priority === "EMERGENCY"
+                          ? DESIGN_TOKENS.danger[600]
+                          : DESIGN_TOKENS.brand[600]
+                      }
+                      title={req.title}
+                      subtitle={`#${req.requestNumber || req._id?.slice(-6)} • ${req.category} • Flat: ${req.flatId?.flatNumber || "Assigned"}`}
+                      rightContent={
+                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                          <Chip
+                            label={req.priority}
+                            size="small"
                             sx={{
+                              fontSize: "0.6875rem",
                               fontWeight: 600,
-                              color: DESIGN_TOKENS.text.primary,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
+                              height: 22,
+                              borderRadius: "999px",
+                              bgcolor:
+                                req.priority === "EMERGENCY"
+                                  ? "#FEE2E2"
+                                  : DESIGN_TOKENS.surface[100],
+                              color:
+                                req.priority === "EMERGENCY"
+                                  ? DESIGN_TOKENS.danger[600]
+                                  : DESIGN_TOKENS.text.secondary,
                             }}
-                          >
-                            {req.title}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: DESIGN_TOKENS.text.secondary,
-                              fontSize: "0.75rem",
-                              display: "block",
-                            }}
-                          >
-                            #{req.requestNumber || req._id?.slice(-6)} • {req.category}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ alignItems: "center", flexShrink: 0 }}
-                      >
-                        <Chip
-                          label={req.priority}
-                          size="small"
-                          sx={{
-                            fontSize: "0.6875rem",
-                            fontWeight: 600,
-                            height: 22,
-                            borderRadius: "999px",
-                            bgcolor:
-                              req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
-                            color:
-                              req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.danger[600]
-                                : DESIGN_TOKENS.text.secondary,
-                          }}
-                        />
-                        <StatusChip status={req.status} />
-                      </Stack>
-                    </Box>
+                          />
+                          <StatusChip status={req.status} />
+                        </Stack>
+                      }
+                    />
                   ))}
                 </Stack>
               )}
-            </Paper>
+            </DashboardCard>
           </Grid>
 
           {/* Right Column: Collections Trend & Latest Notices */}
@@ -848,79 +884,33 @@ export const DashboardPage = () => {
                 labels={["Oct", "Nov", "Dec", "Jan", "Feb", "Current"]}
               />
 
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: { xs: 2.5, sm: 3.5 },
-                  borderRadius: "14px",
-                  borderColor: DESIGN_TOKENS.line[200],
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                }}
+              <DashboardCard
+                title="Latest Notices"
+                subtitle="Published announcements"
+                action="All Notices"
+                actionLink="/notices"
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2.5,
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontFamily: FONT_UI,
-                        fontSize: "1.0625rem",
-                        fontWeight: 700,
-                        color: DESIGN_TOKENS.text.primary,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      Latest Notices
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                    >
-                      Published announcements
-                    </Typography>
-                  </Box>
-                  <Button
-                    component={RouterLink}
-                    to="/notices"
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: "0.8125rem",
-                      color: DESIGN_TOKENS.brand[600],
-                    }}
-                  >
-                    All Notices
-                  </Button>
-                </Box>
-
                 {notices.length === 0 ? (
-                  <Box sx={{ py: 4, textAlign: "center" }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                    >
-                      No notices published yet.
-                    </Typography>
-                  </Box>
+                  /* VERBATIM PROMPT EMPTY STATE */
+                  <DashboardEmptyState message="No notices published yet." />
                 ) : (
-                  <Stack spacing={1.5}>
+                  <Stack spacing={1.25}>
                     {notices.slice(0, 2).map((notice) => (
                       <Box
                         key={notice._id}
                         sx={{
-                          p: 2,
+                          p: "12px 14px",
                           borderRadius: "10px",
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          border: "1px solid #F1F5F9",
+                          bgcolor:
+                            notice.priority === "URGENT_EMERGENCY"
+                              ? "#FFFBEB"
+                              : DESIGN_TOKENS.surface[50],
+                          border: "1px solid",
+                          borderColor:
+                            notice.priority === "URGENT_EMERGENCY" ? "#FDE68A" : "#F1F5F9",
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.75 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
                           <Typography
                             variant="subtitle2"
                             sx={{ fontWeight: 600, fontSize: "0.875rem" }}
@@ -935,13 +925,9 @@ export const DashboardPage = () => {
                               height: 20,
                               borderRadius: "999px",
                               bgcolor:
-                                notice.priority === "URGENT_EMERGENCY"
-                                  ? "#FEE2E2"
-                                  : DESIGN_TOKENS.surface[100],
-                              color:
-                                notice.priority === "URGENT_EMERGENCY"
-                                  ? DESIGN_TOKENS.danger[600]
-                                  : DESIGN_TOKENS.text.secondary,
+                                notice.priority === "URGENT_EMERGENCY" ? "#FEF3C7" : "#E2E8F0",
+                              color: notice.priority === "URGENT_EMERGENCY" ? "#B45309" : "#475569",
+                              fontWeight: 600,
                             }}
                           />
                         </Box>
@@ -963,7 +949,7 @@ export const DashboardPage = () => {
                     ))}
                   </Stack>
                 )}
-              </Paper>
+              </DashboardCard>
             </Stack>
           </Grid>
         </Grid>
@@ -976,179 +962,61 @@ export const DashboardPage = () => {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Primary Triage Queue Card */}
           <Grid item xs={12} lg={7}>
-            <Paper
-              variant="outlined"
-              sx={{
-                p: { xs: 2.5, sm: 3.5 },
-                borderRadius: "14px",
-                borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                height: "100%",
-              }}
+            <DashboardCard
+              title="Triage & Assignment Queue"
+              subtitle="Click any ticket to assign specialist technicians directly"
+              action="Work Order Registry"
+              actionLink="/maintenance-requests"
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: FONT_UI,
-                      fontSize: "1.0625rem",
-                      fontWeight: 700,
-                      color: DESIGN_TOKENS.text.primary,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    Triage & Assignment Queue
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                  >
-                    Click any ticket to assign specialist technicians directly
-                  </Typography>
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to="/maintenance-requests"
-                  size="small"
-                  endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    color: DESIGN_TOKENS.brand[600],
-                  }}
-                >
-                  Work Order Registry
-                </Button>
-              </Box>
-
               {loadingMaintenance ? (
                 <TableLoadingSkeleton rows={4} />
               ) : openRequests.length === 0 ? (
                 /* VERBATIM PROMPT EMPTY STATE */
-                <Box sx={{ py: 6, textAlign: "center" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                  >
-                    Nothing needs triage right now.
-                  </Typography>
-                </Box>
+                <DashboardEmptyState message="Nothing needs triage right now." />
               ) : (
-                <Stack spacing={1.25}>
+                <Stack spacing={1}>
                   {openRequests.slice(0, 6).map((req) => (
-                    <Box
+                    <DashboardListItem
                       key={req._id}
-                      component={RouterLink}
                       to="/maintenance-requests"
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 2,
-                        borderRadius: "10px",
-                        border: "1px solid #F1F5F9",
-                        bgcolor: "#FFFFFF",
-                        textDecoration: "none",
-                        color: "inherit",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: DESIGN_TOKENS.brand[600],
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                        },
-                      }}
-                    >
-                      <Box sx={{ minWidth: 0, mr: 2 }}>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
-                        >
-                          {req.title}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: DESIGN_TOKENS.text.secondary,
-                            fontSize: "0.75rem",
-                            display: "block",
-                          }}
-                        >
-                          #{req.requestNumber || req._id?.slice(-6)} • {req.category} • Flat:{" "}
-                          {req.flatId?.flatNumber || "Assigned Unit"}
-                        </Typography>
-                      </Box>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ alignItems: "center", flexShrink: 0 }}
-                      >
-                        <Chip
-                          label={req.assignedStaffId ? "Assigned" : "Unassigned"}
-                          size="small"
-                          sx={{
-                            fontSize: "0.6875rem",
-                            fontWeight: 600,
-                            borderRadius: "999px",
-                            bgcolor: req.assignedStaffId ? "#ECFDF5" : "#FEF3C7",
-                            color: req.assignedStaffId ? "#047857" : "#B45309",
-                          }}
-                        />
-                        <StatusChip status={req.status} />
-                      </Stack>
-                    </Box>
+                      icon={<BuildIcon />}
+                      iconBg={req.assignedStaffId ? "#ECFDF5" : "#FEF3C7"}
+                      iconColor={req.assignedStaffId ? "#047857" : "#B45309"}
+                      title={req.title}
+                      subtitle={`#${req.requestNumber || req._id?.slice(-6)} • ${req.category} • Flat: ${req.flatId?.flatNumber || "Assigned Unit"}`}
+                      rightContent={
+                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                          <Chip
+                            label={req.assignedStaffId ? "Assigned" : "Unassigned"}
+                            size="small"
+                            sx={{
+                              fontSize: "0.6875rem",
+                              fontWeight: 600,
+                              borderRadius: "999px",
+                              bgcolor: req.assignedStaffId ? "#ECFDF5" : "#FEF3C7",
+                              color: req.assignedStaffId ? "#047857" : "#B45309",
+                            }}
+                          />
+                          <StatusChip status={req.status} />
+                        </Stack>
+                      }
+                    />
                   ))}
                 </Stack>
               )}
-            </Paper>
+            </DashboardCard>
           </Grid>
 
           {/* Side Cards: Staff Availability & Today's Move-ins/Move-outs */}
           <Grid item xs={12} lg={5}>
             <Stack spacing={3}>
               {/* Staff Availability Card */}
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: { xs: 2.5, sm: 3.5 },
-                  borderRadius: "14px",
-                  borderColor: DESIGN_TOKENS.line[200],
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                }}
+              <DashboardCard
+                title="Staff Availability"
+                subtitle="On-duty technicians available for assignment"
+                action="Manage Staff"
+                actionLink="/staff"
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2,
-                  }}
-                >
-                  <Typography sx={{ fontFamily: FONT_UI, fontWeight: 700, fontSize: "1.0625rem" }}>
-                    Staff Availability
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to="/staff"
-                    size="small"
-                    sx={{ fontWeight: 600, fontSize: "0.8125rem", color: DESIGN_TOKENS.brand[600] }}
-                  >
-                    Manage Staff
-                  </Button>
-                </Box>
-                <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, mb: 2 }}>
-                  {staff.length > 0
-                    ? `${staff.length} technicians registered on building roster.`
-                    : "On-duty technicians available for immediate work order assignment."}
-                </Typography>
                 <Stack spacing={1}>
                   {(staff.length > 0
                     ? staff.slice(0, 3)
@@ -1160,7 +1028,7 @@ export const DashboardPage = () => {
                     <Box
                       key={s._id || idx}
                       sx={{
-                        p: 1.5,
+                        p: "10px 12px",
                         borderRadius: "8px",
                         bgcolor: DESIGN_TOKENS.surface[50],
                         display: "flex",
@@ -1189,50 +1057,24 @@ export const DashboardPage = () => {
                     </Box>
                   ))}
                 </Stack>
-              </Paper>
+              </DashboardCard>
 
               {/* Move-ins & Move-outs Card */}
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: { xs: 2.5, sm: 3.5 },
-                  borderRadius: "14px",
-                  borderColor: DESIGN_TOKENS.line[200],
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                }}
+              <DashboardCard
+                title="Today's Move-ins / Move-outs"
+                subtitle="Resident arrival and departure schedules"
+                action="Tenant Roster"
+                actionLink="/tenants"
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2,
-                  }}
-                >
-                  <Typography sx={{ fontFamily: FONT_UI, fontWeight: 700, fontSize: "1.0625rem" }}>
-                    Today's Move-ins / Move-outs
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to="/tenants"
-                    size="small"
-                    sx={{ fontWeight: 600, fontSize: "0.8125rem", color: DESIGN_TOKENS.brand[600] }}
-                  >
-                    Tenant Roster
-                  </Button>
-                </Box>
                 {tenants.length === 0 ? (
-                  <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, py: 2 }}>
-                    No resident transitions scheduled for today.
-                  </Typography>
+                  <DashboardEmptyState message="No resident transitions scheduled for today." />
                 ) : (
                   <Stack spacing={1}>
                     {tenants.slice(0, 2).map((t) => (
                       <Box
                         key={t._id || t.id}
                         sx={{
-                          p: 1.5,
+                          p: "10px 12px",
                           borderRadius: "8px",
                           bgcolor: DESIGN_TOKENS.surface[50],
                           display: "flex",
@@ -1264,7 +1106,7 @@ export const DashboardPage = () => {
                     ))}
                   </Stack>
                 )}
-              </Paper>
+              </DashboardCard>
             </Stack>
           </Grid>
         </Grid>
@@ -1276,130 +1118,49 @@ export const DashboardPage = () => {
       {role === ROLES.ACCOUNTANT && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} lg={7}>
-            <Paper
-              variant="outlined"
-              sx={{
-                p: { xs: 2.5, sm: 3.5 },
-                borderRadius: "14px",
-                borderColor: DESIGN_TOKENS.line[200],
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-                height: "100%",
-              }}
+            <DashboardCard
+              title="Ranked Overdue Accounts"
+              subtitle="Ranked by outstanding dues • Click any row to inspect flat ledger"
+              action="Billing Registry"
+              actionLink="/invoices"
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: FONT_UI,
-                      fontSize: "1.0625rem",
-                      fontWeight: 700,
-                      color: DESIGN_TOKENS.text.primary,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    Ranked Overdue Accounts
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-                  >
-                    Ranked by outstanding dues • Click any row to inspect flat ledger
-                  </Typography>
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to="/invoices"
-                  size="small"
-                  endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    color: DESIGN_TOKENS.brand[600],
-                  }}
-                >
-                  Billing Registry
-                </Button>
-              </Box>
-
               {loadingInvoices ? (
                 <TableLoadingSkeleton rows={4} />
               ) : overdueInvoices.length === 0 ? (
                 /* VERBATIM PROMPT EMPTY STATE */
-                <Box sx={{ py: 6, textAlign: "center" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                  >
-                    No overdue invoices — collections are fully up to date.
-                  </Typography>
-                </Box>
+                <DashboardEmptyState message="No overdue invoices — collections are fully up to date." />
               ) : (
                 <Stack spacing={1}>
                   {overdueInvoices.slice(0, 5).map((inv) => (
-                    <Box
+                    <DashboardListItem
                       key={inv._id}
-                      component={RouterLink}
                       to={`/invoices/${inv._id}`}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 1.75,
-                        borderRadius: "10px",
-                        border: "1px solid #F1F5F9",
-                        bgcolor: "#FFFFFF",
-                        textDecoration: "none",
-                        color: "inherit",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: DESIGN_TOKENS.line[200],
-                          bgcolor: DESIGN_TOKENS.surface[50],
-                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                        },
-                      }}
-                    >
-                      <Box>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
-                        >
-                          Invoice #{inv.invoiceNumber}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
-                        >
-                          Period: {inv.periodMonth}/{inv.periodYear} • Due:{" "}
-                          {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
-                        </Typography>
-                      </Box>
-                      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                        <Typography
-                          sx={{
-                            fontFamily: FONT_UI,
-                            fontSize: "1.0625rem",
-                            fontWeight: 700,
-                            color: DESIGN_TOKENS.danger[600],
-                            letterSpacing: "-0.01em",
-                          }}
-                        >
-                          ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
-                        </Typography>
-                        <StatusChip status={inv.status} />
-                      </Stack>
-                    </Box>
+                      icon={<ReceiptLongIcon />}
+                      iconBg="#FEE2E2"
+                      iconColor={DESIGN_TOKENS.danger[600]}
+                      title={`Invoice #${inv.invoiceNumber}`}
+                      subtitle={`Period: ${inv.periodMonth}/${inv.periodYear} • Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                      rightContent={
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                          <Typography
+                            sx={{
+                              fontFamily: FONT_UI,
+                              fontSize: "0.9375rem",
+                              fontWeight: 700,
+                              color: DESIGN_TOKENS.danger[600],
+                              letterSpacing: "-0.01em",
+                            }}
+                          >
+                            ₨{(inv.dueAmount || inv.totalAmount || 0).toLocaleString()}
+                          </Typography>
+                          <StatusChip status={inv.status} />
+                        </Stack>
+                      }
+                    />
                   ))}
                 </Stack>
               )}
-            </Paper>
+            </DashboardCard>
           </Grid>
 
           <Grid item xs={12} lg={5}>
@@ -1419,123 +1180,59 @@ export const DashboardPage = () => {
           5. MAINTENANCE STAFF: ACTION LIST TODAY
           ------------------------------------------------------------------------- */}
       {role === ROLES.MAINTENANCE_STAFF && (
-        <Paper
-          variant="outlined"
-          sx={{
-            p: { xs: 2.5, sm: 3.5 },
-            borderRadius: "14px",
-            borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-            mb: 4,
-          }}
-        >
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              sx={{
-                fontFamily: FONT_UI,
-                fontSize: "1.0625rem",
-                fontWeight: 700,
-                color: DESIGN_TOKENS.text.primary,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              My Work Orders — Today
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-            >
-              Priority-ordered action items with touch-friendly status controls
-            </Typography>
-          </Box>
-
-          {requests.length === 0 ? (
-            /* VERBATIM PROMPT EMPTY STATE */
-            <Box sx={{ py: 6, textAlign: "center" }}>
-              <Typography
-                variant="body2"
-                sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-              >
-                Nothing assigned to you today.
-              </Typography>
-            </Box>
-          ) : (
-            <Stack spacing={1.25}>
-              {requests.map((req) => (
-                <Box
-                  key={req._id}
-                  component={RouterLink}
-                  to="/maintenance-requests"
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    justifyContent: "space-between",
-                    alignItems: { xs: "flex-start", sm: "center" },
-                    gap: 2,
-                    p: 2,
-                    minHeight: 52,
-                    borderRadius: "10px",
-                    border: "1px solid",
-                    borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#F1F5F9",
-                    bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
-                    textDecoration: "none",
-                    color: "inherit",
-                    transition: "all 0.15s ease",
-                    "&:hover": {
-                      borderColor:
-                        req.priority === "EMERGENCY"
-                          ? DESIGN_TOKENS.danger[600]
-                          : DESIGN_TOKENS.line[200],
-                      boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                    },
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 600,
-                        color: DESIGN_TOKENS.text.primary,
-                        fontSize: "0.9375rem",
-                      }}
-                    >
-                      {req.title}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: DESIGN_TOKENS.text.secondary,
-                        fontSize: "0.8125rem",
-                        mt: 0.25,
-                        display: "block",
-                      }}
-                    >
-                      Unit: {req.flatId?.flatNumber || "Assigned Unit"} • Category: {req.category}
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
-                    <Chip
-                      label={req.priority}
-                      size="small"
-                      sx={{
-                        borderRadius: "999px",
-                        fontWeight: 600,
-                        bgcolor:
-                          req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
-                        color:
-                          req.priority === "EMERGENCY"
-                            ? DESIGN_TOKENS.danger[600]
-                            : DESIGN_TOKENS.text.secondary,
-                      }}
-                    />
-                    <StatusChip status={req.status} />
-                  </Stack>
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </Paper>
+        <Box sx={{ mb: 4 }}>
+          <DashboardCard
+            title="My Work Orders — Today"
+            subtitle="Priority-ordered action items with touch-friendly status controls"
+          >
+            {requests.length === 0 ? (
+              /* VERBATIM PROMPT EMPTY STATE */
+              <DashboardEmptyState message="Nothing assigned to you today." />
+            ) : (
+              <Stack spacing={1.25}>
+                {requests.map((req) => (
+                  <DashboardListItem
+                    key={req._id}
+                    to="/maintenance-requests"
+                    icon={<BuildIcon />}
+                    iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "rgba(67, 56, 202, 0.08)"}
+                    iconColor={
+                      req.priority === "EMERGENCY"
+                        ? DESIGN_TOKENS.danger[600]
+                        : DESIGN_TOKENS.brand[600]
+                    }
+                    title={req.title}
+                    subtitle={`Unit: ${req.flatId?.flatNumber || "Assigned Unit"} • Category: ${req.category}`}
+                    sx={{
+                      minHeight: 48,
+                      borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#F1F5F9",
+                      bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
+                    }}
+                    rightContent={
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                        <Chip
+                          label={req.priority}
+                          size="small"
+                          sx={{
+                            borderRadius: "999px",
+                            fontWeight: 600,
+                            bgcolor:
+                              req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
+                            color:
+                              req.priority === "EMERGENCY"
+                                ? DESIGN_TOKENS.danger[600]
+                                : DESIGN_TOKENS.text.secondary,
+                          }}
+                        />
+                        <StatusChip status={req.status} />
+                      </Stack>
+                    }
+                  />
+                ))}
+              </Stack>
+            )}
+          </DashboardCard>
+        </Box>
       )}
 
       {/* -------------------------------------------------------------------------
@@ -1544,32 +1241,10 @@ export const DashboardPage = () => {
       {role === ROLES.SECURITY_STAFF && (
         <Stack spacing={3} sx={{ mb: 4 }}>
           {/* Quick Check-in Terminal Card */}
-          <Paper
-            variant="outlined"
-            sx={{
-              p: { xs: 3, sm: 4 },
-              borderRadius: "14px",
-              borderColor: DESIGN_TOKENS.line[200],
-              backgroundColor: "#FFFFFF",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-            }}
+          <DashboardCard
+            title="Gate Terminal Quick Entry"
+            subtitle="Enter arriving visitor pass code or scan guest QR pass"
           >
-            <Typography
-              sx={{
-                fontFamily: FONT_UI,
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                color: DESIGN_TOKENS.text.primary,
-                letterSpacing: "-0.015em",
-                mb: 1,
-              }}
-            >
-              Gate Terminal Quick Entry
-            </Typography>
-            <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, mb: 3 }}>
-              Enter arriving visitor pass code or scan guest QR pass.
-            </Typography>
-
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ maxWidth: 540 }}>
               <TextField
                 fullWidth
@@ -1607,95 +1282,49 @@ export const DashboardPage = () => {
                 Verify Pass
               </Button>
             </Stack>
-          </Paper>
+          </DashboardCard>
 
           {/* Currently Inside List */}
-          <Paper
-            variant="outlined"
-            sx={{
-              p: { xs: 2.5, sm: 3.5 },
-              borderRadius: "14px",
-              borderColor: DESIGN_TOKENS.line[200],
-              backgroundColor: "#FFFFFF",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-            }}
+          <DashboardCard
+            title="Currently Inside Premises"
+            subtitle="Active visitor passes requiring check-out upon exit"
+            action="Full Visitor Log"
+            actionLink="/visitors"
           >
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}
-            >
-              <Box>
-                <Typography sx={{ fontFamily: FONT_UI, fontWeight: 700, fontSize: "1.0625rem" }}>
-                  Currently Inside Premises
-                </Typography>
-                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                  Active visitor passes requiring check-out upon exit
-                </Typography>
-              </Box>
-              <Button
-                component={RouterLink}
-                to="/visitors"
-                size="small"
-                sx={{ fontWeight: 600, fontSize: "0.8125rem", color: DESIGN_TOKENS.brand[600] }}
-              >
-                Full Visitor Log
-              </Button>
-            </Box>
-
             {loadingVisitors ? (
               <TableLoadingSkeleton rows={3} />
             ) : checkedInVisitors.length === 0 ? (
               /* VERBATIM PROMPT EMPTY STATE */
-              <Box sx={{ py: 6, textAlign: "center" }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-                >
-                  No visitors currently inside.
-                </Typography>
-              </Box>
+              <DashboardEmptyState message="No visitors currently inside." />
             ) : (
-              <Stack spacing={1.25}>
+              <Stack spacing={1}>
                 {checkedInVisitors.map((v) => (
-                  <Box
+                  <DashboardListItem
                     key={v._id || v.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      p: 2,
-                      borderRadius: "10px",
-                      border: "1px solid #F1F5F9",
-                      bgcolor: "#FFFFFF",
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {v.name}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                        Destination: Flat {v.flatId?.flatNumber || "Visiting Unit"} • Phone:{" "}
-                        {v.phone || "—"}
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<ExitToAppIcon sx={{ fontSize: 16 }} />}
-                      onClick={() => navigate("/visitors/verify")}
-                      sx={{
-                        minHeight: 44, // >= 44px tap target per spec
-                        borderColor: DESIGN_TOKENS.line[200],
-                        color: DESIGN_TOKENS.text.primary,
-                        fontWeight: 600,
-                      }}
-                    >
-                      Check Out
-                    </Button>
-                  </Box>
+                    icon={<BadgeIcon />}
+                    title={v.name}
+                    subtitle={`Destination: Flat ${v.flatId?.flatNumber || "Visiting Unit"} • Phone: ${v.phone || "—"}`}
+                    rightContent={
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<ExitToAppIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => navigate("/visitors/verify")}
+                        sx={{
+                          minHeight: 44, // >= 44px tap target per mobile-first spec
+                          borderColor: DESIGN_TOKENS.line[200],
+                          color: DESIGN_TOKENS.text.primary,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Check Out
+                      </Button>
+                    }
+                  />
                 ))}
               </Stack>
             )}
-          </Paper>
+          </DashboardCard>
         </Stack>
       )}
 
@@ -1703,104 +1332,45 @@ export const DashboardPage = () => {
           7. RESIDENT (OWNER / TENANT): MY FLAT OVERVIEW & LEDGER
           ------------------------------------------------------------------------- */}
       {(role === ROLES.OWNER || role === ROLES.TENANT) && (
-        <Paper
-          variant="outlined"
-          sx={{
-            p: { xs: 2.5, sm: 3.5 },
-            borderRadius: "14px",
-            borderColor: DESIGN_TOKENS.line[200],
-            backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
-            mb: 4,
-          }}
+        <DashboardCard
+          title={role === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
+          subtitle="Official monthly flat maintenance charges and receipts"
+          action="View Invoices"
+          actionLink="/invoices"
+          sx={{ mb: 4 }}
         >
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              sx={{
-                fontFamily: FONT_UI,
-                fontSize: "1.0625rem",
-                fontWeight: 700,
-                color: DESIGN_TOKENS.text.primary,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {role === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: DESIGN_TOKENS.text.secondary, mt: 0.25, display: "block" }}
-            >
-              Official monthly flat maintenance charges and receipts
-            </Typography>
-          </Box>
-
           {invoices.length === 0 ? (
-            <Box sx={{ py: 4, textAlign: "center" }}>
-              <Typography
-                variant="body2"
-                sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 500 }}
-              >
-                No invoices issued yet for your residence.
-              </Typography>
-            </Box>
+            <DashboardEmptyState message="No invoices issued yet for your residence." />
           ) : (
             <Stack spacing={1}>
               {invoices.slice(0, 4).map((inv) => (
-                <Box
+                <DashboardListItem
                   key={inv._id}
-                  component={RouterLink}
                   to={`/invoices/${inv._id}`}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    p: 2,
-                    borderRadius: "10px",
-                    border: "1px solid #F1F5F9",
-                    bgcolor: "#FFFFFF",
-                    textDecoration: "none",
-                    color: "inherit",
-                    transition: "all 0.15s ease",
-                    "&:hover": {
-                      borderColor: DESIGN_TOKENS.line[200],
-                      bgcolor: DESIGN_TOKENS.surface[50],
-                      boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
-                    },
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}
-                    >
-                      Invoice #{inv.invoiceNumber}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
-                    >
-                      Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                    <Typography
-                      sx={{
-                        fontFamily: FONT_UI,
-                        fontWeight: 700,
-                        fontSize: "1.0625rem",
-                        color: DESIGN_TOKENS.text.primary,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      ₨{(inv.totalAmount || 0).toLocaleString()}
-                    </Typography>
-                    <StatusChip status={inv.status} />
-                  </Stack>
-                </Box>
+                  icon={<ReceiptIcon />}
+                  title={`Invoice #${inv.invoiceNumber}`}
+                  subtitle={`Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                  rightContent={
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                      <Typography
+                        sx={{
+                          fontFamily: FONT_UI,
+                          fontWeight: 700,
+                          fontSize: "0.9375rem",
+                          color: DESIGN_TOKENS.text.primary,
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        ₨{(inv.totalAmount || 0).toLocaleString()}
+                      </Typography>
+                      <StatusChip status={inv.status} />
+                    </Stack>
+                  }
+                />
               ))}
             </Stack>
           )}
-        </Paper>
+        </DashboardCard>
       )}
     </Box>
   );

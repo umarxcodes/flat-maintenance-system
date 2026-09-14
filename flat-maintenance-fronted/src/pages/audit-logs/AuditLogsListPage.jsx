@@ -126,6 +126,8 @@ export const AuditLogsListPage = () => {
         columns={columns}
         rows={logs}
         isLoading={isLoading}
+        emptyTitle="No activity in this range."
+        emptyDescription="There are no audit records matching the specified filters."
         totalCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}

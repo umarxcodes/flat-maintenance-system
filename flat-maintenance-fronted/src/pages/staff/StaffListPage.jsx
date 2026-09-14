@@ -160,7 +160,7 @@ export const StaffListPage = () => {
         action={
           <PermissionGuard permission={PERMISSIONS.STAFF_CREATE}>
             <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenCreate}>
-              Onboard Staff
+              Invite Staff
             </Button>
           </PermissionGuard>
         }
@@ -228,6 +228,8 @@ export const StaffListPage = () => {
         columns={columns}
         rows={staff}
         isLoading={isLoading}
+        emptyTitle="No staff registered yet."
+        emptyDescription="Invite specialized technicians or gate staff to build the operational crew."
         totalCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}

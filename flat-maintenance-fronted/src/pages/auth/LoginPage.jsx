@@ -146,7 +146,7 @@ export const LoginPage = () => {
       {/* Backend / Network Error */}
       {loginMutation.isError && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: "8px" }}>
-          {loginMutation.error?.message || "Invalid email or password. Please try again."}
+          That email or password doesn't match our records.
         </Alert>
       )}
 
