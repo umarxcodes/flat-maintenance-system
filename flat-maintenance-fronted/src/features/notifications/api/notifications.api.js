@@ -4,7 +4,13 @@ import { API_ENDPOINTS } from "../../../lib/api/endpoints.js";
 
 export const notificationsApi = {
   getNotifications: async (params = {}) => {
-    return await apiClient.get(API_ENDPOINTS.NOTIFICATIONS.BASE, { params });
+    const cleanParams = Object.entries(params).reduce((acc, [key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        acc[key] = val;
+      }
+      return acc;
+    }, {});
+    return await apiClient.get(API_ENDPOINTS.NOTIFICATIONS.BASE, { params: cleanParams });
   },
 
   markAsRead: async (id) => {
