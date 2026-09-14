@@ -1,6 +1,9 @@
 // =====================  USERS DIRECTORY LIST PAGE  ===========
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -15,11 +18,19 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
+import Avatar from "@mui/material/Avatar";
+import Chip from "@mui/material/Chip";
+import Skeleton from "@mui/material/Skeleton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import ToggleOffIcon from "@mui/icons-material/ToggleOff";
-import { useNavigate } from "react-router-dom";
+import GridViewIcon from "@mui/icons-material/GridView";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -28,35 +39,64 @@ import {
   useUpdateUserStatusMutation,
   useInviteUserMutation,
 } from "../../features/users/hooks/use-users.js";
+import { useBuildingsList } from "../../features/buildings/hooks/use-buildings.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog.jsx";
+import { EmptyState } from "../../components/common/EmptyState.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
 import { STATUSES } from "../../lib/constants/statuses.js";
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { FONT_UI } from "../../theme/typography.js";
+
+const E164_PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
 
 const inviteSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  phone: z.string().optional(),
-  role: z.string().min(1, "Role is required"),
+  firstName: z
+    .string({ required_error: "First name is required" })
+    .trim()
+    .min(2, "First name must be at least 2 characters")
+    .max(64, "First name must not exceed 64 characters"),
+  lastName: z
+    .string({ required_error: "Last name is required" })
+    .trim()
+    .min(2, "Last name must be at least 2 characters")
+    .max(64, "Last name must not exceed 64 characters"),
+  email: z
+    .string({ required_error: "Email is required" })
+    .trim()
+    .toLowerCase()
+    .email("Invalid email format"),
+  phone: z
+    .string({ required_error: "Phone number is required" })
+    .trim()
+    .regex(
+      E164_PHONE_REGEX,
+      "Phone number must include international country code (e.g. +923001234567)"
+    ),
+  role: z.enum(Object.values(ROLES)),
+  assignedBuildingIds: z.array(z.string()).optional().default([]),
 });
 
 export const UsersListPage = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
 
   // Modals state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [statusDialogUser, setStatusDialogUser] = useState(null);
+
+  const { data: buildingsData } = useBuildingsList();
+  const buildings = buildingsData?.buildings || (Array.isArray(buildingsData) ? buildingsData : []);
 
   const queryParams = {
     page: page + 1,
@@ -84,13 +124,21 @@ export const UsersListPage = () => {
       firstName: "",
       lastName: "",
       email: "",
-      phone: "",
+      phone: "+92",
       role: ROLES.TENANT,
+      assignedBuildingIds: [],
     },
   });
 
   const handleOpenInvite = () => {
-    reset();
+    reset({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "+92",
+      role: ROLES.TENANT,
+      assignedBuildingIds: buildings[0] ? [buildings[0].id || buildings[0]._id] : [],
+    });
     setIsInviteOpen(true);
   };
 
@@ -135,17 +183,37 @@ export const UsersListPage = () => {
     {
       id: "name",
       label: "Name",
-      render: (_, row) => `${row.firstName} ${row.lastName}`,
+      render: (_, row) => (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Avatar sx={{ width: 32, height: 32, fontSize: "0.8125rem", bgcolor: "#4F46E5" }}>
+            {`${row.firstName?.[0] || ""}${row.lastName?.[0] || ""}`.toUpperCase()}
+          </Avatar>
+          <Box>
+            <Box sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
+              {row.firstName} {row.lastName}
+            </Box>
+            <Box sx={{ fontSize: "0.75rem", color: DESIGN_TOKENS.text.secondary }}>
+              {row.phone || "No phone logged"}
+            </Box>
+          </Box>
+        </Box>
+      ),
     },
     {
       id: "email",
       label: "Email",
-      render: (val) => val || "-",
+      render: (val) => val || "—",
     },
     {
       id: "role",
-      label: "Role",
-      render: (val) => ROLE_LABELS[val] || val,
+      label: "System Role",
+      render: (val) => (
+        <Chip
+          label={ROLE_LABELS[val] || val}
+          size="small"
+          sx={{ fontSize: "0.75rem", fontWeight: 600, bgcolor: "#EEF2FF", color: DESIGN_TOKENS.brand[600] }}
+        />
+      ),
     },
     {
       id: "status",
@@ -158,7 +226,7 @@ export const UsersListPage = () => {
       align: "right",
       render: (_, row) => (
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <Tooltip title="View Details">
+          <Tooltip title="View Profile">
             <IconButton
               size="small"
               onClick={(e) => {
@@ -196,17 +264,43 @@ export const UsersListPage = () => {
   ];
 
   return (
-    <Box>
+    <Box sx={{ width: "100%", pb: 4 }}>
       <PageHeader
         title="Users Directory"
         subtitle="Manage user accounts, roles, access permissions, and activation states"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Users" }]}
         action={
-          <PermissionGuard permission={PERMISSIONS.USER_CREATE}>
-            <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenInvite}>
-              Invite User
-            </Button>
-          </PermissionGuard>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <ToggleButtonGroup
+              size="small"
+              value={viewMode}
+              exclusive
+              onChange={(_, next) => next && setViewMode(next)}
+              sx={{ bgcolor: "#FFFFFF" }}
+            >
+              <ToggleButton value="grid" aria-label="User Cards">
+                <GridViewIcon sx={{ fontSize: 18 }} />
+              </ToggleButton>
+              <ToggleButton value="table" aria-label="Data Table">
+                <ViewListIcon sx={{ fontSize: 18 }} />
+              </ToggleButton>
+            </ToggleButtonGroup>
+
+            <PermissionGuard permission={PERMISSIONS.USER_CREATE}>
+              <Button
+                variant="contained"
+                startIcon={<PersonAddIcon />}
+                onClick={handleOpenInvite}
+                sx={{
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                }}
+              >
+                Invite User
+              </Button>
+            </PermissionGuard>
+          </Stack>
         }
       />
 
@@ -216,15 +310,15 @@ export const UsersListPage = () => {
           setSearch(v);
           setPage(0);
         }}
-        searchPlaceholder="Search by name or email..."
+        searchPlaceholder="Search by name, email, or phone..."
         onReset={handleResetFilters}
         hasActiveFilters={Boolean(search || roleFilter || statusFilter)}
       >
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel>Role</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel>Filter by Role</InputLabel>
           <Select
             value={roleFilter}
-            label="Role"
+            label="Filter by Role"
             onChange={(e) => {
               setRoleFilter(e.target.value);
               setPage(0);
@@ -242,10 +336,10 @@ export const UsersListPage = () => {
         </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
+          <InputLabel>Account Status</InputLabel>
           <Select
             value={statusFilter}
-            label="Status"
+            label="Account Status"
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(0);
@@ -263,26 +357,138 @@ export const UsersListPage = () => {
         </FormControl>
       </FilterBar>
 
-      <DataTable
-        columns={columns}
-        rows={users}
-        isLoading={isLoading}
-        emptyTitle="No admins yet."
-        emptyDescription="Invite an administrator or create a new user account to get started."
-        totalCount={totalCount}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={setPage}
-        onRowsPerPageChange={(r) => {
-          setRowsPerPage(r);
-          setPage(0);
-        }}
-        onRowClick={(row) => navigate(`/users/${row.id || row._id}`)}
-      />
+      {/* Presentation */}
+      {viewMode === "grid" ? (
+        <Box sx={{ mb: 4 }}>
+          {isLoading ? (
+            <Grid container spacing={2.5}>
+              {[1, 2, 3, 4, 5, 6].map((idx) => (
+                <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <Paper variant="outlined" sx={{ p: 2.5, borderRadius: "14px", borderColor: DESIGN_TOKENS.line[200] }}>
+                    <Skeleton variant="circular" width={44} height={44} sx={{ mb: 1.5 }} />
+                    <Skeleton variant="text" width="60%" height={24} />
+                    <Skeleton variant="text" width="80%" height={18} sx={{ mb: 2 }} />
+                    <Skeleton variant="rectangular" height={32} sx={{ borderRadius: "6px" }} />
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          ) : users.length === 0 ? (
+            <EmptyState
+              title="No users match your filters."
+              description="Invite an administrator or create a new user account to get started."
+              action={
+                <PermissionGuard permission={PERMISSIONS.USER_CREATE}>
+                  <Button
+                    variant="contained"
+                    startIcon={<PersonAddIcon />}
+                    onClick={handleOpenInvite}
+                    sx={{ bgcolor: DESIGN_TOKENS.brand[600], fontWeight: 600 }}
+                  >
+                    Invite User
+                  </Button>
+                </PermissionGuard>
+              }
+            />
+          ) : (
+            <Grid container spacing={2.5}>
+              {users.map((u) => {
+                const uId = u.id || u._id;
+                const initials = `${u.firstName?.[0] || ""}${u.lastName?.[0] || ""}`.toUpperCase() || "U";
+
+                return (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={uId}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2.5,
+                        borderRadius: "14px",
+                        borderColor: DESIGN_TOKENS.line[200],
+                        bgcolor: "#FFFFFF",
+                        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        height: "100%",
+                        "&:hover": {
+                          borderColor: DESIGN_TOKENS.brand[600],
+                          boxShadow: "0 6px 18px -3px rgba(15, 23, 42, 0.08)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Box>
+                        {/* Header: Avatar and Status */}
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1.5 }}>
+                          <Avatar sx={{ width: 44, height: 44, bgcolor: "#4F46E5", fontWeight: 700, fontSize: "1rem" }}>
+                            {initials}
+                          </Avatar>
+                          <StatusChip status={u.status} />
+                        </Box>
+
+                        <Typography sx={{ fontWeight: 700, fontSize: "1.0625rem", color: "#0F172A", mb: 0.25 }}>
+                          {u.firstName} {u.lastName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.8125rem", mb: 1.5 }} noWrap>
+                          {u.email}
+                        </Typography>
+
+                        <Chip
+                          label={ROLE_LABELS[u.role] || u.role}
+                          size="small"
+                          sx={{ fontSize: "0.75rem", fontWeight: 600, bgcolor: "#EEF2FF", color: DESIGN_TOKENS.brand[600], mb: 2 }}
+                        />
+                      </Box>
+
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pt: 1.5, borderTop: "1px solid #F1F5F9" }}>
+                        <PermissionGuard permission={PERMISSIONS.USER_STATUS_UPDATE}>
+                          <Button
+                            size="small"
+                            onClick={() => setStatusDialogUser(u)}
+                            sx={{ fontSize: "0.75rem", color: u.status === STATUSES.USER.ACTIVE ? "error.main" : "success.main" }}
+                          >
+                            {u.status === STATUSES.USER.ACTIVE ? "Deactivate" : "Activate"}
+                          </Button>
+                        </PermissionGuard>
+
+                        <Button
+                          component={RouterLink}
+                          to={`/users/${uId}`}
+                          size="small"
+                          endIcon={<ArrowForwardIcon sx={{ fontSize: 13 }} />}
+                          sx={{ fontWeight: 600, fontSize: "0.8125rem", color: DESIGN_TOKENS.brand[600] }}
+                        >
+                          Profile
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          )}
+        </Box>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={users}
+          isLoading={isLoading}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={(r) => {
+            setRowsPerPage(r);
+            setPage(0);
+          }}
+          onRowClick={(row) => navigate(`/users/${row.id || row._id}`)}
+        />
+      )}
 
       {/* Invite User Dialog */}
       <Dialog open={isInviteOpen} onClose={handleCloseInvite} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600 }}>Invite New User</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>Provision New User Account</DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onInviteSubmit)} noValidate>
           <DialogContent dividers>
             {inviteMutation.isError && (
@@ -319,16 +525,17 @@ export const UsersListPage = () => {
               />
 
               <TextField
-                label="Phone Number"
+                label="Phone Number (E.164)"
+                placeholder="e.g. +923001234567"
                 fullWidth
                 error={Boolean(errors.phone)}
-                helperText={errors.phone?.message}
+                helperText={errors.phone?.message || "Include international country code prefix (+)"}
                 {...register("phone")}
               />
 
               <FormControl fullWidth size="small" error={Boolean(errors.role)}>
-                <InputLabel>Role</InputLabel>
-                <Select label="Role" defaultValue={ROLES.TENANT} {...register("role")}>
+                <InputLabel>Organizational Role</InputLabel>
+                <Select label="Organizational Role" defaultValue={ROLES.TENANT} {...register("role")}>
                   {Object.entries(ROLE_LABELS).map(([code, label]) => (
                     <MenuItem key={code} value={code}>
                       {label}
@@ -342,8 +549,16 @@ export const UsersListPage = () => {
             <Button onClick={handleCloseInvite} color="inherit">
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={inviteMutation.isPending}>
-              {inviteMutation.isPending ? "Sending..." : "Send invite"}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={inviteMutation.isPending}
+              sx={{
+                bgcolor: DESIGN_TOKENS.brand[600],
+                "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+              }}
+            >
+              {inviteMutation.isPending ? "Inviting..." : "Send Invitation"}
             </Button>
           </DialogActions>
         </Box>
@@ -352,13 +567,13 @@ export const UsersListPage = () => {
       {/* Status Toggle Confirmation */}
       <ConfirmDialog
         open={Boolean(statusDialogUser)}
-        title="Confirm User Deactivation"
+        title={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Deactivate User Account" : "Activate User Account"}
         description={
           statusDialogUser?.status === STATUSES.USER.ACTIVE
-            ? `${statusDialogUser?.firstName} ${statusDialogUser?.lastName} will lose access immediately and be unassigned from their building. This can't be undone.`
-            : `Are you sure you want to activate ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`
+            ? `Are you sure you want to deactivate ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}? They will be temporarily blocked from signing into the portal.`
+            : `Are you sure you want to activate ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}? Their portal access will be restored.`
         }
-        confirmLabel={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Remove" : "Activate"}
+        confirmLabel={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "Deactivate" : "Activate"}
         confirmColor={statusDialogUser?.status === STATUSES.USER.ACTIVE ? "error" : "primary"}
         isLoading={updateStatusMutation.isPending}
         onConfirm={handleToggleStatusConfirm}
