@@ -27,9 +27,9 @@ export const StatCard = ({
   action = null,
   sx = {},
 }) => {
-  const resolvedBg = iconBg || (isHero ? "rgba(67, 56, 202, 0.08)" : "#F1F5F9");
+  const resolvedBg = iconBg || (isHero ? "rgba(79, 70, 229, 0.08)" : "#EEF2FF");
   const resolvedColor =
-    iconColor || (isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.text.secondary);
+    iconColor || (isHero ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.brand[600]);
 
   return (
     <Card
@@ -37,13 +37,14 @@ export const StatCard = ({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
         border: "1px solid",
-        borderColor: isHero ? "rgba(67, 56, 202, 0.25)" : DESIGN_TOKENS.line[200],
+        borderColor: isHero ? "rgba(79, 70, 229, 0.35)" : DESIGN_TOKENS.line[200],
         borderRadius: "14px",
         backgroundColor: "#FFFFFF",
+        position: "relative",
+        overflow: "hidden",
         boxShadow: isHero
-          ? "0 1px 3px rgba(67, 56, 202, 0.08), 0 4px 12px rgba(67, 56, 202, 0.04)"
+          ? "0 1px 3px rgba(79, 70, 229, 0.08), 0 4px 12px rgba(79, 70, 229, 0.04)"
           : "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
@@ -55,84 +56,114 @@ export const StatCard = ({
         ...sx,
       }}
     >
-      <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
+      {isHero && (
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            mb: 1.5,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            bgcolor: DESIGN_TOKENS.brand[600],
           }}
-        >
-          <Box sx={{ minWidth: 0, pr: 1.5 }}>
+        />
+      )}
+      <CardContent
+        sx={{
+          p: { xs: 2.25, sm: 2.75 },
+          "&:last-child": { pb: { xs: 2.25, sm: 2.75 } },
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 1.5,
+              mb: 1.25,
+            }}
+          >
             <Typography
-              variant="body2"
               sx={{
                 fontFamily: FONT_UI,
-                fontWeight: 500,
+                fontWeight: 600,
                 color: DESIGN_TOKENS.text.secondary,
-                fontSize: "0.8125rem", // 13px per spec
-                lineHeight: 1.3,
-                mb: 0.75,
+                fontSize: "0.8125rem",
+                lineHeight: 1.35,
+                letterSpacing: "-0.01em",
               }}
             >
               {label}
             </Typography>
-            <Typography
-              sx={{
-                fontFamily: FONT_UI,
-                fontSize: "1.875rem", // 30px bold numeral
-                lineHeight: 1.15,
-                fontWeight: 700,
-                color: DESIGN_TOKENS.text.primary,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              {value}
-            </Typography>
+
+            {icon ? (
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: "10px",
+                  bgcolor: resolvedBg,
+                  color: resolvedColor,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  transition: "transform 0.2s ease",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                  },
+                }}
+              >
+                {React.cloneElement(icon, { sx: { fontSize: 20, ...icon.props?.sx } })}
+              </Box>
+            ) : action ? (
+              <Box>{action}</Box>
+            ) : null}
           </Box>
 
-          {icon ? (
-            <Box
-              sx={{
-                width: 44,
-                height: 44,
-                borderRadius: "12px",
-                bgcolor: resolvedBg,
-                color: resolvedColor,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                transition: "transform 0.2s ease",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                },
-              }}
-            >
-              {React.cloneElement(icon, { sx: { fontSize: 22, ...icon.props?.sx } })}
-            </Box>
-          ) : action ? (
-            <Box>{action}</Box>
-          ) : null}
-        </Box>
-
-        {/* Bottom: Contextual Delta / Meta */}
-        {delta && (
           <Typography
-            variant="caption"
             sx={{
               fontFamily: FONT_UI,
-              display: "block",
-              mt: 1,
-              color: DESIGN_TOKENS.text.secondary,
-              fontSize: "0.875rem", // 14px per spec
-              fontWeight: 400,
-              lineHeight: 1.4,
+              fontSize: { xs: "1.625rem", sm: "1.875rem" },
+              lineHeight: 1.15,
+              fontWeight: 700,
+              color: DESIGN_TOKENS.text.primary,
+              letterSpacing: "-0.03em",
             }}
           >
-            {delta}
+            {value}
           </Typography>
+        </Box>
+
+        {/* Bottom Contextual Indicator */}
+        {delta && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mt: 2,
+              pt: 1.25,
+              borderTop: "1px solid #F1F5F9",
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                fontFamily: FONT_UI,
+                color: DESIGN_TOKENS.text.secondary,
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                lineHeight: 1.3,
+              }}
+            >
+              {delta}
+            </Typography>
+          </Box>
         )}
       </CardContent>
     </Card>

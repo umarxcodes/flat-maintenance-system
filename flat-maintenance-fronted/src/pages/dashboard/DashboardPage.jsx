@@ -107,7 +107,15 @@ const formatRelativeTime = (timestamp) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} }) => (
+const DashboardCard = ({
+  title,
+  subtitle,
+  action,
+  actionLink,
+  actionComponent = null,
+  children,
+  sx = {},
+}) => (
   <Paper
     variant="outlined"
     sx={{
@@ -164,7 +172,9 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
           </Typography>
         )}
       </Box>
-      {action && actionLink && (
+      {actionComponent ? (
+        actionComponent
+      ) : action && actionLink ? (
         <Button
           component={RouterLink}
           to={actionLink}
@@ -186,7 +196,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         >
           {action}
         </Button>
-      )}
+      ) : null}
     </Box>
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>{children}</Box>
   </Paper>
@@ -384,8 +394,8 @@ export const DashboardPage = () => {
   const { user, activeBuildingId } = useAuth();
   const navigate = useNavigate();
   const role = user?.role || ROLES.TENANT;
-
   const effectiveRole = role;
+  const [managerTriageFilter, setManagerTriageFilter] = useState("ALL");
 
   // Live Domain Queries
   const { data: buildingsData, isLoading: loadingBuildings } = useBuildingsList({ limit: 100 });
@@ -504,6 +514,11 @@ export const DashboardPage = () => {
     () => requests.filter((r) => (r.priority === "EMERGENCY" || r.priority === "HIGH") && r.status !== "CLOSED" && r.status !== "RESOLVED"),
     [requests]
   );
+  const managerFilteredRequests = useMemo(() => {
+    if (managerTriageFilter === "UNASSIGNED") return unassignedRequests;
+    if (managerTriageFilter === "URGENT") return urgentRequests;
+    return openRequests;
+  }, [managerTriageFilter, unassignedRequests, urgentRequests, openRequests]);
 
   const occupiedFlats = useMemo(() => flats.filter((f) => f.status === "OCCUPIED").length, [flats]);
   const vacantFlats = useMemo(() => flats.filter((f) => f.status === "VACANT").length, [flats]);
@@ -901,7 +916,7 @@ export const DashboardPage = () => {
                   <StatCard
                     value={urgentRequests.length}
                     label="Urgent / SLA At Risk"
-                    delta="Emergency priority work orders"
+                    delta="Emergency priority tickets"
                     icon={<WarningAmberIcon />}
                     iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#EEF2FF"}
                     iconColor={urgentRequests.length > 0 ? "#DC2626" : DESIGN_TOKENS.brand[600]}
@@ -919,10 +934,10 @@ export const DashboardPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <StatCard
-                    value={tenants.slice(0, 3).length}
-                    label="Scheduled Move-ins"
-                    delta="Active resident transitions"
-                    icon={<DoorSlidingIcon />}
+                    value={`${occupancyPct}%`}
+                    label="Building Occupancy"
+                    delta={`${occupiedFlats} of ${flats.length} units occupied`}
+                    icon={<HomeWorkIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
                   />
@@ -1447,72 +1462,211 @@ export const DashboardPage = () => {
             </Stack>
           )}
 
-          {/* 3. MANAGER DASHBOARD (Section §3 - Working Triage Queue) */}
+          {/* 3. MANAGER DASHBOARD (Section §3 - Operational Command Center) */}
           {effectiveRole === ROLES.MANAGER && (
-            <Stack spacing={3}>
-              {/* Row 2: Full-Width Primary Working Triage Queue */}
-              <DashboardCard
-                title="Live Triage & Dispatch Queue"
-                subtitle="Review, prioritize, and assign incoming service requests"
-                action="Work Order Registry"
-                actionLink="/maintenance-requests"
-              >
-                {openRequests.length === 0 ? (
-                  <DashboardEmptyState
-                    message="Nothing needs triage right now — new work orders will appear here the moment they're submitted."
-                    icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
-                  />
-                ) : (
-                  <DataTable
-                    columns={[
-                      { id: "requestNumber", label: "Ticket #", minWidth: 90, render: (r) => <Typography sx={{ fontWeight: 700, fontSize: "0.8125rem" }}>#{r.requestNumber || r._id?.slice(-6)}</Typography> },
-                      { id: "title", label: "Request Title", render: (r) => <Typography sx={{ fontWeight: 600, fontSize: "0.875rem" }}>{r.title}</Typography> },
-                      { id: "category", label: "Category", render: (r) => <Chip label={toSentenceCase(r.category)} size="small" sx={{ fontSize: "0.75rem" }} /> },
-                      { id: "priority", label: "Priority", render: (r) => <StatusChip status={r.priority} /> },
-                      { id: "status", label: "Status", render: (r) => <StatusChip status={r.status} /> },
-                      {
-                        id: "actions",
-                        label: "Action",
-                        align: "right",
-                        render: (r) => (
-                          <Button
-                            component={RouterLink}
-                            to={`/maintenance-requests`}
-                            size="small"
-                            variant="contained"
-                            sx={{
-                              bgcolor: DESIGN_TOKENS.brand[600],
-                              fontSize: "0.75rem",
-                              py: 0.25,
-                              px: 1.5,
-                              fontWeight: 600,
-                              "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
-                            }}
-                          >
-                            Assign Staff
-                          </Button>
-                        ),
-                      },
-                    ]}
-                    rows={openRequests.slice(0, 6)}
-                    totalCount={openRequests.length}
-                    rowsPerPage={6}
-                    page={0}
-                  />
-                )}
-              </DashboardCard>
-
-              {/* Row 3: Paired Cards (Staff Availability + Scheduled Move-ins) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+            <Grid container spacing={3}>
+              {/* Left Primary Column: Triage Queue & Resident Inquiries (8 cols) */}
+              <Grid item xs={12} lg={8}>
+                <Stack spacing={3}>
+                  {/* Primary Working Triage Queue */}
                   <DashboardCard
-                    title="Staff Availability by Trade"
-                    subtitle="Duty roster of active technicians ready for dispatch"
+                    title="Live Triage & Dispatch Queue"
+                    subtitle="Review, prioritize, and assign incoming service requests"
+                    action="Work Order Registry"
+                    actionLink="/maintenance-requests"
+                    actionComponent={
+                      <Stack direction="row" spacing={0.75} alignItems="center">
+                        {[
+                          { id: "ALL", label: `All (${openRequests.length})` },
+                          { id: "UNASSIGNED", label: `Unassigned (${unassignedRequests.length})` },
+                          { id: "URGENT", label: `Urgent (${urgentRequests.length})` },
+                        ].map((filterTab) => {
+                          const isActive = managerTriageFilter === filterTab.id;
+                          return (
+                            <Chip
+                              key={filterTab.id}
+                              label={filterTab.label}
+                              size="small"
+                              onClick={() => setManagerTriageFilter(filterTab.id)}
+                              sx={{
+                                cursor: "pointer",
+                                fontSize: "0.75rem",
+                                fontWeight: isActive ? 700 : 500,
+                                bgcolor: isActive ? DESIGN_TOKENS.brand[600] : "#F1F5F9",
+                                color: isActive ? "#FFFFFF" : DESIGN_TOKENS.text.secondary,
+                                border: "1px solid",
+                                borderColor: isActive ? DESIGN_TOKENS.brand[600] : "#E2E8F0",
+                                "&:hover": {
+                                  bgcolor: isActive ? DESIGN_TOKENS.brand[700] : "#E2E8F0",
+                                },
+                              }}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    }
+                  >
+                    {managerFilteredRequests.length === 0 ? (
+                      <DashboardEmptyState
+                        message={
+                          managerTriageFilter === "UNASSIGNED"
+                            ? "All work orders have been assigned to technicians."
+                            : managerTriageFilter === "URGENT"
+                            ? "No urgent or emergency work orders pending."
+                            : "Nothing needs triage right now — new work orders will appear here the moment they're submitted."
+                        }
+                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                      />
+                    ) : (
+                      <DataTable
+                        columns={[
+                          {
+                            id: "requestNumber",
+                            label: "Ticket #",
+                            minWidth: 90,
+                            render: (r) => (
+                              <Typography sx={{ fontWeight: 700, fontSize: "0.8125rem", color: DESIGN_TOKENS.brand[700] }}>
+                                #{r.requestNumber || r._id?.slice(-6)}
+                              </Typography>
+                            ),
+                          },
+                          {
+                            id: "title",
+                            label: "Request Title",
+                            render: (r) => (
+                              <Box>
+                                <Typography sx={{ fontWeight: 600, fontSize: "0.875rem", color: DESIGN_TOKENS.text.primary }}>
+                                  {r.title}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
+                                  {r.flatId?.flatNumber ? `Unit: Flat ${r.flatId.flatNumber}` : "General Area"}
+                                </Typography>
+                              </Box>
+                            ),
+                          },
+                          {
+                            id: "category",
+                            label: "Category",
+                            render: (r) => (
+                              <Chip
+                                label={toSentenceCase(r.category)}
+                                size="small"
+                                sx={{
+                                  fontSize: "0.75rem",
+                                  bgcolor: "#F1F5F9",
+                                  color: DESIGN_TOKENS.text.primary,
+                                  fontWeight: 500,
+                                }}
+                              />
+                            ),
+                          },
+                          { id: "priority", label: "Priority", render: (r) => <StatusChip status={r.priority} /> },
+                          { id: "status", label: "Status", render: (r) => <StatusChip status={r.status} /> },
+                          {
+                            id: "actions",
+                            label: "Action",
+                            align: "right",
+                            render: () => (
+                              <Button
+                                component={RouterLink}
+                                to="/maintenance-requests"
+                                size="small"
+                                variant="contained"
+                                sx={{
+                                  bgcolor: DESIGN_TOKENS.brand[600],
+                                  fontSize: "0.75rem",
+                                  py: 0.35,
+                                  px: 1.5,
+                                  fontWeight: 600,
+                                  borderRadius: "6px",
+                                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                                }}
+                              >
+                                Assign
+                              </Button>
+                            ),
+                          },
+                        ]}
+                        rows={managerFilteredRequests.slice(0, 5)}
+                        totalCount={managerFilteredRequests.length}
+                        rowsPerPage={5}
+                        page={0}
+                      />
+                    )}
+                  </DashboardCard>
+
+                  {/* Secondary: Priority Resident Inquiries & Complaints */}
+                  <DashboardCard
+                    title="Resident Inquiries & Grievances"
+                    subtitle="Open complaints and facility concerns requiring operational review"
+                    action="Complaints Center"
+                    actionLink="/complaints"
+                  >
+                    {complaints.filter((c) => c.status !== "RESOLVED").length === 0 ? (
+                      <DashboardEmptyState
+                        message="All resident inquiries and complaints are currently resolved."
+                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                      />
+                    ) : (
+                      <Stack spacing={1}>
+                        {complaints
+                          .filter((c) => c.status !== "RESOLVED")
+                          .slice(0, 3)
+                          .map((c) => (
+                            <DashboardListItem
+                              key={c._id || c.id}
+                              to="/complaints"
+                              icon={<ReportProblemIcon />}
+                              iconBg={c.status === "OPEN" ? "#FEE2E2" : "#FEF3C7"}
+                              iconColor={c.status === "OPEN" ? "#DC2626" : "#B45309"}
+                              title={c.title}
+                              subtitle={
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                  <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
+                                    {c.flat?.flatNumber ? `Flat ${c.flat.flatNumber}` : "Common Facility"}
+                                  </Typography>
+                                  <Chip
+                                    label={toSentenceCase(c.type || "General")}
+                                    size="small"
+                                    sx={{
+                                      height: 18,
+                                      fontSize: "0.6875rem",
+                                      fontWeight: 600,
+                                      bgcolor: "#F1F5F9",
+                                      color: "#475569",
+                                      borderRadius: "4px",
+                                    }}
+                                  />
+                                </Box>
+                              }
+                              rightContent={
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <StatusChip status={c.status} />
+                                  <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.75rem" }}>
+                                    {formatRelativeTime(c.createdAt)}
+                                  </Typography>
+                                </Stack>
+                              }
+                            />
+                          ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Stack>
+              </Grid>
+
+              {/* Right Secondary Column: Duty Roster, Tenancies, & Actions (4 cols) */}
+              <Grid item xs={12} lg={4}>
+                <Stack spacing={3}>
+                  {/* Card 1: Duty Roster & Staff Availability */}
+                  <DashboardCard
+                    title="Duty Roster & Staff"
+                    subtitle="Technicians available for dispatch"
                     action="Staff Registry"
                     actionLink="/staff"
                   >
                     {staff.length === 0 ? (
-                      <DashboardEmptyState message="No staff registered." />
+                      <DashboardEmptyState message="No staff registered in this building complex." />
                     ) : (
                       <Stack spacing={1}>
                         {staff.slice(0, 4).map((s) => (
@@ -1560,20 +1714,19 @@ export const DashboardPage = () => {
                       </Stack>
                     )}
                   </DashboardCard>
-                </Grid>
 
-                <Grid item xs={12} md={6}>
+                  {/* Card 2: Upcoming Move-ins */}
                   <DashboardCard
-                    title="Today's Move-ins & Move-outs"
-                    subtitle="Scheduled resident tenancy changes and gate checklists"
-                    action="Tenants Registry"
+                    title="Scheduled Move-ins"
+                    subtitle="Active resident transitions"
+                    action="Tenants"
                     actionLink="/tenants"
                   >
                     {tenants.length === 0 ? (
-                      <DashboardEmptyState message="No tenant transitions scheduled for today." />
+                      <DashboardEmptyState message="No tenant transitions scheduled for this week." />
                     ) : (
                       <Stack spacing={1}>
-                        {tenants.slice(0, 4).map((t) => (
+                        {tenants.slice(0, 3).map((t) => (
                           <DashboardListItem
                             key={t._id || t.id}
                             to="/tenants"
@@ -1586,9 +1739,81 @@ export const DashboardPage = () => {
                       </Stack>
                     )}
                   </DashboardCard>
-                </Grid>
+
+                  {/* Card 3: Manager Quick Operations */}
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2.5,
+                      borderRadius: "14px",
+                      borderColor: DESIGN_TOKENS.line[200],
+                      backgroundColor: "#FFFFFF",
+                      boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04)",
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontFamily: FONT_UI,
+                        fontSize: "0.9375rem",
+                        fontWeight: 700,
+                        color: DESIGN_TOKENS.text.primary,
+                        mb: 0.5,
+                      }}
+                    >
+                      Quick Operations
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: DESIGN_TOKENS.text.secondary,
+                        display: "block",
+                        mb: 2,
+                        fontSize: "0.8125rem",
+                      }}
+                    >
+                      Instant shortcuts for frequent workflows
+                    </Typography>
+                    <Grid container spacing={1.5}>
+                      {[
+                        { label: "New Ticket", to: "/maintenance-requests", icon: <BuildIcon fontSize="small" /> },
+                        { label: "Post Notice", to: "/notices", icon: <CampaignIcon fontSize="small" /> },
+                        { label: "Log Complaint", to: "/complaints", icon: <ReportProblemIcon fontSize="small" /> },
+                        { label: "View Reports", to: "/reports", icon: <TrendingUpIcon fontSize="small" /> },
+                      ].map((actionItem) => (
+                        <Grid item xs={6} key={actionItem.label}>
+                          <Button
+                            component={RouterLink}
+                            to={actionItem.to}
+                            fullWidth
+                            variant="outlined"
+                            startIcon={actionItem.icon}
+                            sx={{
+                              justifyContent: "flex-start",
+                              textTransform: "none",
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                              borderRadius: "10px",
+                              py: 0.85,
+                              px: 1.25,
+                              color: DESIGN_TOKENS.text.primary,
+                              borderColor: DESIGN_TOKENS.line[200],
+                              bgcolor: "#F8FAFC",
+                              "&:hover": {
+                                borderColor: DESIGN_TOKENS.brand[600],
+                                bgcolor: "#EEF2FF",
+                                color: DESIGN_TOKENS.brand[700],
+                              },
+                            }}
+                          >
+                            {actionItem.label}
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Paper>
+                </Stack>
               </Grid>
-            </Stack>
+            </Grid>
           )}
 
           {/* 4. ACCOUNTANT DASHBOARD (Section §4) */}
