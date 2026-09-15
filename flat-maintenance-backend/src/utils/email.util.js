@@ -219,7 +219,148 @@ export const sendPasswordResetEmail = async ({ to, resetToken, userName }) => {
   }
 };
 
+/**
+ * Generates modern, responsive HTML email template for account invitation.
+ *
+ * @param {Object} options
+ * @param {string} options.userName - Recipient name.
+ * @param {string} options.roleLabel - Formatted role string.
+ * @param {string} options.activationUrl - Actionable activation link.
+ * @returns {string} HTML string.
+ */
+const buildInvitationHtml = ({ userName, roleLabel, activationUrl }) => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Flat Maintenance System</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); padding: 36px 32px; text-align: center;">
+              <div style="display: inline-flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 12px; background: rgba(255, 255, 255, 0.15); margin-bottom: 12px;">
+                <span style="font-size: 28px; line-height: 1;">🏢</span>
+              </div>
+              <h1 style="margin: 0 0 6px 0; color: #ffffff; font-size: 22px; font-weight: 700;">
+                Flat Maintenance System
+              </h1>
+              <p style="margin: 0; color: #bfdbfe; font-size: 13px; font-weight: 500; text-transform: uppercase;">
+                Account Invitation
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 36px 32px 28px 32px;">
+              <h2 style="margin: 0 0 16px 0; color: #0f172a; font-size: 20px; font-weight: 700;">
+                You've Been Invited!
+              </h2>
+              <p style="margin: 0 0 16px 0; color: #475569; font-size: 15px; line-height: 1.6;">
+                Hello <strong>${userName || "User"}</strong>,
+              </p>
+              <p style="margin: 0 0 24px 0; color: #475569; font-size: 15px; line-height: 1.6;">
+                An administrator has invited you to join the Flat Maintenance portal as a <strong>${roleLabel}</strong>. Click below to activate your account and choose your password:
+              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${activationUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 14px 34px; border-radius: 10px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+                      Activate Account &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px 16px; margin: 24px 0 20px 0;">
+                <p style="margin: 0; color: #1e40af; font-size: 13px; font-weight: 500;">
+                  ⏱️ This invitation token is valid for <strong>72 hours</strong>.
+                </p>
+              </div>
+              <p style="margin: 20px 0 6px 0; color: #64748b; font-size: 13px;">
+                Direct URL:
+              </p>
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; word-break: break-all; font-family: monospace; font-size: 12px; color: #2563eb;">
+                <a href="${activationUrl}" target="_blank" style="color: #2563eb; text-decoration: none;">
+                  ${activationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+              <p style="margin: 0; color: #64748b; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Flat Maintenance Management System. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+// =====================  DISPATCH SERVICES  ==================
+
+/**
+ * Sends an account activation invitation email.
+ *
+ * @param {Object} params
+ * @param {string} params.to - Recipient email.
+ * @param {string} params.userName - Display name.
+ * @param {string} params.role - Assigned role enum.
+ * @param {string} params.invitationToken - Cryptographic invitation token.
+ * @returns {Promise<{ success: boolean, activationUrl: string }>}
+ */
+export const sendInvitationEmail = async ({ to, userName, role, invitationToken }) => {
+  const clientBaseUrl =
+    env.CLIENT_URL || env.CORS_ORIGIN || "http://localhost:5173";
+  const activationUrl = `${clientBaseUrl.replace(/\/+$/, "")}/activate-account?token=${encodeURIComponent(
+    invitationToken
+  )}`;
+  const roleLabel = String(role).replace(/_/g, " ");
+
+  const mailOptions = {
+    from: env.SMTP_FROM || `"Flat Maintenance System" <${env.SMTP_USER}>`,
+    to,
+    subject: `🏢 You're Invited to Flat Maintenance System (${roleLabel})`,
+    text: `Hello ${userName || "User"},\n\nYou have been invited to join Flat Maintenance System as ${roleLabel}.\n\nActivate your account at:\n${activationUrl}\n\nThis invitation is valid for 72 hours.`,
+    html: buildInvitationHtml({ userName, roleLabel, activationUrl }),
+  };
+
+  try {
+    const mailer = getEmailTransporter();
+    const info = await mailer.sendMail(mailOptions);
+    logger.info("User invitation email dispatched successfully", {
+      recipient: to,
+      messageId: info.messageId,
+    });
+    console.log(
+      `\n[EMAIL SERVICE] ✅ Invitation email successfully sent to: ${to} (MessageId: ${info.messageId})`
+    );
+    return { success: true, messageId: info.messageId, activationUrl };
+  } catch (error) {
+    logger.error("Failed to dispatch invitation email via SMTP", {
+      recipient: to,
+      error: error.message,
+    });
+    console.warn(
+      `\n⚠️ [EMAIL SERVICE WARNING] Could not send invitation email via SMTP to ${to}: ${error.message}`
+    );
+    console.log(`\n======================================================`);
+    console.log(`🔑 DEV ACTIVATION LINK FOR [${to}]:`);
+    console.log(activationUrl);
+    console.log(`======================================================\n`);
+    return { success: false, error: error.message, activationUrl };
+  }
+};
+
 export default {
   getEmailTransporter,
   sendPasswordResetEmail,
+  sendInvitationEmail,
 };

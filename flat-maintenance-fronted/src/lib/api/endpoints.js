@@ -17,6 +17,7 @@ export const API_ENDPOINTS = Object.freeze({
   // Module 2: Users
   USERS: {
     BASE: "/users",
+    INVITE: "/users/invite",
     BY_ID: (id) => `/users/${id}`,
     STATUS: (id) => `/users/${id}/status`,
     PROFILE: "/users/profile",

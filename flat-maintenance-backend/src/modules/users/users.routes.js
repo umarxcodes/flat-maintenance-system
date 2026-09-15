@@ -38,6 +38,13 @@ router.post(
   inviteUser
 );
 
+router.post(
+  "/",
+  authorize(PERMISSIONS.USER_CREATE),
+  validate(inviteUserSchema),
+  inviteUser
+);
+
 /**
  * Administrative User Directory
  * GET /api/v1/users

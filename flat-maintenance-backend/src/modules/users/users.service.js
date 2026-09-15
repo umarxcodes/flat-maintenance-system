@@ -17,6 +17,7 @@ import {
   AUDIT_ACTIONS,
   AUDIT_RESOURCE_TYPES,
 } from "../audit-logs/audit-logs.constants.js";
+import { sendInvitationEmail } from "../../utils/email.util.js";
 
 // =====================  USER SERVICE  ======================
 /**
@@ -154,6 +155,14 @@ class UsersService {
       ...context,
     });
 
+    // Dispatch invitation email with activation link
+    const emailRes = await sendInvitationEmail({
+      to: normalizedEmail,
+      userName: `${firstName} ${lastName}`.trim(),
+      role: targetUser.role,
+      invitationToken: rawInvitationToken,
+    });
+
     const isTestEnv =
       process.env.NODE_ENV === "test" ||
       process.env.npm_lifecycle_event?.includes("test") ||
@@ -161,6 +170,9 @@ class UsersService {
 
     return {
       user: targetUser.toSafeUser(),
+      ...(process.env.NODE_ENV !== "production" && emailRes?.activationUrl
+        ? { devActivationUrl: emailRes.activationUrl }
+        : {}),
       ...(isTestEnv ? { testOnlyInvitationToken: rawInvitationToken } : {}),
     };
   }

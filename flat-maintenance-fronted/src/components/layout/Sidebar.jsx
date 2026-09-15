@@ -122,8 +122,7 @@ export const Sidebar = ({
       href: "/buildings",
       icon: <ApartmentOutlinedIcon sx={{ fontSize: 20 }} />,
     },
-    { title: "Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
-    { title: "Users", href: "/users", icon: <PeopleOutlineOutlinedIcon sx={{ fontSize: 20 }} /> },
+    { title: "Building Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
     {
       title: "Roles & Permissions",
       href: "/roles",
@@ -136,7 +135,6 @@ export const Sidebar = ({
       badge: "99+",
     },
     { title: "Reports", href: "/reports", icon: <DescriptionOutlinedIcon sx={{ fontSize: 20 }} /> },
-    { title: "Settings", href: "/profile", icon: <SettingsOutlinedIcon sx={{ fontSize: 20 }} /> },
   ];
 
   const renderNavButton = (item, isMobile = false) => {
@@ -380,119 +378,6 @@ export const Sidebar = ({
             ))
           )}
         </Box>
-
-        {/* Footer / User Profile Card */}
-        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
-        {collapsed ? (
-          <Tooltip title={`${userFullName} • ${userRoleLabel}`} placement="right" arrow enterDelay={150}>
-            <Box
-              component={RouterLink}
-              to="/profile"
-              onClick={onMobileClose}
-              sx={{
-                p: 1.5,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                bgcolor: "rgba(0, 0, 0, 0.2)",
-                textDecoration: "none",
-                color: "inherit",
-                cursor: "pointer",
-                transition: "background 0.15s ease",
-                "&:hover": {
-                  bgcolor: "rgba(255, 255, 255, 0.06)",
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "50%",
-                  bgcolor: DESIGN_TOKENS.brand[600],
-                  color: "#FFFFFF",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: "0.875rem",
-                  flexShrink: 0,
-                  border: "2px solid rgba(255, 255, 255, 0.1)",
-                }}
-              >
-                {initials}
-              </Box>
-            </Box>
-          </Tooltip>
-        ) : (
-          <Box
-            component={RouterLink}
-            to="/profile"
-            onClick={onMobileClose}
-            sx={{
-              p: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              bgcolor: "rgba(0, 0, 0, 0.2)",
-              textDecoration: "none",
-              color: "inherit",
-              cursor: "pointer",
-              transition: "background 0.15s ease",
-              "&:hover": {
-                bgcolor: "rgba(255, 255, 255, 0.06)",
-              },
-            }}
-          >
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                bgcolor: DESIGN_TOKENS.brand[600],
-                color: "#FFFFFF",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: "0.8125rem",
-                flexShrink: 0,
-                border: "2px solid rgba(255, 255, 255, 0.1)",
-              }}
-            >
-              {initials}
-            </Box>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  color: "#FFFFFF",
-                  fontSize: "0.8125rem",
-                  lineHeight: 1.2,
-                  fontFamily: FONT_UI,
-                }}
-                noWrap
-              >
-                {userFullName}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#94A3B8",
-                  fontFamily: FONT_UI,
-                  fontSize: "0.75rem",
-                  display: "block",
-                  lineHeight: 1.2,
-                  mt: 0.25,
-                }}
-                noWrap
-              >
-                {userRoleLabel}
-              </Typography>
-            </Box>
-          </Box>
-        )}
       </Box>
     );
   };

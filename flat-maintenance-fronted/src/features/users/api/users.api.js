@@ -16,7 +16,7 @@ export const usersApi = {
   },
 
   inviteUser: async (userData) => {
-    return await apiClient.post(API_ENDPOINTS.USERS.BASE, userData);
+    return await apiClient.post(API_ENDPOINTS.USERS.INVITE, userData);
   },
 };
 

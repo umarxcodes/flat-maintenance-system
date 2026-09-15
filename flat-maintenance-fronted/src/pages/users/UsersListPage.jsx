@@ -47,6 +47,7 @@ import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog.jsx";
 import { EmptyState } from "../../components/common/EmptyState.jsx";
 import { PermissionGuard } from "../../components/guards/PermissionGuard.jsx";
+import { useAuth } from "../../providers/auth-context.js";
 import { PERMISSIONS } from "../../lib/constants/permissions.js";
 import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
 import { STATUSES } from "../../lib/constants/statuses.js";
@@ -79,20 +80,26 @@ const inviteSchema = z.object({
       "Phone number must include international country code (e.g. +923001234567)"
     ),
   role: z.enum(Object.values(ROLES)),
+  assignedBuildingId: z.string().optional(),
   assignedBuildingIds: z.array(z.string()).optional().default([]),
 });
 
 export const UsersListPage = () => {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === ROLES.SUPER_ADMIN;
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
+  // Super Admin views Building Admins by default; Building Admins view all users in their complex
+  const [roleFilter, setRoleFilter] = useState(isSuperAdmin ? ROLES.BUILDING_ADMIN : "");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewMode, setViewMode] = useState("grid");
 
   // Modals state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteResult, setInviteResult] = useState(null);
   const [statusDialogUser, setStatusDialogUser] = useState(null);
 
   const { data: buildingsData } = useBuildingsList();
@@ -125,32 +132,52 @@ export const UsersListPage = () => {
       lastName: "",
       email: "",
       phone: "+92",
-      role: ROLES.TENANT,
+      role: isSuperAdmin ? ROLES.BUILDING_ADMIN : ROLES.TENANT,
+      assignedBuildingId: "",
       assignedBuildingIds: [],
     },
   });
 
   const handleOpenInvite = () => {
+    setInviteResult(null);
+    const defaultRole = isSuperAdmin ? ROLES.BUILDING_ADMIN : ROLES.TENANT;
+    const defaultBuilding = buildings[0] ? (buildings[0].id || buildings[0]._id) : "";
     reset({
       firstName: "",
       lastName: "",
       email: "",
       phone: "+92",
-      role: ROLES.TENANT,
-      assignedBuildingIds: buildings[0] ? [buildings[0].id || buildings[0]._id] : [],
+      role: defaultRole,
+      assignedBuildingId: defaultBuilding,
     });
     setIsInviteOpen(true);
   };
 
   const handleCloseInvite = () => {
     setIsInviteOpen(false);
+    setInviteResult(null);
     reset();
   };
 
   const onInviteSubmit = (values) => {
-    inviteMutation.mutate(values, {
-      onSuccess: () => {
-        handleCloseInvite();
+    const defaultBuilding = buildings[0] ? (buildings[0].id || buildings[0]._id) : undefined;
+    const targetBuildingId = values.assignedBuildingId || defaultBuilding;
+
+    const payload = {
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+      email: values.email.trim().toLowerCase(),
+      phone: values.phone.trim(),
+      role: values.role,
+      assignedBuildingIds: targetBuildingId ? [targetBuildingId] : [],
+    };
+
+    inviteMutation.mutate(payload, {
+      onSuccess: (res) => {
+        setInviteResult(res);
+        if (!res?.devActivationUrl) {
+          handleCloseInvite();
+        }
       },
     });
   };
@@ -266,9 +293,16 @@ export const UsersListPage = () => {
   return (
     <Box sx={{ width: "100%", pb: 4 }}>
       <PageHeader
-        title="Users Directory"
-        subtitle="Manage user accounts, roles, access permissions, and activation states"
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Users" }]}
+        title={isSuperAdmin ? "Building Administrators" : "Users Directory"}
+        subtitle={
+          isSuperAdmin
+            ? "Provision, oversee, and manage Building Complex Administrators across all societies"
+            : "Manage resident accounts, operational staff, and access permissions"
+        }
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: isSuperAdmin ? "Building Admins" : "Users" },
+        ]}
         action={
           <Stack direction="row" spacing={1.5} alignItems="center">
             <ToggleButtonGroup
@@ -297,7 +331,7 @@ export const UsersListPage = () => {
                   "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
                 }}
               >
-                Invite User
+                {isSuperAdmin ? "Invite Building Admin" : "Invite User"}
               </Button>
             </PermissionGuard>
           </Stack>
@@ -312,9 +346,9 @@ export const UsersListPage = () => {
         }}
         searchPlaceholder="Search by name, email, or phone..."
         onReset={handleResetFilters}
-        hasActiveFilters={Boolean(search || roleFilter || statusFilter)}
+        hasActiveFilters={Boolean(search || (isSuperAdmin ? roleFilter !== ROLES.BUILDING_ADMIN : roleFilter) || statusFilter)}
       >
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Filter by Role</InputLabel>
           <Select
             value={roleFilter}
@@ -488,13 +522,40 @@ export const UsersListPage = () => {
 
       {/* Invite User Dialog */}
       <Dialog open={isInviteOpen} onClose={handleCloseInvite} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>Provision New User Account</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>
+          {isSuperAdmin ? "Provision Building Administrator" : "Provision New User Account"}
+        </DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onInviteSubmit)} noValidate>
           <DialogContent dividers>
             {inviteMutation.isError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, borderRadius: "8px" }}>
                 {inviteMutation.error?.message || "Failed to invite user."}
               </Alert>
+            )}
+
+            {inviteResult && (
+              <Stack spacing={1.5} sx={{ mb: 2.5 }}>
+                <Alert severity="success" sx={{ borderRadius: "8px" }}>
+                  User invitation successfully created! An activation link has been sent to their email.
+                </Alert>
+                {inviteResult.devActivationUrl && (
+                  <Alert severity="info" sx={{ borderRadius: "8px" }}>
+                    <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 700 }}>
+                      ⚡ Developer Activation Link:
+                    </Typography>
+                    <Typography
+                      component="a"
+                      href={inviteResult.devActivationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="caption"
+                      sx={{ wordBreak: "break-all", color: "inherit", textDecoration: "underline" }}
+                    >
+                      {inviteResult.devActivationUrl}
+                    </Typography>
+                  </Alert>
+                )}
+              </Stack>
             )}
 
             <Stack spacing={2}>
@@ -533,12 +594,36 @@ export const UsersListPage = () => {
                 {...register("phone")}
               />
 
+              {buildings.length > 0 && (
+                <FormControl fullWidth size="small">
+                  <InputLabel>Assigned Complex / Building</InputLabel>
+                  <Select
+                    label="Assigned Complex / Building"
+                    defaultValue={buildings[0]?.id || buildings[0]?._id}
+                    {...register("assignedBuildingId")}
+                  >
+                    {buildings.map((b) => (
+                      <MenuItem key={b.id || b._id} value={b.id || b._id}>
+                        {b.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
               <FormControl fullWidth size="small" error={Boolean(errors.role)}>
                 <InputLabel>Organizational Role</InputLabel>
-                <Select label="Organizational Role" defaultValue={ROLES.TENANT} {...register("role")}>
-                  {Object.entries(ROLE_LABELS).map(([code, label]) => (
+                <Select
+                  label="Organizational Role"
+                  defaultValue={isSuperAdmin ? ROLES.BUILDING_ADMIN : ROLES.TENANT}
+                  {...register("role")}
+                >
+                  {(isSuperAdmin
+                    ? [ROLES.BUILDING_ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT, ROLES.MAINTENANCE_STAFF, ROLES.SECURITY_STAFF, ROLES.OWNER, ROLES.TENANT]
+                    : [ROLES.MANAGER, ROLES.ACCOUNTANT, ROLES.MAINTENANCE_STAFF, ROLES.SECURITY_STAFF, ROLES.OWNER, ROLES.TENANT]
+                  ).map((code) => (
                     <MenuItem key={code} value={code}>
-                      {label}
+                      {ROLE_LABELS[code] || code}
                     </MenuItem>
                   ))}
                 </Select>
@@ -547,7 +632,7 @@ export const UsersListPage = () => {
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
             <Button onClick={handleCloseInvite} color="inherit">
-              Cancel
+              {inviteResult ? "Done" : "Cancel"}
             </Button>
             <Button
               type="submit"
