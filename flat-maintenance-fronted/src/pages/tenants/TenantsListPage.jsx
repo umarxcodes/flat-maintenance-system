@@ -360,9 +360,9 @@ export const TenantsListPage = () => {
   return (
     <Box>
       <PageHeader
-        title="Tenants & Lease Registry"
-        subtitle="Active tenant contracts, lease renewals, police background verifications, and checkout workflows"
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Tenants" }]}
+        title="Residents & Lease Registry"
+        subtitle="Active resident contracts, lease renewals, police background verifications, and checkout workflows"
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Residents" }]}
         action={
           <Stack direction="row" spacing={1.5} alignItems="center">
             <ToggleButtonGroup

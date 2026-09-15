@@ -61,7 +61,7 @@ export const NAVIGATION_CONFIG = Object.freeze([
         permission: PERMISSIONS.OWNER_READ,
       },
       {
-        title: "Tenants",
+        title: "Residents",
         href: "/tenants",
         iconName: "Group",
         permission: PERMISSIONS.TENANT_READ,
