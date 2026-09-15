@@ -833,313 +833,318 @@ export const DashboardPage = () => {
       ) : (
         <>
           {/* =========================================================================
-              1. STATCARD ROW (Symmetric 4 or 3 Equal Columns across All Dashboards)
+              1. STATCARD ROW (100% Full-Width Responsive CSS Grid across All Roles)
               ========================================================================= */}
-          <Box sx={{ mb: 2, width: "100%" }}>
+          <Box sx={{ mb: 2.5, width: "100%" }}>
             {/* 1. SUPER ADMIN (Section §1) */}
             {effectiveRole === ROLES.SUPER_ADMIN && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={buildings.length}
-                    label="Total Buildings"
-                    delta="+1 this quarter"
-                    icon={<ApartmentIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={users.length}
-                    label="Total Active Users"
-                    delta="Across all platform roles"
-                    icon={<PeopleIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`${collectionRate}%`}
-                    label="Platform Collection Rate"
-                    delta="Fees collected this period"
-                    icon={<AccountBalanceWalletIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={openRequests.length}
-                    label="Open Work Orders"
-                    delta="Platform-wide active tickets"
-                    icon={<BuildIcon />}
-                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    isHero={openRequests.length > 0}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={buildings.length}
+                  label="Total Buildings"
+                  delta="+1 this quarter"
+                  icon={<ApartmentIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={users.length}
+                  label="Total Active Users"
+                  delta="Across all platform roles"
+                  icon={<PeopleIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={`${collectionRate}%`}
+                  label="Platform Collection Rate"
+                  delta="Fees collected this period"
+                  icon={<AccountBalanceWalletIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={openRequests.length}
+                  label="Open Work Orders"
+                  delta="Platform-wide active tickets"
+                  icon={<BuildIcon />}
+                  iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                  isHero={openRequests.length > 0}
+                />
+              </Box>
             )}
 
             {/* 2. BUILDING ADMIN (Section §2) */}
             {effectiveRole === ROLES.BUILDING_ADMIN && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`${occupancyPct}%`}
-                    label="Occupancy Rate"
-                    delta={`${occupiedFlats} of ${totalFlats} flats occupied`}
-                    icon={<HomeWorkIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={openRequests.length}
-                    label="Open Work Orders"
-                    delta={`${unassignedRequests.length} awaiting technician dispatch`}
-                    icon={<BuildIcon />}
-                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    isHero={openRequests.length > 0}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`${collectionRate}%`}
-                    label="This Month's Collection"
-                    delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
-                    icon={<AccountBalanceWalletIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={complaints.filter((c) => c.status !== "RESOLVED").length}
-                    label="Open Complaints"
-                    delta="Resident grievances under triage"
-                    icon={<ReportProblemIcon />}
-                    iconBg={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={`${occupancyPct}%`}
+                  label="Occupancy Rate"
+                  delta={`${occupiedFlats} of ${totalFlats} flats occupied`}
+                  icon={<HomeWorkIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={openRequests.length}
+                  label="Open Work Orders"
+                  delta={`${unassignedRequests.length} awaiting technician dispatch`}
+                  icon={<BuildIcon />}
+                  iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                  isHero={openRequests.length > 0}
+                />
+                <StatCard
+                  value={`${collectionRate}%`}
+                  label="This Month's Collection"
+                  delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
+                  icon={<AccountBalanceWalletIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={complaints.filter((c) => c.status !== "RESOLVED").length}
+                  label="Open Complaints"
+                  delta="Resident grievances under triage"
+                  icon={<ReportProblemIcon />}
+                  iconBg={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                />
+              </Box>
             )}
 
             {/* 3. MANAGER (Section §3 - Working Queue) */}
             {effectiveRole === ROLES.MANAGER && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={unassignedRequests.length}
-                    label="Unassigned Work Orders"
-                    delta="Require technician assignment"
-                    icon={<AssignmentLateIcon />}
-                    iconBg={unassignedRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={unassignedRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    isHero={unassignedRequests.length > 0}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={urgentRequests.length}
-                    label="Urgent / SLA At Risk"
-                    delta="Emergency priority tickets"
-                    icon={<WarningAmberIcon />}
-                    iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#EEF2FF"}
-                    iconColor={urgentRequests.length > 0 ? "#DC2626" : DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={staff.filter((s) => s.status === "ACTIVE" || s.isAvailable !== false).length}
-                    label="Staff Available"
-                    delta={`${staff.length} technicians registered`}
-                    icon={<SupervisorAccountIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`${occupancyPct}%`}
-                    label="Building Occupancy"
-                    delta={`${occupiedFlats} of ${flats.length} units occupied`}
-                    icon={<HomeWorkIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={unassignedRequests.length}
+                  label="Unassigned Work Orders"
+                  delta="Require technician assignment"
+                  icon={<AssignmentLateIcon />}
+                  iconBg={unassignedRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={unassignedRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                  isHero={unassignedRequests.length > 0}
+                />
+                <StatCard
+                  value={urgentRequests.length}
+                  label="Urgent / SLA At Risk"
+                  delta="Emergency priority tickets"
+                  icon={<WarningAmberIcon />}
+                  iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#EEF2FF"}
+                  iconColor={urgentRequests.length > 0 ? "#DC2626" : DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={staff.filter((s) => s.status === "ACTIVE" || s.isAvailable !== false).length}
+                  label="Staff Available"
+                  delta={`${staff.length} technicians registered`}
+                  icon={<SupervisorAccountIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={`${occupancyPct}%`}
+                  label="Building Occupancy"
+                  delta={`${occupiedFlats} of ${flats.length} units occupied`}
+                  icon={<HomeWorkIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+              </Box>
             )}
 
             {/* 4. ACCOUNTANT (Section §4) */}
             {effectiveRole === ROLES.ACCOUNTANT && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`${collectionRate}%`}
-                    label="This Month's Collection Rate"
-                    delta={`${paidInvoices.length} invoices settled this period`}
-                    icon={<TrendingUpIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={`₨${totalOverdueAmount.toLocaleString()}`}
-                    label="Total Outstanding"
-                    delta="Accumulated unpaid ledger balances"
-                    icon={<AccountBalanceWalletIcon />}
-                    iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
-                    iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
-                    isHero={totalOverdueAmount > 0}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={overdueInvoices.length}
-                    label="Overdue Invoices"
-                    delta="Invoices past grace period deadline"
-                    icon={<ReceiptLongIcon />}
-                    iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={overdueInvoices.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={pendingExpenses.length}
-                    label="Pending Expense Approvals"
-                    delta="Operational claims awaiting review"
-                    icon={<PendingActionsIcon />}
-                    iconBg={pendingExpenses.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={pendingExpenses.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={`${collectionRate}%`}
+                  label="This Month's Collection Rate"
+                  delta={`${paidInvoices.length} invoices settled this period`}
+                  icon={<TrendingUpIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={`₨${totalOverdueAmount.toLocaleString()}`}
+                  label="Total Outstanding"
+                  delta="Accumulated unpaid ledger balances"
+                  icon={<AccountBalanceWalletIcon />}
+                  iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
+                  iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
+                  isHero={totalOverdueAmount > 0}
+                />
+                <StatCard
+                  value={overdueInvoices.length}
+                  label="Overdue Invoices"
+                  delta="Invoices past grace period deadline"
+                  icon={<ReceiptLongIcon />}
+                  iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={overdueInvoices.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={pendingExpenses.length}
+                  label="Pending Expense Approvals"
+                  delta="Operational claims awaiting review"
+                  icon={<PendingActionsIcon />}
+                  iconBg={pendingExpenses.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={pendingExpenses.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                />
+              </Box>
             )}
 
             {/* 5. MAINTENANCE STAFF (Section §5 - Mobile-First Compact Pair) */}
             {effectiveRole === ROLES.MAINTENANCE_STAFF && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={requests.filter((r) => r.status !== "CLOSED" && r.status !== "CANCELLED").length}
-                    label="Assigned to You Today"
-                    delta="Active work orders in your queue"
-                    icon={<BuildIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    isHero={true}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={requests.filter((r) => r.status === "COMPLETED" || r.status === "VERIFIED").length}
-                    label="Completed This Week"
-                    delta="Successfully resolved jobs"
-                    icon={<CheckCircleOutlinedIcon />}
-                    iconBg="#ECFDF5"
-                    iconColor="#059669"
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={requests.filter((r) => r.status !== "CLOSED" && r.status !== "CANCELLED").length}
+                  label="Assigned to You Today"
+                  delta="Active work orders in your queue"
+                  icon={<BuildIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                  isHero={true}
+                />
+                <StatCard
+                  value={requests.filter((r) => r.status === "COMPLETED" || r.status === "VERIFIED").length}
+                  label="Completed This Week"
+                  delta="Successfully resolved jobs"
+                  icon={<CheckCircleOutlinedIcon />}
+                  iconBg="#ECFDF5"
+                  iconColor="#059669"
+                />
+              </Box>
             )}
 
             {/* 6. SECURITY STAFF (Section §6 - Gate Launcher) */}
             {effectiveRole === ROLES.SECURITY_STAFF && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} sm={6} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={checkedInVisitors.length}
-                    label="Currently Inside Premises"
-                    delta="Guests on site awaiting checkout"
-                    icon={<BadgeIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    isHero={true}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={expectedVisitors.length}
-                    label="Expected Today"
-                    delta="Pre-approved resident entry passes"
-                    icon={<DoorSlidingIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={checkedInVisitors.length}
+                  label="Currently Inside Premises"
+                  delta="Guests on site awaiting checkout"
+                  icon={<BadgeIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                  isHero={true}
+                />
+                <StatCard
+                  value={expectedVisitors.length}
+                  label="Expected Today"
+                  delta="Pre-approved resident entry passes"
+                  icon={<DoorSlidingIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+              </Box>
             )}
 
             {/* 7 & 8. RESIDENTS (FLAT OWNER & TENANT - Sections §7 & §8) */}
             {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
-              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
-                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} Due` : "All Paid"}
-                    label="Dues Status"
-                    delta={
-                      totalOverdueAmount > 0
-                        ? "Outstanding maintenance dues"
-                        : "Your maintenance fees are caught up"
-                    }
-                    icon={<AccountBalanceWalletIcon />}
-                    iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
-                    iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
-                    isHero={totalOverdueAmount > 0}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={requests.length}
-                    label="Open Work Orders"
-                    delta="Service tickets logged for your unit"
-                    icon={<BuildIcon />}
-                    iconBg={requests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
-                    iconColor={requests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
-                  <StatCard
-                    value={visitors.filter((v) => v.status === "EXPECTED" || v.status === "CHECKED_IN").length}
-                    label="Active Visitor Passes"
-                    delta="Valid guest codes currently active"
-                    icon={<BadgeIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(3, 1fr)",
+                  },
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <StatCard
+                  value={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} Due` : "All Paid"}
+                  label="Dues Status"
+                  delta={
+                    totalOverdueAmount > 0
+                      ? "Outstanding maintenance dues"
+                      : "Your maintenance fees are caught up"
+                  }
+                  icon={<AccountBalanceWalletIcon />}
+                  iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
+                  iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
+                  isHero={totalOverdueAmount > 0}
+                />
+                <StatCard
+                  value={requests.length}
+                  label="Open Work Orders"
+                  delta="Service tickets logged for your unit"
+                  icon={<BuildIcon />}
+                  iconBg={requests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                  iconColor={requests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                />
+                <StatCard
+                  value={visitors.filter((v) => v.status === "EXPECTED" || v.status === "CHECKED_IN").length}
+                  label="Active Visitor Passes"
+                  delta="Valid guest codes currently active"
+                  icon={<BadgeIcon />}
+                  iconBg="#EEF2FF"
+                  iconColor={DESIGN_TOKENS.brand[600]}
+                />
+              </Box>
             )}
           </Box>
 
@@ -1149,9 +1154,20 @@ export const DashboardPage = () => {
 
           {/* 1. SUPER ADMIN DASHBOARD (Section §1 - Enterprise Command Center) */}
           {effectiveRole === ROLES.SUPER_ADMIN && (
-            <Grid container spacing={2}>
-              {/* Left Major Column: Growth, Portfolio & Mutations (8 cols on lg) */}
-              <Grid item xs={12} lg={8}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  lg: "1.75fr 1fr",
+                },
+                gap: 2.5,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              {/* Left Major Column: Growth, Portfolio & Mutations */}
+              <Box sx={{ minWidth: 0, width: "100%" }}>
                 <Stack spacing={2}>
                   {/* Card 1: Platform Growth & Velocity Analytics */}
                   <TrendChart
@@ -1290,10 +1306,10 @@ export const DashboardPage = () => {
                     )}
                   </DashboardCard>
                 </Stack>
-              </Grid>
+              </Box>
 
-              {/* Right Control Column: Infrastructure, Bulletins, and Quick Launcher (4 cols on lg) */}
-              <Grid item xs={12} lg={4}>
+              {/* Right Control Column: Infrastructure, Bulletins, and Quick Launcher */}
+              <Box sx={{ minWidth: 0, width: "100%" }}>
                 <Stack spacing={2}>
                   {/* Card 4: Platform Infrastructure Telemetry */}
                   <Paper
@@ -1476,8 +1492,8 @@ export const DashboardPage = () => {
                     </Grid>
                   </Paper>
                 </Stack>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
 
           {/* 2. BUILDING ADMIN DASHBOARD PANELS (Section §2) */}
@@ -1627,9 +1643,20 @@ export const DashboardPage = () => {
 
           {/* 3. MANAGER DASHBOARD (Section §3 - Operational Command Center) */}
           {effectiveRole === ROLES.MANAGER && (
-            <Grid container spacing={3}>
-              {/* Left Primary Column: Triage Queue & Resident Inquiries (8 cols) */}
-              <Grid item xs={12} lg={8}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  lg: "1.75fr 1fr",
+                },
+                gap: 2.5,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              {/* Left Primary Column: Triage Queue & Resident Inquiries */}
+              <Box sx={{ minWidth: 0, width: "100%" }}>
                 <Stack spacing={3}>
                   {/* Primary Working Triage Queue */}
                   <DashboardCard
@@ -1816,10 +1843,10 @@ export const DashboardPage = () => {
                     )}
                   </DashboardCard>
                 </Stack>
-              </Grid>
+              </Box>
 
-              {/* Right Secondary Column: Duty Roster, Tenancies, & Actions (4 cols) */}
-              <Grid item xs={12} lg={4}>
+              {/* Right Secondary Column: Duty Roster, Tenancies, & Actions */}
+              <Box sx={{ minWidth: 0, width: "100%" }}>
                 <Stack spacing={3}>
                   {/* Card 1: Duty Roster & Staff Availability */}
                   <DashboardCard
@@ -1975,8 +2002,8 @@ export const DashboardPage = () => {
                     </Grid>
                   </Paper>
                 </Stack>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
 
           {/* 4. ACCOUNTANT DASHBOARD (Section §4) */}
