@@ -217,7 +217,7 @@ export const OwnersListPage = () => {
       label: "Building Complex",
       render: (_, row) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
-          {row.building?.name || "Greenwood Valley"}
+          {row.building?.name || "Al-Raziq Heights"}
         </Typography>
       ),
     },
@@ -593,7 +593,7 @@ export const OwnersListPage = () => {
                         Building Portfolio
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary, mb: 1 }}>
-                        {owner.building?.name || "Greenwood Valley Residences"}
+                        {owner.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       <Stack direction="row" spacing={1} alignItems="center">
@@ -877,7 +877,7 @@ export const OwnersListPage = () => {
               </Typography>
               <Paper variant="outlined" sx={{ p: 2, borderRadius: "10px", bgcolor: "#F8FAFC" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary, mb: 0.5 }}>
-                  {selectedOwner?.building?.name || "Greenwood Valley Residences"}
+                  {selectedOwner?.building?.name || "Al-Raziq Heights"}
                 </Typography>
                 <Chip
                   label={selectedOwner?.isResidingInBuilding ? "Resident Owner (Lives on-premises)" : "Off-site Owner (Investor / Landlord)"}

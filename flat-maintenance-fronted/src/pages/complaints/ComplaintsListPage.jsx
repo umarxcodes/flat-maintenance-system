@@ -233,7 +233,7 @@ export const ComplaintsListPage = () => {
             Flat {row.flat?.flatNumber || row.flatId || "-"}
           </Typography>
           <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-            {row.building?.name || "Greenwood Valley"}
+            {row.building?.name || "Al-Raziq Heights"}
           </Typography>
         </Box>
       ),
@@ -628,7 +628,7 @@ export const ComplaintsListPage = () => {
                         Flat {c.flat?.flatNumber || c.flatId || "-"}
                       </Typography>
                       <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                        {c.building?.name || "Greenwood Valley Residences"}
+                        {c.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       {c.resolutionNotes && (

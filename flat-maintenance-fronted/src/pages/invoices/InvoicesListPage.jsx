@@ -197,7 +197,7 @@ export const InvoicesListPage = () => {
       label: "Building Complex",
       render: (_, row) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
-          {row.building?.name || "Greenwood Valley"}
+          {row.building?.name || "Al-Raziq Heights"}
         </Typography>
       ),
     },
@@ -580,7 +580,7 @@ export const InvoicesListPage = () => {
                         </Typography>
                       </Box>
                       <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, display: "block" }}>
-                        {inv.building?.name || "Greenwood Valley"}
+                        {inv.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       <Divider sx={{ my: 1, borderColor: DESIGN_TOKENS.line[200] }} />

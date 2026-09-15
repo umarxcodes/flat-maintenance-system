@@ -667,7 +667,7 @@ export const StaffListPage = () => {
                         />
                       </Box>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
-                        {staffMember.building?.name || "Greenwood Valley Residences"}
+                        {staffMember.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       <Divider sx={{ my: 1, borderColor: DESIGN_TOKENS.line[200] }} />
@@ -908,7 +908,7 @@ export const StaffListPage = () => {
               <Paper variant="outlined" sx={{ p: 2, borderRadius: "10px", bgcolor: "#F8FAFC" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary }}>
-                    {selectedStaff?.building?.name || "Greenwood Valley Residences"}
+                    {selectedStaff?.building?.name || "Al-Raziq Heights"}
                   </Typography>
                   <StatusChip status={selectedStaff?.status || "ACTIVE"} />
                 </Box>

@@ -265,7 +265,7 @@ export const TenantsListPage = () => {
             Flat {row.flat?.flatNumber || row.flatId || "-"}
           </Typography>
           <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-            {row.building?.name || "Greenwood Valley"}
+            {row.building?.name || "Al-Raziq Heights"}
           </Typography>
         </Box>
       ),
@@ -679,7 +679,7 @@ export const TenantsListPage = () => {
                         Flat {tenant.flat?.flatNumber || tenant.flatId || "-"}
                       </Typography>
                       <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, display: "block" }}>
-                        {tenant.building?.name || "Greenwood Valley"}
+                        {tenant.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       <Divider sx={{ my: 1, borderColor: DESIGN_TOKENS.line[200] }} />
@@ -1003,7 +1003,7 @@ export const TenantsListPage = () => {
                   <StatusChip status={selectedTenant?.status} />
                 </Box>
                 <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.secondary, mb: 1.5 }}>
-                  {selectedTenant?.building?.name || "Greenwood Valley Residences"}
+                  {selectedTenant?.building?.name || "Al-Raziq Heights"}
                 </Typography>
 
                 <Grid container spacing={2}>

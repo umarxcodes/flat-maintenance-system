@@ -36,58 +36,66 @@ const loginSchema = z.object({
 const DEMO_ROLES = [
   {
     role: "Super Admin",
+    name: "Muhammad Umar",
     email: "muhammadumar.codes@gmail.com",
     password: "umarkhan",
-    description: "System-wide administrative authority",
+    description: "Platform Super Administrator",
   },
   {
     role: "Building Admin",
-    email: "admin.greenwood@society.local",
+    name: "Tariq Mahmood",
+    email: "admin.alraziq@society.local",
     password: "Password123!",
-    description: "Society & building manager",
+    description: "Society & Building Executive",
   },
   {
     role: "Manager",
+    name: "Sarah Khan",
     email: "manager.sarah@society.local",
     password: "Password123!",
-    description: "Operations & triage management",
+    description: "Operations & Triage Supervisor",
   },
   {
     role: "Accountant",
-    email: "accountant.dave@society.local",
+    name: "Dawood Ahmed",
+    email: "accountant.dawood@society.local",
     password: "Password123!",
-    description: "Invoicing, payments & expenses",
+    description: "Accounts & Financial Controller",
   },
   {
     role: "Maintenance Staff",
-    email: "tech.carlos@society.local",
+    name: "Kamran Akram",
+    email: "tech.kamran@society.local",
     password: "Password123!",
-    description: "Assigned tasks & work orders",
+    description: "Senior MEP Technical Specialist",
   },
   {
     role: "Security Staff",
+    name: "Ahmed Raza",
     email: "guard.ahmed@society.local",
     password: "Password123!",
-    description: "Gate terminal & visitor check-in",
+    description: "Main Gate Security & Visitor Protocol",
   },
   {
     role: "Owner",
-    email: "owner.elena@society.local",
+    name: "Fatima Zahra",
+    email: "owner.fatima@society.local",
     password: "Password123!",
-    description: "Property owner portal & dues",
+    description: "Resident & Flat 101 Owner",
   },
   {
     role: "Tenant",
-    email: "tenant.marcus@society.local",
+    name: "Hamza Tariq",
+    email: "tenant.hamza@society.local",
     password: "Password123!",
-    description: "Resident portal & maintenance requests",
+    description: "Resident & Flat 101 Tenant",
   },
 ];
 
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [demoMenuAnchor, setDemoMenuAnchor] = useState(null);
-  const [selectedDemoRole, setSelectedDemoRole] = useState(null);
+  const [selectedDemoAccount, setSelectedDemoAccount] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
@@ -96,6 +104,7 @@ export const LoginPage = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
@@ -105,12 +114,18 @@ export const LoginPage = () => {
     },
   });
 
+  const currentEmail = watch("email");
+  // Check if typed email matches one of the demo accounts
+  const matchedUser = selectedDemoAccount || DEMO_ROLES.find(
+    (u) => u.email.toLowerCase() === (currentEmail || "").trim().toLowerCase()
+  );
+
   const loginMutation = useLoginMutation();
 
   const handleSelectDemo = (account) => {
     setValue("email", account.email, { shouldValidate: true });
     setValue("password", account.password, { shouldValidate: true });
-    setSelectedDemoRole(account.role);
+    setSelectedDemoAccount(account);
     setDemoMenuAnchor(null);
   };
 
@@ -223,6 +238,32 @@ export const LoginPage = () => {
           </Link>
         </Box>
 
+        {matchedUser && (
+          <Box
+            sx={{
+              py: 1,
+              px: 1.5,
+              bgcolor: DESIGN_TOKENS.brand[50],
+              border: "1px solid",
+              borderColor: DESIGN_TOKENS.brand[200],
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.25,
+            }}
+          >
+            <CheckCircleRoundedIcon sx={{ fontSize: 18, color: DESIGN_TOKENS.brand[600] }} />
+            <Box sx={{ minWidth: 0, textAlign: "left" }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.brand[900], lineHeight: 1.2 }}>
+                {matchedUser.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.brand[700], fontWeight: 500 }}>
+                {matchedUser.role} • Al-Raziq Heights
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         <Button
           type="submit"
           variant="contained"
@@ -243,14 +284,18 @@ export const LoginPage = () => {
             },
           }}
         >
-          {loginMutation.isPending ? "Signing in..." : "Sign In"}
+          {loginMutation.isPending
+            ? `Signing in ${matchedUser ? matchedUser.name : ""}...`
+            : matchedUser
+            ? `Sign In as ${matchedUser.name}`
+            : "Sign In"}
         </Button>
       </Stack>
 
       {/* Super Clean Demo Switcher at Bottom */}
       <Divider sx={{ my: 3 }}>
         <Typography variant="caption" sx={{ color: "text.secondary", px: 1, fontWeight: 500 }}>
-          Quick Evaluation
+          Quick Evaluation (Pakistani Profiles)
         </Typography>
       </Divider>
 
@@ -275,7 +320,9 @@ export const LoginPage = () => {
             },
           }}
         >
-          {selectedDemoRole ? `Autofilled: ${selectedDemoRole}` : "Select Demo Account to Test"}
+          {selectedDemoAccount
+            ? `Active: ${selectedDemoAccount.name} (${selectedDemoAccount.role})`
+            : "Select Pakistani Demo Account"}
         </Button>
 
         <Menu
@@ -287,8 +334,8 @@ export const LoginPage = () => {
           slotProps={{
             paper: {
               sx: {
-                width: 320,
-                maxHeight: 380,
+                width: 360,
+                maxHeight: 400,
                 mt: 1,
                 borderRadius: "12px",
                 border: "1px solid",
@@ -298,16 +345,16 @@ export const LoginPage = () => {
             },
           }}
         >
-          <Box sx={{ px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
-            <Typography variant="caption" fontWeight={600} color="text.secondary">
-              ONE-CLICK TEST ACCOUNTS
+          <Box sx={{ px: 2, py: 1.25, borderBottom: "1px solid", borderColor: "divider", bgcolor: DESIGN_TOKENS.surface[50] }}>
+            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ letterSpacing: "0.04em" }}>
+              PAKISTANI DEMO ACCOUNTS (ONE-CLICK)
             </Typography>
           </Box>
           {DEMO_ROLES.map((account) => (
             <MenuItem
               key={account.email}
               onClick={() => handleSelectDemo(account)}
-              selected={selectedDemoRole === account.role}
+              selected={selectedDemoAccount?.email === account.email}
               sx={{
                 py: 1.25,
                 px: 2,
@@ -318,17 +365,34 @@ export const LoginPage = () => {
             >
               <ListItemText
                 primary={
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-                    {account.role}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                      {account.name}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 600,
+                        color: DESIGN_TOKENS.brand[700],
+                        bgcolor: DESIGN_TOKENS.brand[50],
+                        px: 0.75,
+                        py: 0.2,
+                        borderRadius: "4px",
+                        border: "1px solid",
+                        borderColor: DESIGN_TOKENS.brand[200],
+                      }}
+                    >
+                      {account.role}
+                    </Typography>
+                  </Box>
                 }
                 secondary={
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    {account.email}
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.25 }}>
+                    {account.email} • {account.description}
                   </Typography>
                 }
               />
-              {selectedDemoRole === account.role && (
+              {selectedDemoAccount?.email === account.email && (
                 <CheckCircleRoundedIcon sx={{ fontSize: 18, color: DESIGN_TOKENS.brand[600] }} />
               )}
             </MenuItem>

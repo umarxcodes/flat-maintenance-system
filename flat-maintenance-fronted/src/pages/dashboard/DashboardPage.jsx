@@ -667,13 +667,14 @@ export const DashboardPage = () => {
       .slice(0, 5);
   }, [buildings, invoices, complaints]);
 
-  // Time-aware warm greeting pattern
-  const getGreeting = (name) => {
+  // Time-aware warm greeting pattern showing full name
+  const getGreeting = (firstName, lastName) => {
     const hour = new Date().getHours();
     let timeStr = "Good morning";
     if (hour >= 12 && hour < 17) timeStr = "Good afternoon";
     else if (hour >= 17) timeStr = "Good evening";
-    return `${timeStr}, ${name || "Resident"}`;
+    const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+    return `${timeStr}, ${fullName || "Resident"}`;
   };
 
   // Check if Super Admin portfolio has 0 buildings
@@ -686,7 +687,7 @@ export const DashboardPage = () => {
           0. STANDARD PAGE HEADER
           ------------------------------------------------------------------------- */}
       <PageHeader
-        title={getGreeting(user?.firstName)}
+        title={getGreeting(user?.firstName, user?.lastName)}
         subtitle={
           effectiveRole === ROLES.BUILDING_ADMIN && activeBuilding
             ? `Currently managing: ${activeBuilding.name || "Building Operations"}`
@@ -834,11 +835,11 @@ export const DashboardPage = () => {
           {/* =========================================================================
               1. STATCARD ROW (Symmetric 4 or 3 Equal Columns across All Dashboards)
               ========================================================================= */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, width: "100%" }}>
             {/* 1. SUPER ADMIN (Section §1) */}
             {effectiveRole === ROLES.SUPER_ADMIN && (
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={buildings.length}
                     label="Total Buildings"
@@ -846,9 +847,10 @@ export const DashboardPage = () => {
                     icon={<ApartmentIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={users.length}
                     label="Total Active Users"
@@ -856,9 +858,10 @@ export const DashboardPage = () => {
                     icon={<PeopleIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`${collectionRate}%`}
                     label="Platform Collection Rate"
@@ -866,9 +869,10 @@ export const DashboardPage = () => {
                     icon={<AccountBalanceWalletIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={openRequests.length}
                     label="Open Work Orders"
@@ -877,6 +881,7 @@ export const DashboardPage = () => {
                     iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={openRequests.length > 0}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -884,8 +889,8 @@ export const DashboardPage = () => {
 
             {/* 2. BUILDING ADMIN (Section §2) */}
             {effectiveRole === ROLES.BUILDING_ADMIN && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6} md={3}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`${occupancyPct}%`}
                     label="Occupancy Rate"
@@ -893,9 +898,10 @@ export const DashboardPage = () => {
                     icon={<HomeWorkIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={openRequests.length}
                     label="Open Work Orders"
@@ -904,9 +910,10 @@ export const DashboardPage = () => {
                     iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={openRequests.length > 0}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`${collectionRate}%`}
                     label="This Month's Collection"
@@ -914,9 +921,10 @@ export const DashboardPage = () => {
                     icon={<AccountBalanceWalletIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={complaints.filter((c) => c.status !== "RESOLVED").length}
                     label="Open Complaints"
@@ -924,6 +932,7 @@ export const DashboardPage = () => {
                     icon={<ReportProblemIcon />}
                     iconBg={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -931,8 +940,8 @@ export const DashboardPage = () => {
 
             {/* 3. MANAGER (Section §3 - Working Queue) */}
             {effectiveRole === ROLES.MANAGER && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6} md={3}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={unassignedRequests.length}
                     label="Unassigned Work Orders"
@@ -941,9 +950,10 @@ export const DashboardPage = () => {
                     iconBg={unassignedRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={unassignedRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={unassignedRequests.length > 0}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={urgentRequests.length}
                     label="Urgent / SLA At Risk"
@@ -951,9 +961,10 @@ export const DashboardPage = () => {
                     icon={<WarningAmberIcon />}
                     iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#EEF2FF"}
                     iconColor={urgentRequests.length > 0 ? "#DC2626" : DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={staff.filter((s) => s.status === "ACTIVE" || s.isAvailable !== false).length}
                     label="Staff Available"
@@ -961,9 +972,10 @@ export const DashboardPage = () => {
                     icon={<SupervisorAccountIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`${occupancyPct}%`}
                     label="Building Occupancy"
@@ -971,6 +983,7 @@ export const DashboardPage = () => {
                     icon={<HomeWorkIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -978,8 +991,8 @@ export const DashboardPage = () => {
 
             {/* 4. ACCOUNTANT (Section §4) */}
             {effectiveRole === ROLES.ACCOUNTANT && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6} md={3}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`${collectionRate}%`}
                     label="This Month's Collection Rate"
@@ -987,9 +1000,10 @@ export const DashboardPage = () => {
                     icon={<TrendingUpIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={`₨${totalOverdueAmount.toLocaleString()}`}
                     label="Total Outstanding"
@@ -998,9 +1012,10 @@ export const DashboardPage = () => {
                     iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
                     iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
                     isHero={totalOverdueAmount > 0}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={overdueInvoices.length}
                     label="Overdue Invoices"
@@ -1008,9 +1023,10 @@ export const DashboardPage = () => {
                     icon={<ReceiptLongIcon />}
                     iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={overdueInvoices.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} sx={{ display: "flex" }}>
                   <StatCard
                     value={pendingExpenses.length}
                     label="Pending Expense Approvals"
@@ -1018,6 +1034,7 @@ export const DashboardPage = () => {
                     icon={<PendingActionsIcon />}
                     iconBg={pendingExpenses.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={pendingExpenses.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -1025,8 +1042,8 @@ export const DashboardPage = () => {
 
             {/* 5. MAINTENANCE STAFF (Section §5 - Mobile-First Compact Pair) */}
             {effectiveRole === ROLES.MAINTENANCE_STAFF && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
                   <StatCard
                     value={requests.filter((r) => r.status !== "CLOSED" && r.status !== "CANCELLED").length}
                     label="Assigned to You Today"
@@ -1035,9 +1052,10 @@ export const DashboardPage = () => {
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
                     isHero={true}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={6} md={4} sx={{ display: "flex" }}>
                   <StatCard
                     value={requests.filter((r) => r.status === "COMPLETED" || r.status === "VERIFIED").length}
                     label="Completed This Week"
@@ -1045,6 +1063,7 @@ export const DashboardPage = () => {
                     icon={<CheckCircleOutlinedIcon />}
                     iconBg="#ECFDF5"
                     iconColor="#059669"
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -1052,8 +1071,8 @@ export const DashboardPage = () => {
 
             {/* 6. SECURITY STAFF (Section §6 - Gate Launcher) */}
             {effectiveRole === ROLES.SECURITY_STAFF && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} sm={6} sx={{ display: "flex" }}>
                   <StatCard
                     value={checkedInVisitors.length}
                     label="Currently Inside Premises"
@@ -1062,9 +1081,10 @@ export const DashboardPage = () => {
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
                     isHero={true}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={6} sx={{ display: "flex" }}>
                   <StatCard
                     value={expectedVisitors.length}
                     label="Expected Today"
@@ -1072,6 +1092,7 @@ export const DashboardPage = () => {
                     icon={<DoorSlidingIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>
@@ -1079,8 +1100,8 @@ export const DashboardPage = () => {
 
             {/* 7 & 8. RESIDENTS (FLAT OWNER & TENANT - Sections §7 & §8) */}
             {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} md={4}>
+              <Grid container spacing={2} sx={{ width: "100%", m: 0 }}>
+                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
                   <StatCard
                     value={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} Due` : "All Paid"}
                     label="Dues Status"
@@ -1093,9 +1114,10 @@ export const DashboardPage = () => {
                     iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
                     iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
                     isHero={totalOverdueAmount > 0}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
                   <StatCard
                     value={requests.length}
                     label="Open Work Orders"
@@ -1103,9 +1125,10 @@ export const DashboardPage = () => {
                     icon={<BuildIcon />}
                     iconBg={requests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
                     iconColor={requests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={4} sx={{ display: "flex" }}>
                   <StatCard
                     value={visitors.filter((v) => v.status === "EXPECTED" || v.status === "CHECKED_IN").length}
                     label="Active Visitor Passes"
@@ -1113,6 +1136,7 @@ export const DashboardPage = () => {
                     icon={<BadgeIcon />}
                     iconBg="#EEF2FF"
                     iconColor={DESIGN_TOKENS.brand[600]}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               </Grid>

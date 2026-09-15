@@ -232,7 +232,7 @@ export const ExpensesListPage = () => {
       label: "Complex",
       render: (_, row) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
-          {row.building?.name || "Greenwood Valley"}
+          {row.building?.name || "Al-Raziq Heights"}
         </Typography>
       ),
     },
@@ -619,7 +619,7 @@ export const ExpensesListPage = () => {
                         Incurred For Complex
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
-                        {exp.building?.name || "Greenwood Valley Residences"}
+                        {exp.building?.name || "Al-Raziq Heights"}
                       </Typography>
                     </Box>
 
@@ -883,7 +883,7 @@ export const ExpensesListPage = () => {
                     Complex
                   </Typography>
                   <Typography variant="body2" sx={{ color: DESIGN_TOKENS.text.primary }}>
-                    {selectedExpense?.building?.name || "Greenwood Valley"}
+                    {selectedExpense?.building?.name || "Al-Raziq Heights"}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>

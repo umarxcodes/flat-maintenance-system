@@ -312,7 +312,7 @@ export const MaintenanceRequestsListPage = () => {
             Flat {row.flat?.flatNumber || row.flatId || "-"}
           </Typography>
           <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-            {row.building?.name || "Greenwood Valley"}
+            {row.building?.name || "Al-Raziq Heights"}
           </Typography>
         </Box>
       ),
@@ -779,7 +779,7 @@ export const MaintenanceRequestsListPage = () => {
                         Flat {req.flat?.flatNumber || req.flatId || "-"}
                       </Typography>
                       <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, display: "block" }}>
-                        {req.building?.name || "Greenwood Valley Residences"}
+                        {req.building?.name || "Al-Raziq Heights"}
                       </Typography>
 
                       {req.assignedStaff && (
