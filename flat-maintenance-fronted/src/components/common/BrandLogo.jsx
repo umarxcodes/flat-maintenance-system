@@ -289,11 +289,11 @@ export const BrandLogo = ({
               variant="caption"
               sx={{
                 display: "block",
-                fontSize: "0.6875rem",
-                fontWeight: 600,
+                fontSize: "0.75rem",
+                fontWeight: 500,
                 color: isDark ? "#94A3B8" : "#64748B",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
+                letterSpacing: "0.01em",
+                textTransform: "none",
                 lineHeight: 1.3,
                 mt: 0.25,
                 whiteSpace: "nowrap",

@@ -148,7 +148,7 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           theme="dark"
           variant="full"
           size={38}
-          subtitle="Residential Portal"
+          subtitle="Residential portal"
           href="/dashboard"
         />
       </Box>

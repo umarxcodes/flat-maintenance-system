@@ -62,8 +62,50 @@ import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
 // =========================================================================
-// REUSABLE CARD CONTAINERS & ROW PRESENTERS
+// REUSABLE HELPERS, FORMATTERS & ROW PRESENTERS
 // =========================================================================
+
+/**
+ * Cleanly format physical address without [object Object] serialization
+ */
+const formatAddress = (addr) => {
+  if (!addr) return "";
+  if (typeof addr === "string") return addr;
+  const parts = [addr.street, addr.city, addr.state].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : (addr.city || "");
+};
+
+/**
+ * Clean sentence-case converter for enums and actions
+ */
+const toSentenceCase = (str) => {
+  if (!str) return "";
+  const clean = String(str).replace(/_/g, " ").trim().toLowerCase();
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
+
+/**
+ * Human-readable relative time formatter ("2 hours ago", "Yesterday", etc.)
+ */
+const formatRelativeTime = (timestamp) => {
+  if (!timestamp) return "Just now";
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return "Recently";
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffSec < 45) return "Just now";
+  if (diffSec < 90) return "1 min ago";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} mins ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours === 1) return "1 hour ago";
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
 
 const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} }) => (
   <Paper
@@ -150,12 +192,10 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
   </Paper>
 );
 
-const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null }) => (
+const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null, compact = false }) => (
   <Box
     sx={{
-      flex: 1,
-      minHeight: 140,
-      p: 3,
+      p: { xs: 2.5, sm: 3 },
       textAlign: "center",
       display: "flex",
       flexDirection: "column",
@@ -164,13 +204,14 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
       bgcolor: "#F8FAFC",
       borderRadius: "12px",
       border: `1px dashed ${DESIGN_TOKENS.line[200]}`,
-      my: 0.5,
+      my: "auto",
+      minHeight: compact ? 120 : 150,
     }}
   >
     <Box
       sx={{
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         borderRadius: "10px",
         bgcolor: "#FFFFFF",
         border: `1px solid ${DESIGN_TOKENS.line[200]}`,
@@ -178,7 +219,7 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
         alignItems: "center",
         justifyContent: "center",
         color: DESIGN_TOKENS.brand[600],
-        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
         mb: 1.25,
       }}
     >
@@ -286,20 +327,25 @@ const DashboardListItem = ({
             {title}
           </Typography>
           {subtitle && (
-            <Typography
-              variant="caption"
-              sx={{
-                fontFamily: FONT_UI,
-                color: DESIGN_TOKENS.text.secondary,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "block",
-                fontSize: "0.75rem",
-              }}
-            >
-              {subtitle}
-            </Typography>
+            typeof subtitle === "string" ? (
+              <Typography
+                variant="caption"
+                sx={{
+                  fontFamily: FONT_UI,
+                  color: DESIGN_TOKENS.text.secondary,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "block",
+                  fontSize: "0.75rem",
+                  mt: 0.25,
+                }}
+              >
+                {subtitle}
+              </Typography>
+            ) : (
+              subtitle
+            )
           )}
         </Box>
       </Box>
@@ -550,7 +596,7 @@ export const DashboardPage = () => {
     };
   }, [invoices]);
 
-  // Platform Growth Trend Calculation (trailing 6 months)
+  // Platform Growth Trend Calculation (cumulative active resident & user onboarding)
   const platformGrowthTrend = useMemo(() => {
     const months = [];
     const now = new Date();
@@ -569,9 +615,28 @@ export const DashboardPage = () => {
       }
     });
 
+    // Calculate prior count before window
+    const priorCount = users.filter((u) => {
+      const p = u.createdAt ? String(u.createdAt).slice(0, 7) : "";
+      return p && p < months[0].key;
+    }).length;
+
+    // Cumulative progression
+    let runningTotal = priorCount;
+    const cumulativeCounts = months.map((m) => {
+      runningTotal += m.count;
+      return runningTotal;
+    });
+
+    // Start chart from first month with activity if early platform
+    const firstActiveIdx = months.findIndex((m) => m.count > 0);
+    const startIdx = firstActiveIdx > 1 ? firstActiveIdx - 1 : 0;
+    const visibleLabels = months.slice(startIdx).map((m) => m.label);
+    const visibleCounts = cumulativeCounts.slice(startIdx);
+
     return {
-      labels: months.map((m) => m.label),
-      counts: months.map((m) => m.count),
+      labels: visibleLabels.length >= 2 ? visibleLabels : months.map((m) => m.label),
+      counts: visibleCounts.length >= 2 ? visibleCounts : cumulativeCounts,
     };
   }, [users]);
 
@@ -609,38 +674,50 @@ export const DashboardPage = () => {
 
   return (
     <Box sx={{ width: "100%", pb: 5 }}>
-      {/* Interactive Perspective Switcher for Multi-Role Inspection */}
+      {/* QA Preview Mode: Role Perspective Switcher */}
       {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.BUILDING_ADMIN) && (
         <Paper
           variant="outlined"
           sx={{
-            p: 1,
+            p: "8px 14px",
             mb: 3,
             borderRadius: "12px",
-            borderColor: DESIGN_TOKENS.line[200],
-            bgcolor: "#FFFFFF",
+            borderColor: "#CBD5E1",
+            borderStyle: "dashed",
+            bgcolor: "#F8FAFC",
             display: "flex",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: 1,
+            gap: 1.25,
           }}
         >
-          <Typography
-            sx={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              color: DESIGN_TOKENS.text.secondary,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              px: 1,
-            }}
-          >
-            Perspective Switcher:
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 0.5 }}>
+            <Chip
+              label="QA preview mode"
+              size="small"
+              sx={{
+                height: 22,
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                bgcolor: "#EEF2FF",
+                color: DESIGN_TOKENS.brand[700],
+                borderRadius: "6px",
+              }}
+            />
+            <Typography
+              sx={{
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: DESIGN_TOKENS.text.secondary,
+              }}
+            >
+              Viewing as:
+            </Typography>
+          </Box>
           {[
             { id: ROLES.SUPER_ADMIN, label: "Super Admin" },
             { id: ROLES.BUILDING_ADMIN, label: "Building Admin" },
-            { id: ROLES.MANAGER, label: "Manager (Triage Queue)" },
+            { id: ROLES.MANAGER, label: "Manager" },
             { id: ROLES.ACCOUNTANT, label: "Accountant" },
             { id: ROLES.MAINTENANCE_STAFF, label: "Maintenance Staff" },
             { id: ROLES.SECURITY_STAFF, label: "Security Staff" },
@@ -653,18 +730,21 @@ export const DashboardPage = () => {
                 key={roleItem.id}
                 size="small"
                 onClick={() => setSelectedRoleView(roleItem.id)}
-                variant={isSelected ? "contained" : "text"}
+                variant={isSelected ? "contained" : "outlined"}
                 sx={{
                   textTransform: "none",
                   fontWeight: isSelected ? 700 : 500,
                   fontSize: "0.8125rem",
                   borderRadius: "8px",
-                  py: 0.5,
-                  px: 1.5,
-                  bgcolor: isSelected ? DESIGN_TOKENS.brand[600] : "transparent",
-                  color: isSelected ? "#FFFFFF" : DESIGN_TOKENS.text.secondary,
+                  py: 0.4,
+                  px: 1.25,
+                  bgcolor: isSelected ? DESIGN_TOKENS.brand[600] : "#FFFFFF",
+                  borderColor: isSelected ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200],
+                  color: isSelected ? "#FFFFFF" : DESIGN_TOKENS.text.primary,
+                  boxShadow: isSelected ? "0 1px 2px rgba(79, 70, 229, 0.15)" : "none",
                   "&:hover": {
-                    bgcolor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.surface[100],
+                    bgcolor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.surface[50],
+                    borderColor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.line[300],
                   },
                 }}
               >
@@ -690,9 +770,9 @@ export const DashboardPage = () => {
             : effectiveRole === ROLES.MAINTENANCE_STAFF
             ? "Today's work orders & assigned technical tickets"
             : effectiveRole === ROLES.OWNER
-            ? "Flat 101 • Residence maintenance dues & service requests"
+            ? (user?.flatId?.flatNumber ? `Flat ${user.flatId.flatNumber}: Residence maintenance dues and service requests` : "Residence maintenance dues and service requests")
             : effectiveRole === ROLES.TENANT
-            ? "Flat 101 • Resident portal & active dues"
+            ? (user?.flatId?.flatNumber ? `Flat ${user.flatId.flatNumber}: Resident portal and active dues` : "Resident portal and active dues")
             : undefined
         }
         action={
@@ -810,18 +890,18 @@ export const DashboardPage = () => {
                     label="Total Active Users"
                     delta="Across all platform roles"
                     icon={<PeopleIcon />}
-                    iconBg="#F0FDF4"
-                    iconColor="#16A34A"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <StatCard
                     value={`${collectionRate}%`}
                     label="Platform Collection Rate"
-                    delta="Trailing fees recovered"
+                    delta="Fees collected this period"
                     icon={<AccountBalanceWalletIcon />}
-                    iconBg="#ECFDF5"
-                    iconColor="#059669"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -830,8 +910,8 @@ export const DashboardPage = () => {
                     label="Open Work Orders"
                     delta="Platform-wide active tickets"
                     icon={<BuildIcon />}
-                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
-                    iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
+                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={openRequests.length > 0}
                   />
                 </Grid>
@@ -847,8 +927,8 @@ export const DashboardPage = () => {
                     label="Occupancy Rate"
                     delta={`${occupiedFlats} of ${totalFlats} flats occupied`}
                     icon={<HomeWorkIcon />}
-                    iconBg="#ECFDF5"
-                    iconColor="#059669"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -857,8 +937,8 @@ export const DashboardPage = () => {
                     label="Open Work Orders"
                     delta={`${unassignedRequests.length} awaiting technician dispatch`}
                     icon={<BuildIcon />}
-                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
-                    iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
+                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={openRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={openRequests.length > 0}
                   />
                 </Grid>
@@ -878,8 +958,8 @@ export const DashboardPage = () => {
                     label="Open Complaints"
                     delta="Resident grievances under triage"
                     icon={<ReportProblemIcon />}
-                    iconBg="#FEE2E2"
-                    iconColor="#DC2626"
+                    iconBg={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={complaints.filter((c) => c.status !== "RESOLVED").length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
               </Grid>
@@ -894,8 +974,8 @@ export const DashboardPage = () => {
                     label="Unassigned Work Orders"
                     delta="Require technician assignment"
                     icon={<AssignmentLateIcon />}
-                    iconBg={unassignedRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
-                    iconColor={unassignedRequests.length > 0 ? "#DC2626" : "#059669"}
+                    iconBg={unassignedRequests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={unassignedRequests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                     isHero={unassignedRequests.length > 0}
                   />
                 </Grid>
@@ -905,8 +985,8 @@ export const DashboardPage = () => {
                     label="Urgent / SLA At Risk"
                     delta="Emergency priority work orders"
                     icon={<WarningAmberIcon />}
-                    iconBg={urgentRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
-                    iconColor={urgentRequests.length > 0 ? "#B45309" : "#64748B"}
+                    iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#EEF2FF"}
+                    iconColor={urgentRequests.length > 0 ? "#DC2626" : DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -925,8 +1005,8 @@ export const DashboardPage = () => {
                     label="Scheduled Move-ins"
                     delta="Active resident transitions"
                     icon={<DoorSlidingIcon />}
-                    iconBg="#F1F5F9"
-                    iconColor="#475569"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
               </Grid>
@@ -941,8 +1021,8 @@ export const DashboardPage = () => {
                     label="This Month's Collection Rate"
                     delta={`${paidInvoices.length} invoices settled this period`}
                     icon={<TrendingUpIcon />}
-                    iconBg="#ECFDF5"
-                    iconColor="#059669"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -962,8 +1042,8 @@ export const DashboardPage = () => {
                     label="Overdue Invoices"
                     delta="Invoices past grace period deadline"
                     icon={<ReceiptLongIcon />}
-                    iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#F1F5F9"}
-                    iconColor={overdueInvoices.length > 0 ? "#B45309" : "#64748B"}
+                    iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={overdueInvoices.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -972,8 +1052,8 @@ export const DashboardPage = () => {
                     label="Pending Expense Approvals"
                     delta="Operational claims awaiting review"
                     icon={<PendingActionsIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
+                    iconBg={pendingExpenses.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={pendingExpenses.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
               </Grid>
@@ -1026,8 +1106,8 @@ export const DashboardPage = () => {
                     label="Expected Today"
                     delta="Pre-approved resident entry passes"
                     icon={<DoorSlidingIcon />}
-                    iconBg="#ECFDF5"
-                    iconColor="#059669"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
               </Grid>
@@ -1057,8 +1137,8 @@ export const DashboardPage = () => {
                     label="Open Work Orders"
                     delta="Service tickets logged for your unit"
                     icon={<BuildIcon />}
-                    iconBg="#EEF2FF"
-                    iconColor={DESIGN_TOKENS.brand[600]}
+                    iconBg={requests.length > 0 ? "#FEF3C7" : "#EEF2FF"}
+                    iconColor={requests.length > 0 ? "#B45309" : DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -1067,8 +1147,8 @@ export const DashboardPage = () => {
                     label="Active Visitor Passes"
                     delta="Valid guest codes currently active"
                     icon={<BadgeIcon />}
-                    iconBg="#F0FDF4"
-                    iconColor="#16A34A"
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
                 </Grid>
               </Grid>
@@ -1088,8 +1168,8 @@ export const DashboardPage = () => {
                 <Grid item xs={12} md={7.2}>
                   <TrendChart
                     title="Platform Growth"
-                    subtitle="New resident registrations and portfolio expansion over trailing 6 months"
-                    metric={`+${users.length} Residents`}
+                    subtitle="Cumulative resident and team onboarding over time"
+                    metric={`${users.length} active members`}
                     color={DESIGN_TOKENS.brand[600]}
                     data={platformGrowthTrend.counts}
                     labels={platformGrowthTrend.labels}
@@ -1115,28 +1195,58 @@ export const DashboardPage = () => {
                             to={`/buildings/${b.id || b._id}`}
                             icon={<ApartmentIcon />}
                             title={b.name}
-                            subtitle={`Code: ${b.code || "BLD"} • ${b.address || "Complex"}`}
+                            subtitle={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                <Typography
+                                  component="span"
+                                  sx={{
+                                    fontSize: "0.75rem",
+                                    fontWeight: 600,
+                                    color: DESIGN_TOKENS.text.secondary,
+                                  }}
+                                >
+                                  {b.code || "BLD"}
+                                </Typography>
+                                {b.address && (
+                                  <Typography
+                                    component="span"
+                                    sx={{
+                                      fontSize: "0.75rem",
+                                      color: "#94A3B8",
+                                      maxWidth: 160,
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {formatAddress(b.address)}
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
                             rightContent={
                               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                 <Chip
-                                  label={`${b.collectionRate}% Col.`}
+                                  label={`${b.collectionRate}% collected`}
                                   size="small"
                                   sx={{
                                     fontSize: "0.6875rem",
-                                    fontWeight: 700,
+                                    fontWeight: 600,
                                     bgcolor: b.collectionRate < 80 ? "#FEE2E2" : "#ECFDF5",
                                     color: b.collectionRate < 80 ? "#DC2626" : "#059669",
+                                    borderRadius: "6px",
                                   }}
                                 />
                                 {b.openComplaints > 0 && (
                                   <Chip
-                                    label={`${b.openComplaints} CMP`}
+                                    label={`${b.openComplaints} open complaints`}
                                     size="small"
                                     sx={{
                                       fontSize: "0.6875rem",
-                                      fontWeight: 700,
+                                      fontWeight: 600,
                                       bgcolor: "#FEF3C7",
                                       color: "#B45309",
+                                      borderRadius: "6px",
                                     }}
                                   />
                                 )}
@@ -1168,11 +1278,39 @@ export const DashboardPage = () => {
                             key={log.id || log._id}
                             to="/audit-logs"
                             icon={<HistoryIcon />}
-                            title={log.action?.replace(/_/g, " ") || "System Action"}
-                            subtitle={`${log.resourceType || "RESOURCE"} • ${log.actorUserId?.firstName ? `${log.actorUserId.firstName} ${log.actorUserId.lastName || ""}` : "System Administrator"}`}
+                            title={toSentenceCase(log.action) || "System action"}
+                            subtitle={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                <Chip
+                                  label={toSentenceCase(log.resourceType || "System")}
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 600,
+                                    bgcolor: "#F1F5F9",
+                                    color: "#475569",
+                                    borderRadius: "4px",
+                                    px: 0.5,
+                                    "& .MuiChip-label": { px: 0.5 },
+                                  }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: DESIGN_TOKENS.text.secondary,
+                                    fontSize: "0.75rem",
+                                  }}
+                                >
+                                  {log.actorUserId?.firstName
+                                    ? `${log.actorUserId.firstName} ${log.actorUserId.lastName || ""}`.trim()
+                                    : "System administrator"}
+                                </Typography>
+                              </Box>
+                            }
                             rightContent={
-                              <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.75rem" }}>
-                                {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently"}
+                              <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                                {formatRelativeTime(log.timestamp || log.createdAt)}
                               </Typography>
                             }
                           />
@@ -1199,16 +1337,40 @@ export const DashboardPage = () => {
                             to="/notices"
                             icon={<CampaignIcon />}
                             title={n.title}
-                            subtitle={`Target: ${n.targetAudience || "All Residents"} • ${n.buildingId?.name || "General"}`}
+                            subtitle={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                <Chip
+                                  label={toSentenceCase(n.targetAudience || "All residents")}
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 600,
+                                    bgcolor: "#F1F5F9",
+                                    color: "#475569",
+                                    borderRadius: "4px",
+                                    px: 0.5,
+                                    "& .MuiChip-label": { px: 0.5 },
+                                  }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
+                                >
+                                  {n.buildingId?.name || "General announcement"}
+                                </Typography>
+                              </Box>
+                            }
                             rightContent={
                               <Chip
-                                label={n.priority || "NORMAL"}
+                                label={toSentenceCase(n.priority || "Normal")}
                                 size="small"
                                 sx={{
                                   fontSize: "0.6875rem",
                                   fontWeight: 600,
                                   bgcolor: n.priority === "URGENT_EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
                                   color: n.priority === "URGENT_EMERGENCY" ? "#DC2626" : "#475569",
+                                  borderRadius: "6px",
                                 }}
                               />
                             }
@@ -1231,7 +1393,7 @@ export const DashboardPage = () => {
                   <TrendChart
                     title="Collections Trend"
                     subtitle="Trailing 6-month collection recovery velocity"
-                    metric={`${collectionRate}% Cleared`}
+                    metric={`${collectionRate}% collected`}
                     color={DESIGN_TOKENS.brand[600]}
                     data={collectionsTrend.rates}
                     labels={collectionsTrend.labels}
@@ -1258,17 +1420,18 @@ export const DashboardPage = () => {
                             iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.brand[50]}
                             iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
                             title={req.title}
-                            subtitle={`#${req.requestNumber || "WO"}, ${req.category}`}
+                            subtitle={`Ticket #${req.requestNumber || "WO"}, category: ${toSentenceCase(req.category)}`}
                             rightContent={
                               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                 <Chip
-                                  label={req.priority}
+                                  label={toSentenceCase(req.priority)}
                                   size="small"
                                   sx={{
                                     fontSize: "0.6875rem",
                                     fontWeight: 600,
                                     bgcolor: req.priority === "EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
                                     color: req.priority === "EMERGENCY" ? "#DC2626" : "#475569",
+                                    borderRadius: "6px",
                                   }}
                                 />
                                 <StatusChip status={req.status} />
@@ -1327,7 +1490,27 @@ export const DashboardPage = () => {
                             to="/staff"
                             icon={<SupervisorAccountIcon />}
                             title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Technician"}`}
-                            subtitle={`Specialty: ${s.category || "Maintenance"} • Shift: ${s.shift || "Morning"}`}
+                            subtitle={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
+                                  {toSentenceCase(s.category || s.specialization || "General")}
+                                </Typography>
+                                <Chip
+                                  label={`Shift: ${toSentenceCase(s.shift || "Morning")}`}
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 600,
+                                    bgcolor: "#F1F5F9",
+                                    color: "#475569",
+                                    borderRadius: "4px",
+                                    px: 0.5,
+                                    "& .MuiChip-label": { px: 0.5 },
+                                  }}
+                                />
+                              </Box>
+                            }
                             rightContent={
                               <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
                                 <Rating value={s.averageRating || 4.5} precision={0.5} size="small" readOnly />
@@ -1364,9 +1547,9 @@ export const DashboardPage = () => {
                 ) : (
                   <DataTable
                     columns={[
-                      { id: "requestNumber", label: "WO #", minWidth: 90, render: (r) => <Typography sx={{ fontWeight: 700, fontSize: "0.8125rem" }}>#{r.requestNumber || r._id?.slice(-6)}</Typography> },
+                      { id: "requestNumber", label: "Ticket #", minWidth: 90, render: (r) => <Typography sx={{ fontWeight: 700, fontSize: "0.8125rem" }}>#{r.requestNumber || r._id?.slice(-6)}</Typography> },
                       { id: "title", label: "Request Title", render: (r) => <Typography sx={{ fontWeight: 600, fontSize: "0.875rem" }}>{r.title}</Typography> },
-                      { id: "category", label: "Category", render: (r) => <Chip label={r.category} size="small" sx={{ fontSize: "0.75rem" }} /> },
+                      { id: "category", label: "Category", render: (r) => <Chip label={toSentenceCase(r.category)} size="small" sx={{ fontSize: "0.75rem" }} /> },
                       { id: "priority", label: "Priority", render: (r) => <StatusChip status={r.priority} /> },
                       { id: "status", label: "Status", render: (r) => <StatusChip status={r.status} /> },
                       {
@@ -1419,17 +1602,38 @@ export const DashboardPage = () => {
                             key={s._id || s.id}
                             to="/staff"
                             icon={<SupervisorAccountIcon />}
-                            title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Staff"}`}
-                            subtitle={`Trade: ${s.category || "General"} • Shift: ${s.shift || "Morning"}`}
+                            title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Staff"}`.trim()}
+                            subtitle={
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
+                                  {toSentenceCase(s.category || "General maintenance")}
+                                </Typography>
+                                <Chip
+                                  label={`Shift: ${toSentenceCase(s.shift || "Morning")}`}
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 600,
+                                    bgcolor: "#F1F5F9",
+                                    color: "#475569",
+                                    borderRadius: "4px",
+                                    px: 0.5,
+                                    "& .MuiChip-label": { px: 0.5 },
+                                  }}
+                                />
+                              </Box>
+                            }
                             rightContent={
                               <Chip
-                                label={s.status === "ACTIVE" ? "Available" : "On Leave"}
+                                label={toSentenceCase(s.status === "ACTIVE" ? "Available" : "On leave")}
                                 size="small"
                                 sx={{
                                   fontSize: "0.6875rem",
-                                  fontWeight: 700,
+                                  fontWeight: 600,
                                   bgcolor: s.status === "ACTIVE" ? "#DCFCE7" : "#FEE2E2",
                                   color: s.status === "ACTIVE" ? "#15803D" : "#DC2626",
+                                  borderRadius: "6px",
                                 }}
                               />
                             }
@@ -1478,7 +1682,7 @@ export const DashboardPage = () => {
                   <TrendChart
                     title="Collections Trend"
                     subtitle="Monthly maintenance fee collections and recovery trajectory"
-                    metric={`${collectionRate}% Cleared`}
+                    metric={`${collectionRate}% collected`}
                     color={DESIGN_TOKENS.accent.green}
                     data={collectionsTrend.rates}
                     labels={collectionsTrend.labels}
@@ -1508,7 +1712,7 @@ export const DashboardPage = () => {
                             iconBg="#FEE2E2"
                             iconColor="#DC2626"
                             title={`Invoice #${inv.invoiceNumber}`}
-                            subtitle={`Due Date: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Past Due"}`}
+                            subtitle={`Due date: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Past due"}`}
                             rightContent={
                               <Typography
                                 sx={{
@@ -1548,7 +1752,7 @@ export const DashboardPage = () => {
                             to="/expenses"
                             icon={<PendingActionsIcon />}
                             title={exp.title}
-                            subtitle={`Vendor: ${exp.vendor || "Operational"} • Category: ${exp.category}`}
+                            subtitle={`Vendor: ${exp.vendor || "Operational"}, category: ${toSentenceCase(exp.category)}`}
                             rightContent={
                               <Typography sx={{ fontWeight: 700, fontSize: "0.875rem", color: "#B45309" }}>
                                 ₨{(Number(exp.amount) || 0).toLocaleString()}
@@ -1569,13 +1773,13 @@ export const DashboardPage = () => {
                     <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
                       <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                         <Box>
-                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>TOTAL BILLED</Typography>
+                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total billed</Typography>
                           <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mt: 0.5 }}>
                             ₨{totalBilled.toLocaleString()}
                           </Typography>
                         </Box>
                         <Box sx={{ textAlign: "right" }}>
-                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>TOTAL COLLECTED</Typography>
+                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total collected</Typography>
                           <Typography variant="h5" sx={{ fontWeight: 800, color: "#059669", mt: 0.5 }}>
                             ₨{totalCollected.toLocaleString()}
                           </Typography>
@@ -1616,7 +1820,7 @@ export const DashboardPage = () => {
                         iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "#EEF2FF"}
                         iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
                         title={req.title}
-                        subtitle={`Location: Flat ${req.flatId?.flatNumber || "Assigned Unit"} • Category: ${req.category}`}
+                        subtitle={`Flat ${req.flatId?.flatNumber || "Assigned unit"}, category: ${toSentenceCase(req.category)}`}
                         sx={{
                           py: 1.75,
                           px: 2,
@@ -1733,21 +1937,26 @@ export const DashboardPage = () => {
                         key={v._id || v.id}
                         icon={<BadgeIcon />}
                         title={v.visitorName}
-                        subtitle={`Visiting Flat ${v.flatId?.flatNumber || "Unit"} • Expected: ${v.expectedArrival || "Today"}`}
+                        subtitle={`Visiting Flat ${v.flatId?.flatNumber || "Unit"}`}
                         rightContent={
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => navigate(`/visitors/verify?code=${v.passCode}`)}
-                            sx={{
-                              borderColor: DESIGN_TOKENS.line[200],
-                              color: DESIGN_TOKENS.text.primary,
-                              fontWeight: 700,
-                              fontSize: "0.75rem",
-                            }}
-                          >
-                            Check In
-                          </Button>
+                          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                            <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+                              {v.expectedArrival || "Today"}
+                            </Typography>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => navigate(`/visitors/verify?code=${v.passCode}`)}
+                              sx={{
+                                borderColor: DESIGN_TOKENS.line[200],
+                                color: DESIGN_TOKENS.text.primary,
+                                fontWeight: 700,
+                                fontSize: "0.75rem",
+                              }}
+                            >
+                              Check In
+                            </Button>
+                          </Stack>
                         }
                       />
                     ))}
@@ -1786,7 +1995,7 @@ export const DashboardPage = () => {
                             to={`/invoices/${inv._id || inv.id}`}
                             icon={<ReceiptIcon />}
                             title={`Invoice #${inv.invoiceNumber}`}
-                            subtitle={`Period: ${inv.billingPeriod || "Monthly"} • Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                            subtitle={`Billing period: ${toSentenceCase(inv.billingPeriod || "Monthly")}`}
                             rightContent={
                               <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                                 <Typography sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
@@ -1870,7 +2079,7 @@ export const DashboardPage = () => {
                             to="/maintenance-requests"
                             icon={<BuildIcon />}
                             title={r.title}
-                            subtitle={`#${r.requestNumber || "WO"} • Category: ${r.category}`}
+                            subtitle={`Ticket #${r.requestNumber || "WO"}, category: ${toSentenceCase(r.category)}`}
                             rightContent={<StatusChip status={r.status} />}
                           />
                         ))}

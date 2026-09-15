@@ -189,7 +189,7 @@ export const AuthLayout = () => {
             theme="light"
             variant="full"
             size={40}
-            subtitle="Residential Portal"
+            subtitle="Residential portal"
             href="/login"
           />
         </Box>
