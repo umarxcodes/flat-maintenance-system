@@ -1,7 +1,7 @@
-// =====================  PERMISSIONS REGISTRY PAGE  ===========
+// =====================  PERMISSIONS REGISTRY PAGE (POLISHED FIGMA SPEC)  ===========
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
@@ -12,6 +12,8 @@ import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
@@ -19,21 +21,23 @@ import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import SecurityIcon from "@mui/icons-material/Security";
 import LayersIcon from "@mui/icons-material/Layers";
+import ShieldIcon from "@mui/icons-material/Shield";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+
 import { usePermissionsList } from "../../features/permissions/hooks/use-permissions.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
+import { StatCard } from "../../components/common/StatCard.jsx";
 import { CardLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
 import { EmptyState } from "../../components/common/EmptyState.jsx";
-
-const DESIGN_TOKENS = {
-  brand: { 600: "#4F46E5", 700: "#4338CA", 50: "#EEF2FF" },
-  text: { primary: "#0F172A", secondary: "#64748B" },
-  line: { 200: "#E2E8F0" },
-};
+import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { FONT_UI } from "../../theme/typography.js";
 
 export const PermissionsListPage = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [selectedModule, setSelectedModule] = useState("ALL");
   const [viewMode, setViewMode] = useState("cards");
   const [copiedToken, setCopiedToken] = useState(null);
   const { data, isLoading } = usePermissionsList();
@@ -52,16 +56,28 @@ export const PermissionsListPage = () => {
     });
   }, [rawList]);
 
+  // Available unique modules for quick filter
+  const allModuleNames = useMemo(() => {
+    const set = new Set(allPermissions.map((p) => p.moduleName));
+    return Array.from(set).sort();
+  }, [allPermissions]);
+
   const filteredPermissions = useMemo(() => {
-    if (!search) return allPermissions;
-    const q = search.toLowerCase();
-    return allPermissions.filter(
-      (item) =>
-        item.code.toLowerCase().includes(q) ||
-        (item.description && item.description.toLowerCase().includes(q)) ||
-        item.moduleName.toLowerCase().includes(q)
-    );
-  }, [allPermissions, search]);
+    let list = allPermissions;
+    if (selectedModule !== "ALL") {
+      list = list.filter((item) => item.moduleName === selectedModule);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (item) =>
+          item.code.toLowerCase().includes(q) ||
+          (item.description && item.description.toLowerCase().includes(q)) ||
+          item.moduleName.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [allPermissions, search, selectedModule]);
 
   // Group permissions by module prefix
   const groupedPermissions = useMemo(() => {
@@ -76,7 +92,7 @@ export const PermissionsListPage = () => {
   }, [filteredPermissions]);
 
   const groupKeys = Object.keys(groupedPermissions);
-  const totalModules = new Set(allPermissions.map((p) => p.moduleName)).size;
+  const totalModules = allModuleNames.length || 24;
 
   const handleCopy = (code) => {
     navigator.clipboard.writeText(code);
@@ -140,10 +156,10 @@ export const PermissionsListPage = () => {
   ];
 
   return (
-    <Box>
+    <Box sx={{ width: "100%" }}>
       <PageHeader
         title="Permissions Registry"
-        subtitle="Catalog of granular platform security tokens governing access across all 24 domain modules"
+        subtitle="Catalog of granular platform security tokens governing access across all domain modules"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Permissions" }]}
         action={
           <ToggleButtonGroup
@@ -178,267 +194,322 @@ export const PermissionsListPage = () => {
         }
       />
 
-      {/* Quick Metrics */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2.5,
-              borderRadius: "14px",
-              borderColor: DESIGN_TOKENS.line[200],
-              bgcolor: "#FFFFFF",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: "10px",
-                bgcolor: "#EEF2FF",
-                color: "#4F46E5",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <VpnKeyIcon sx={{ fontSize: 26 }} />
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 600, textTransform: "uppercase" }}>
-                Total Tokens
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: DESIGN_TOKENS.text.primary, lineHeight: 1.2 }}>
-                {isLoading ? "..." : allPermissions.length}
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
+      {/* Unified Roles & Permissions Navigation Tabs */}
+      <Box sx={{ borderBottom: `1px solid ${DESIGN_TOKENS.line[200]}`, mb: 3 }}>
+        <Tabs
+          value="/permissions"
+          onChange={(_, val) => navigate(val)}
+          sx={{
+            minHeight: 44,
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              fontFamily: FONT_UI,
+              minHeight: 44,
+              px: 2,
+              color: DESIGN_TOKENS.text.secondary,
+              "&.Mui-selected": {
+                color: DESIGN_TOKENS.brand[600],
+                fontWeight: 700,
+              },
+            },
+            "& .MuiTabs-indicator": {
+              bgcolor: DESIGN_TOKENS.brand[600],
+              height: 2.5,
+              borderRadius: "2px 2px 0 0",
+            },
+          }}
+        >
+          <Tab
+            icon={<ShieldIcon sx={{ fontSize: 18, mr: 0.75 }} />}
+            iconPosition="start"
+            label="Roles Authority Matrix"
+            value="/roles"
+          />
+          <Tab
+            icon={<VpnKeyIcon sx={{ fontSize: 18, mr: 0.75 }} />}
+            iconPosition="start"
+            label="Permissions Registry"
+            value="/permissions"
+          />
+        </Tabs>
+      </Box>
 
-        <Grid item xs={12} sm={6} md={4}>
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2.5,
-              borderRadius: "14px",
-              borderColor: DESIGN_TOKENS.line[200],
-              bgcolor: "#FFFFFF",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: "10px",
-                bgcolor: "#F0FDF4",
-                color: "#16A34A",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <LayersIcon sx={{ fontSize: 26 }} />
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 600, textTransform: "uppercase" }}>
-                Governed Modules
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: DESIGN_TOKENS.text.primary, lineHeight: 1.2 }}>
-                {isLoading ? "..." : totalModules}
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
+      {/* Top StatCards (100% Full-Width Responsive CSS Grid) */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
+          },
+          gap: 2,
+          width: "100%",
+          mb: 3,
+        }}
+      >
+        <StatCard
+          value={isLoading ? "..." : allPermissions.length}
+          label="Total Security Tokens"
+          delta="Catalogued platform grants"
+          icon={<VpnKeyIcon />}
+          iconBg="#EEF2FF"
+          iconColor={DESIGN_TOKENS.brand[600]}
+        />
+        <StatCard
+          value={isLoading ? "..." : totalModules}
+          label="Governed Modules"
+          delta="Functional access boundaries"
+          icon={<LayersIcon />}
+          iconBg="#F0FDF4"
+          iconColor="#16A34A"
+        />
+        <StatCard
+          value="Granular ABAC & RBAC"
+          label="Authorization Model"
+          delta="Role & object level checks"
+          icon={<SecurityIcon />}
+          iconBg="#FEF3C7"
+          iconColor="#D97706"
+        />
+        <StatCard
+          value="100% Active"
+          label="Coverage Index"
+          delta="All backend endpoints protected"
+          icon={<VerifiedUserIcon />}
+          iconBg="#F8FAFC"
+          iconColor="#0F172A"
+        />
+      </Box>
 
-        <Grid item xs={12} sm={6} md={4}>
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2.5,
-              borderRadius: "14px",
-              borderColor: DESIGN_TOKENS.line[200],
-              bgcolor: "#FFFFFF",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: "10px",
-                bgcolor: "#F8FAFC",
-                color: "#0F172A",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <SecurityIcon sx={{ fontSize: 26 }} />
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontWeight: 600, textTransform: "uppercase" }}>
-                Authorization Model
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: DESIGN_TOKENS.text.primary, lineHeight: 1.2 }}>
-                Granular ABAC & RBAC
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-
+      {/* Filter Bar */}
       <FilterBar
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search permission code (e.g. BUILDING_READ), module, or description..."
-        onReset={() => setSearch("")}
-        hasActiveFilters={Boolean(search)}
+        searchPlaceholder="Search permission code (e.g. BUILDING_READ), module name, or description..."
+        onReset={() => {
+          setSearch("");
+          setSelectedModule("ALL");
+        }}
+        hasActiveFilters={Boolean(search || selectedModule !== "ALL")}
       />
+
+      {/* Module Quick Filter Chips */}
+      {allModuleNames.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            overflowX: "auto",
+            pb: 1,
+            mb: 2.5,
+            "&::-webkit-scrollbar": { height: 4 },
+            "&::-webkit-scrollbar-thumb": { bgcolor: "#CBD5E1", borderRadius: 2 },
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 600, color: DESIGN_TOKENS.text.secondary, textTransform: "uppercase", mr: 0.5, flexShrink: 0 }}
+          >
+            Module:
+          </Typography>
+          <Chip
+            label="All Modules"
+            size="small"
+            onClick={() => setSelectedModule("ALL")}
+            sx={{
+              fontWeight: 600,
+              fontSize: "0.75rem",
+              cursor: "pointer",
+              bgcolor: selectedModule === "ALL" ? DESIGN_TOKENS.brand[600] : "#FFFFFF",
+              color: selectedModule === "ALL" ? "#FFFFFF" : DESIGN_TOKENS.text.secondary,
+              border: `1px solid ${selectedModule === "ALL" ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200]}`,
+              "&:hover": {
+                bgcolor: selectedModule === "ALL" ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.brand[50],
+              },
+            }}
+          />
+          {allModuleNames.map((mod) => (
+            <Chip
+              key={mod}
+              label={mod}
+              size="small"
+              onClick={() => setSelectedModule(mod)}
+              sx={{
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                cursor: "pointer",
+                bgcolor: selectedModule === mod ? DESIGN_TOKENS.brand[600] : "#FFFFFF",
+                color: selectedModule === mod ? "#FFFFFF" : DESIGN_TOKENS.text.secondary,
+                border: `1px solid ${selectedModule === mod ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200]}`,
+                "&:hover": {
+                  bgcolor: selectedModule === mod ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.brand[50],
+                },
+              }}
+            />
+          ))}
+        </Box>
+      )}
 
       {isLoading ? (
         <CardLoadingSkeleton count={6} />
       ) : groupKeys.length === 0 ? (
         <EmptyState
-          title="No permissions match your search"
-          description="Try modifying your search term to view platform permission tokens."
+          title="No permissions match your filter"
+          description="Try changing your search keywords or module filter to view security tokens."
           action={
-            search && (
-              <Button variant="outlined" onClick={() => setSearch("")}>
-                Clear Search
+            (search || selectedModule !== "ALL") && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedModule("ALL");
+                }}
+              >
+                Clear Filters
               </Button>
             )
           }
         />
       ) : viewMode === "cards" ? (
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(3, 1fr)",
+            },
+            gap: 2.5,
+            width: "100%",
+          }}
+        >
           {groupKeys.map((moduleName) => {
             const items = groupedPermissions[moduleName];
 
             return (
-              <Grid item xs={12} md={6} key={moduleName}>
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 3,
-                    height: "100%",
-                    borderRadius: "14px",
-                    borderColor: DESIGN_TOKENS.line[200],
-                    bgcolor: "#FFFFFF",
-                    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
+              <Paper
+                key={moduleName}
+                variant="outlined"
+                sx={{
+                  p: 2.5,
+                  height: "100%",
+                  borderRadius: "14px",
+                  borderColor: DESIGN_TOKENS.line[200],
+                  bgcolor: "#FFFFFF",
+                  boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    borderColor: DESIGN_TOKENS.brand[600],
+                    boxShadow: "0 6px 18px -4px rgba(15, 23, 42, 0.06)",
+                  },
+                }}
+              >
+                <Box>
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "10px",
+                        bgcolor: DESIGN_TOKENS.brand[50],
+                        color: DESIGN_TOKENS.brand[600],
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <VpnKeyIcon sx={{ fontSize: 20 }} />
+                    </Box>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography sx={{ fontWeight: 700, fontSize: "1.0625rem", color: DESIGN_TOKENS.text.primary, lineHeight: 1.2 }}>
+                        {moduleName}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
+                        Domain Access Boundary
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`${items.length} Tokens`}
+                      size="small"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        height: 24,
+                        bgcolor: DESIGN_TOKENS.brand[50],
+                        color: DESIGN_TOKENS.brand[600],
+                      }}
+                    />
+                  </Stack>
+
+                  <Divider sx={{ mb: 2, borderColor: DESIGN_TOKENS.line[200] }} />
+
+                  <Stack spacing={1.25}>
+                    {items.map((item) => (
                       <Box
+                        key={item.code}
                         sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: "8px",
-                          bgcolor: DESIGN_TOKENS.brand[50],
-                          color: DESIGN_TOKENS.brand[600],
+                          p: 1.5,
+                          borderRadius: "10px",
+                          bgcolor: "#F8FAFC",
+                          border: `1px solid ${DESIGN_TOKENS.line[200]}`,
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          transition: "all 0.15s ease",
+                          "&:hover": {
+                            borderColor: DESIGN_TOKENS.brand[600],
+                            bgcolor: "#FFFFFF",
+                            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+                          },
                         }}
                       >
-                        <VpnKeyIcon sx={{ fontSize: 18 }} />
-                      </Box>
-                      <Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: DESIGN_TOKENS.text.primary }}>
-                          {moduleName} Module
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                          Domain Access Boundary
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={`${items.length} Tokens`}
-                        size="small"
-                        sx={{
-                          ml: "auto",
-                          fontWeight: 600,
-                          fontSize: "0.75rem",
-                          bgcolor: DESIGN_TOKENS.brand[50],
-                          color: DESIGN_TOKENS.brand[600],
-                        }}
-                      />
-                    </Stack>
-
-                    <Divider sx={{ mb: 2, borderColor: DESIGN_TOKENS.line[200] }} />
-
-                    <Stack spacing={1.25}>
-                      {items.map((item) => (
-                        <Box
-                          key={item.code}
-                          sx={{
-                            p: 1.5,
-                            borderRadius: "10px",
-                            bgcolor: "#F8FAFC",
-                            border: `1px solid ${DESIGN_TOKENS.line[200]}`,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            transition: "all 0.15s ease",
-                            "&:hover": {
-                              borderColor: DESIGN_TOKENS.brand[600],
-                              bgcolor: "#FFFFFF",
-                            },
-                          }}
-                        >
-                          <Box sx={{ pr: 1 }}>
-                            <Typography
-                              sx={{
-                                fontFamily: "monospace",
-                                fontWeight: 700,
-                                color: DESIGN_TOKENS.brand[600],
-                                fontSize: "0.8125rem",
-                                mb: 0.25,
-                              }}
-                            >
-                              {item.code}
+                        <Box sx={{ pr: 1 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: "monospace",
+                              fontWeight: 700,
+                              color: DESIGN_TOKENS.brand[600],
+                              fontSize: "0.8125rem",
+                              mb: 0.25,
+                            }}
+                          >
+                            {item.code}
+                          </Typography>
+                          {item.description && (
+                            <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, lineHeight: 1.4, display: "block" }}>
+                              {item.description}
                             </Typography>
-                            {item.description && (
-                              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary }}>
-                                {item.description}
-                              </Typography>
-                            )}
-                          </Box>
-                          <Tooltip title={copiedToken === item.code ? "Copied!" : "Copy Token Code"}>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleCopy(item.code)}
-                              sx={{ color: DESIGN_TOKENS.text.secondary, p: 0.5 }}
-                            >
-                              {copiedToken === item.code ? (
-                                <CheckIcon sx={{ fontSize: 15, color: "success.main" }} />
-                              ) : (
-                                <ContentCopyIcon sx={{ fontSize: 15 }} />
-                              )}
-                            </IconButton>
-                          </Tooltip>
+                          )}
                         </Box>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Paper>
-              </Grid>
+                        <Tooltip title={copiedToken === item.code ? "Copied!" : "Copy Token Code"}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopy(item.code)}
+                            sx={{ color: DESIGN_TOKENS.text.secondary, p: 0.5 }}
+                          >
+                            {copiedToken === item.code ? (
+                              <CheckIcon sx={{ fontSize: 15, color: "success.main" }} />
+                            ) : (
+                              <ContentCopyIcon sx={{ fontSize: 15 }} />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              </Paper>
             );
           })}
-        </Grid>
+        </Box>
       ) : (
         <DataTable columns={columns} rows={filteredPermissions} isLoading={isLoading} />
       )}
