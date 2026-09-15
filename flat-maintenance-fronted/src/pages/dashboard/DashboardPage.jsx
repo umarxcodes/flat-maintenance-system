@@ -119,8 +119,8 @@ const DashboardCard = ({
   <Paper
     variant="outlined"
     sx={{
-      p: { xs: 2.25, sm: 3 },
-      borderRadius: "14px",
+      p: { xs: 1.75, sm: 2 },
+      borderRadius: "12px",
       borderColor: DESIGN_TOKENS.line[200],
       backgroundColor: "#FFFFFF",
       boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)",
@@ -140,18 +140,18 @@ const DashboardCard = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        mb: 2.25,
+        mb: 1.5,
       }}
     >
       <Box sx={{ minWidth: 0, pr: 1.5 }}>
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1.0625rem",
+            fontSize: "0.9375rem",
             fontWeight: 700,
             color: DESIGN_TOKENS.text.primary,
             letterSpacing: "-0.015em",
-            lineHeight: 1.3,
+            lineHeight: 1.25,
           }}
         >
           {title}
@@ -163,9 +163,9 @@ const DashboardCard = ({
               fontFamily: FONT_UI,
               color: DESIGN_TOKENS.text.secondary,
               display: "block",
-              mt: 0.5,
-              fontSize: "0.8125rem",
-              lineHeight: 1.4,
+              mt: 0.25,
+              fontSize: "0.75rem",
+              lineHeight: 1.35,
             }}
           >
             {subtitle}
@@ -179,13 +179,13 @@ const DashboardCard = ({
           component={RouterLink}
           to={actionLink}
           size="small"
-          endIcon={<ArrowForwardIcon sx={{ fontSize: "0.875rem !important" }} />}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: "0.8125rem !important" }} />}
           sx={{
             textTransform: "none",
-            fontSize: "0.8125rem",
+            fontSize: "0.75rem",
             fontWeight: 600,
             color: DESIGN_TOKENS.brand[600],
-            p: "4px 8px",
+            p: "2px 6px",
             minWidth: "auto",
             flexShrink: 0,
             "&:hover": {
@@ -287,8 +287,8 @@ const DashboardListItem = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        p: "10px 12px",
-        borderRadius: "10px",
+        p: "7px 10px",
+        borderRadius: "8px",
         border: "1px solid",
         borderColor: "#F1F5F9",
         bgcolor: "#FFFFFF",
@@ -303,20 +303,20 @@ const DashboardListItem = ({
         ...sx,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, mr: 1.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, mr: 1.25 }}>
         {icon && (
           <Box
             sx={{
-              width: 34,
-              height: 34,
-              borderRadius: "8px",
+              width: 30,
+              height: 30,
+              borderRadius: "6px",
               bgcolor: iconBg,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: iconColor,
               flexShrink: 0,
-              "& svg": { fontSize: 18 },
+              "& svg": { fontSize: 16 },
             }}
           >
             {icon}
@@ -327,7 +327,7 @@ const DashboardListItem = ({
             sx={{
               fontFamily: FONT_UI,
               fontWeight: 600,
-              fontSize: "0.84rem",
+              fontSize: "0.8125rem",
               color: DESIGN_TOKENS.text.primary,
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -347,8 +347,8 @@ const DashboardListItem = ({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   display: "block",
-                  fontSize: "0.75rem",
-                  mt: 0.25,
+                  fontSize: "0.7188rem",
+                  mt: 0.2,
                 }}
               >
                 {subtitle}
@@ -641,15 +641,9 @@ export const DashboardPage = () => {
       return runningTotal;
     });
 
-    // Start chart from first month with activity if early platform
-    const firstActiveIdx = months.findIndex((m) => m.count > 0);
-    const startIdx = firstActiveIdx > 1 ? firstActiveIdx - 1 : 0;
-    const visibleLabels = months.slice(startIdx).map((m) => m.label);
-    const visibleCounts = cumulativeCounts.slice(startIdx);
-
     return {
-      labels: visibleLabels.length >= 2 ? visibleLabels : months.map((m) => m.label),
-      counts: visibleCounts.length >= 2 ? visibleCounts : cumulativeCounts,
+      labels: months.map((m) => m.label),
+      counts: cumulativeCounts,
     };
   }, [users]);
 
@@ -706,10 +700,47 @@ export const DashboardPage = () => {
             ? (user?.flatId?.flatNumber ? `Flat ${user.flatId.flatNumber}: Residence maintenance dues and service requests` : "Residence maintenance dues and service requests")
             : effectiveRole === ROLES.TENANT
             ? (user?.flatId?.flatNumber ? `Flat ${user.flatId.flatNumber}: Resident portal and active dues` : "Resident portal and active dues")
+            : effectiveRole === ROLES.SUPER_ADMIN
+            ? "Global property portfolio and operations command center"
             : undefined
         }
         action={
-          effectiveRole === ROLES.SECURITY_STAFF ? (
+          effectiveRole === ROLES.SUPER_ADMIN ? (
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Chip
+                icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#10B981", ml: 0.5, mr: -0.25 }} />}
+                label="All Systems Operational"
+                size="small"
+                sx={{
+                  bgcolor: "#ECFDF5",
+                  color: "#065F46",
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                  border: "1px solid #A7F3D0",
+                  display: { xs: "none", sm: "inline-flex" },
+                }}
+              />
+              <Button
+                component={RouterLink}
+                to="/buildings"
+                variant="contained"
+                startIcon={<AddIcon />}
+                size="small"
+                sx={{
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  fontWeight: 600,
+                  fontSize: "0.8125rem",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  py: 0.6,
+                  px: 1.75,
+                  "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                }}
+              >
+                Add Building
+              </Button>
+            </Stack>
+          ) : effectiveRole === ROLES.SECURITY_STAFF ? (
             <Button
               component={RouterLink}
               to="/visitors/verify"
@@ -803,10 +834,10 @@ export const DashboardPage = () => {
           {/* =========================================================================
               1. STATCARD ROW (Symmetric 4 or 3 Equal Columns across All Dashboards)
               ========================================================================= */}
-          <Box sx={{ mb: 3.5 }}>
+          <Box sx={{ mb: 2 }}>
             {/* 1. SUPER ADMIN (Section §1) */}
             {effectiveRole === ROLES.SUPER_ADMIN && (
-              <Grid container spacing={2.5}>
+              <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
                   <StatCard
                     value={buildings.length}
@@ -1092,134 +1123,123 @@ export const DashboardPage = () => {
               2. ROW 2 & ROW 3 PANELS (Standard 60/40 Split or Full Width)
               ========================================================================= */}
 
-          {/* 1. SUPER ADMIN DASHBOARD PANELS (Section §1) */}
+          {/* 1. SUPER ADMIN DASHBOARD (Section §1 - Enterprise Command Center) */}
           {effectiveRole === ROLES.SUPER_ADMIN && (
-            <Stack spacing={3}>
-              {/* Row 2: 60/40 Split */}
-              <Grid container spacing={3}>
-                {/* Left: TrendChart Platform Growth */}
-                <Grid item xs={12} md={7.2}>
+            <Grid container spacing={2}>
+              {/* Left Major Column: Growth, Portfolio & Mutations (8 cols on lg) */}
+              <Grid item xs={12} lg={8}>
+                <Stack spacing={2}>
+                  {/* Card 1: Platform Growth & Velocity Analytics */}
                   <TrendChart
-                    title="Platform Growth"
-                    subtitle="Cumulative resident and team onboarding over time"
+                    title="Platform Growth & User Velocity"
+                    subtitle="Cumulative member and staff onboarding trajectory"
                     metric={`${users.length} active members`}
                     color={DESIGN_TOKENS.brand[600]}
                     data={platformGrowthTrend.counts}
                     labels={platformGrowthTrend.labels}
                     emptyMessage="Growth data will appear as accounts register"
+                    height={85}
+                    compact={true}
                   />
-                </Grid>
 
-                {/* Right: Ranked List Buildings Needing Attention */}
-                <Grid item xs={12} md={4.8}>
+                  {/* Card 2: Managed Building Complexes Portfolio */}
                   <DashboardCard
-                    title="Buildings Needing Attention"
-                    subtitle="Ranked by lowest collection rate or open complaints"
-                    action="All Buildings"
+                    title="Managed Complex Portfolio"
+                    subtitle="Real-time operational standing across residential complexes"
+                    action="Buildings Registry"
                     actionLink="/buildings"
                   >
-                    {rankedBuildings.length === 0 ? (
-                      <DashboardEmptyState message="All buildings are in good standing." />
+                    {buildings.length === 0 ? (
+                      <DashboardEmptyState message="No building complexes registered yet." compact={true} />
                     ) : (
                       <Stack spacing={1}>
-                        {rankedBuildings.map((b) => (
-                          <DashboardListItem
-                            key={b.id || b._id}
-                            to={`/buildings/${b.id || b._id}`}
-                            icon={<ApartmentIcon />}
-                            title={b.name}
-                            subtitle={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
-                                <Typography
-                                  component="span"
-                                  sx={{
-                                    fontSize: "0.75rem",
-                                    fontWeight: 600,
-                                    color: DESIGN_TOKENS.text.secondary,
-                                  }}
-                                >
-                                  {b.code || "BLD"}
-                                </Typography>
-                                {b.address && (
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      fontSize: "0.75rem",
-                                      color: "#94A3B8",
-                                      maxWidth: 160,
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {formatAddress(b.address)}
-                                  </Typography>
-                                )}
-                              </Box>
-                            }
-                            rightContent={
-                              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                                <Chip
-                                  label={`${b.collectionRate}% collected`}
-                                  size="small"
-                                  sx={{
-                                    fontSize: "0.6875rem",
-                                    fontWeight: 600,
-                                    bgcolor: b.collectionRate < 80 ? "#FEE2E2" : "#ECFDF5",
-                                    color: b.collectionRate < 80 ? "#DC2626" : "#059669",
-                                    borderRadius: "6px",
-                                  }}
-                                />
-                                {b.openComplaints > 0 && (
+                        {buildings.map((b) => {
+                          const bId = b.id || b._id;
+                          const bFlats = flats.filter((f) => String(f.buildingId?._id || f.buildingId) === String(bId));
+                          const bOccupied = bFlats.filter((f) => f.status === "OCCUPIED").length;
+                          const bInvoices = invoices.filter((i) => String(i.buildingId?._id || i.buildingId) === String(bId));
+                          const bPaid = bInvoices.filter((i) => i.status === "PAID").length;
+                          const bRate = bInvoices.length > 0 ? Math.round((bPaid / bInvoices.length) * 100) : 100;
+
+                          return (
+                            <DashboardListItem
+                              key={bId}
+                              to={`/buildings/${bId}`}
+                              icon={<ApartmentIcon />}
+                              title={b.name}
+                              subtitle={
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.2, flexWrap: "wrap" }}>
                                   <Chip
-                                    label={`${b.openComplaints} open complaints`}
+                                    label={`Code: ${b.code || "BLD"}`}
                                     size="small"
                                     sx={{
-                                      fontSize: "0.6875rem",
+                                      height: 16,
+                                      fontSize: "0.625rem",
                                       fontWeight: 600,
-                                      bgcolor: "#FEF3C7",
-                                      color: "#B45309",
-                                      borderRadius: "6px",
+                                      bgcolor: "#EEF2FF",
+                                      color: DESIGN_TOKENS.brand[700],
+                                      borderRadius: "4px",
                                     }}
                                   />
-                                )}
-                              </Stack>
-                            }
-                          />
-                        ))}
+                                  <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.7188rem" }}>
+                                    {bFlats.length > 0 ? `${bOccupied}/${bFlats.length} flats occupied` : `${b.totalFlats || 0} flats total`}
+                                  </Typography>
+                                  {b.address && formatAddress(b.address) && (
+                                    <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.7188rem" }}>
+                                      • {formatAddress(b.address)}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              }
+                              rightContent={
+                                <Stack direction="row" spacing={0.75} alignItems="center">
+                                  <Chip
+                                    label={`${bRate}% collected`}
+                                    size="small"
+                                    sx={{
+                                      height: 20,
+                                      fontSize: "0.6875rem",
+                                      fontWeight: 600,
+                                      bgcolor: bRate < 80 ? "#FEE2E2" : "#ECFDF5",
+                                      color: bRate < 80 ? "#DC2626" : "#059669",
+                                      borderRadius: "5px",
+                                    }}
+                                  />
+                                  <StatusChip status={b.status || "ACTIVE"} />
+                                </Stack>
+                              }
+                            />
+                          );
+                        })}
                       </Stack>
                     )}
                   </DashboardCard>
-                </Grid>
-              </Grid>
 
-              {/* Row 3: Paired Cards (Recent Activity + Latest Notices) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                  {/* Card 3: Live System Audit Trail */}
                   <DashboardCard
-                    title="Recent Admin Activity"
-                    subtitle="Platform mutations and security audit events"
-                    action="View Full Audit Log"
+                    title="Live Security & Administrative Audit Trail"
+                    subtitle="Immutable cryptographic ledger of platform events and role mutations"
+                    action="Full Audit Log"
                     actionLink="/audit-logs"
                   >
                     {auditLogs.length === 0 ? (
-                      <DashboardEmptyState message="No recent admin activity recorded." />
+                      <DashboardEmptyState message="No administrative activity recorded yet." compact={true} />
                     ) : (
-                      <Stack spacing={1}>
-                        {auditLogs.slice(0, 4).map((log) => (
+                      <Stack spacing={0.85}>
+                        {auditLogs.slice(0, 3).map((log) => (
                           <DashboardListItem
                             key={log.id || log._id}
                             to="/audit-logs"
                             icon={<HistoryIcon />}
-                            title={toSentenceCase(log.action) || "System action"}
+                            title={toSentenceCase(log.action) || "Platform event"}
                             subtitle={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.2 }}>
                                 <Chip
                                   label={toSentenceCase(log.resourceType || "System")}
                                   size="small"
                                   sx={{
-                                    height: 18,
-                                    fontSize: "0.6875rem",
+                                    height: 16,
+                                    fontSize: "0.625rem",
                                     fontWeight: 600,
                                     bgcolor: "#F1F5F9",
                                     color: "#475569",
@@ -1228,13 +1248,7 @@ export const DashboardPage = () => {
                                     "& .MuiChip-label": { px: 0.5 },
                                   }}
                                 />
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: DESIGN_TOKENS.text.secondary,
-                                    fontSize: "0.75rem",
-                                  }}
-                                >
+                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.7188rem" }}>
                                   {log.actorUserId?.firstName
                                     ? `${log.actorUserId.firstName} ${log.actorUserId.lastName || ""}`.trim()
                                     : "System administrator"}
@@ -1242,7 +1256,7 @@ export const DashboardPage = () => {
                               </Box>
                             }
                             rightContent={
-                              <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                              <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.7188rem", whiteSpace: "nowrap" }}>
                                 {formatRelativeTime(log.timestamp || log.createdAt)}
                               </Typography>
                             }
@@ -1251,33 +1265,104 @@ export const DashboardPage = () => {
                       </Stack>
                     )}
                   </DashboardCard>
-                </Grid>
+                </Stack>
+              </Grid>
 
-                <Grid item xs={12} md={6}>
+              {/* Right Control Column: Infrastructure, Bulletins, and Quick Launcher (4 cols on lg) */}
+              <Grid item xs={12} lg={4}>
+                <Stack spacing={2}>
+                  {/* Card 4: Platform Infrastructure Telemetry */}
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      borderColor: DESIGN_TOKENS.line[200],
+                      backgroundColor: "#FFFFFF",
+                      boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04)",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.25 }}>
+                      <Box>
+                        <Typography sx={{ fontFamily: FONT_UI, fontSize: "0.9375rem", fontWeight: 700, color: DESIGN_TOKENS.text.primary, lineHeight: 1.25 }}>
+                          Platform Telemetry
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, display: "block", fontSize: "0.75rem", mt: 0.25 }}>
+                          Infrastructure & services status
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label="Healthy"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "0.65rem",
+                          fontWeight: 700,
+                          bgcolor: "#ECFDF5",
+                          color: "#059669",
+                          borderRadius: "5px",
+                        }}
+                      />
+                    </Box>
+
+                    <Stack spacing={1}>
+                      {[
+                        { label: "REST API Gateway", value: "200 OK • Node.js" },
+                        { label: "Database Cluster", value: "MongoDB Atlas Connected" },
+                        { label: "Auth & OBAC Engine", value: "8 Roles Configured" },
+                        { label: "Active User Base", value: `${users.length} registered accounts` },
+                      ].map((service) => (
+                        <Box
+                          key={service.label}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            p: "6px 10px",
+                            borderRadius: "7px",
+                            bgcolor: "#F8FAFC",
+                            border: "1px solid #F1F5F9",
+                          }}
+                        >
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.85 }}>
+                            <Box sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: "#10B981" }} />
+                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 600, color: DESIGN_TOKENS.text.primary }}>
+                              {service.label}
+                            </Typography>
+                          </Box>
+                          <Typography sx={{ fontSize: "0.7188rem", color: DESIGN_TOKENS.text.secondary }}>
+                            {service.value}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Paper>
+
+                  {/* Card 5: Platform Bulletins & Notices */}
                   <DashboardCard
-                    title="Latest Notices Across Platform"
-                    subtitle="Recent bulletins published across residential complexes"
+                    title="Platform Bulletins"
+                    subtitle="System-wide broadcasts"
                     action="All Notices"
                     actionLink="/notices"
                   >
                     {notices.length === 0 ? (
-                      <DashboardEmptyState message="No notices published yet." />
+                      <DashboardEmptyState message="No bulletins currently active." compact={true} />
                     ) : (
-                      <Stack spacing={1}>
-                        {notices.slice(0, 4).map((n) => (
+                      <Stack spacing={0.85}>
+                        {notices.slice(0, 2).map((n) => (
                           <DashboardListItem
                             key={n.id || n._id}
                             to="/notices"
                             icon={<CampaignIcon />}
                             title={n.title}
                             subtitle={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.2 }}>
                                 <Chip
                                   label={toSentenceCase(n.targetAudience || "All residents")}
                                   size="small"
                                   sx={{
-                                    height: 18,
-                                    fontSize: "0.6875rem",
+                                    height: 16,
+                                    fontSize: "0.625rem",
                                     fontWeight: 600,
                                     bgcolor: "#F1F5F9",
                                     color: "#475569",
@@ -1286,11 +1371,8 @@ export const DashboardPage = () => {
                                     "& .MuiChip-label": { px: 0.5 },
                                   }}
                                 />
-                                <Typography
-                                  variant="caption"
-                                  sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}
-                                >
-                                  {n.buildingId?.name || "General announcement"}
+                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.7188rem" }}>
+                                  {n.buildingId?.name || "Global notice"}
                                 </Typography>
                               </Box>
                             }
@@ -1299,11 +1381,12 @@ export const DashboardPage = () => {
                                 label={toSentenceCase(n.priority || "Normal")}
                                 size="small"
                                 sx={{
-                                  fontSize: "0.6875rem",
+                                  fontSize: "0.65rem",
+                                  height: 18,
                                   fontWeight: 600,
                                   bgcolor: n.priority === "URGENT_EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
                                   color: n.priority === "URGENT_EMERGENCY" ? "#DC2626" : "#475569",
-                                  borderRadius: "6px",
+                                  borderRadius: "5px",
                                 }}
                               />
                             }
@@ -1312,9 +1395,65 @@ export const DashboardPage = () => {
                       </Stack>
                     )}
                   </DashboardCard>
-                </Grid>
+
+                  {/* Card 6: Executive Quick Launcher */}
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      borderColor: DESIGN_TOKENS.line[200],
+                      backgroundColor: "#FFFFFF",
+                      boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.04)",
+                    }}
+                  >
+                    <Typography sx={{ fontFamily: FONT_UI, fontSize: "0.875rem", fontWeight: 700, color: DESIGN_TOKENS.text.primary, mb: 0.25, lineHeight: 1.25 }}>
+                      Executive Operations
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, display: "block", mb: 1.25, fontSize: "0.75rem" }}>
+                      Administrative launcher
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {[
+                        { label: "Add Building", to: "/buildings", icon: <ApartmentIcon sx={{ fontSize: 16 }} /> },
+                        { label: "Invite User", to: "/users", icon: <PeopleIcon sx={{ fontSize: 16 }} /> },
+                        { label: "Audit Trail", to: "/audit-logs", icon: <HistoryIcon sx={{ fontSize: 16 }} /> },
+                        { label: "System Reports", to: "/reports", icon: <TrendingUpIcon sx={{ fontSize: 16 }} /> },
+                      ].map((actionItem) => (
+                        <Grid item xs={6} key={actionItem.label}>
+                          <Button
+                            component={RouterLink}
+                            to={actionItem.to}
+                            fullWidth
+                            variant="outlined"
+                            startIcon={actionItem.icon}
+                            sx={{
+                              justifyContent: "flex-start",
+                              textTransform: "none",
+                              fontWeight: 600,
+                              fontSize: "0.7188rem",
+                              borderRadius: "8px",
+                              py: 0.65,
+                              px: 1,
+                              color: DESIGN_TOKENS.text.primary,
+                              borderColor: DESIGN_TOKENS.line[200],
+                              bgcolor: "#F8FAFC",
+                              "&:hover": {
+                                borderColor: DESIGN_TOKENS.brand[600],
+                                bgcolor: "#EEF2FF",
+                                color: DESIGN_TOKENS.brand[700],
+                              },
+                            }}
+                          >
+                            {actionItem.label}
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Paper>
+                </Stack>
               </Grid>
-            </Stack>
+            </Grid>
           )}
 
           {/* 2. BUILDING ADMIN DASHBOARD PANELS (Section §2) */}

@@ -8,9 +8,9 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link as RouterLink } from "react-router-dom";
 import PropTypes from "prop-types";
 
-export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null }) => {
+export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null, sx = {} }) => {
   return (
-    <Box sx={{ mb: 3 }}>
+    <Box sx={{ mb: 2.25, ...sx }}>
       {breadcrumbs && breadcrumbs.length > 0 && (
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" sx={{ color: "text.disabled" }} />}

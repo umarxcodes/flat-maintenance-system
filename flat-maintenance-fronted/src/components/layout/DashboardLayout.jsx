@@ -17,9 +17,6 @@ export const DashboardLayout = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const isSuperAdminDashboard =
-    user?.role === ROLES.SUPER_ADMIN && location.pathname === "/dashboard";
-
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
       {/* Sidebar Navigation */}
@@ -36,14 +33,14 @@ export const DashboardLayout = () => {
           flexDirection: "column",
         }}
       >
-        {!isSuperAdminDashboard && <Topbar onMenuClick={handleDrawerToggle} />}
+        <Topbar onMenuClick={handleDrawerToggle} />
 
         <Box
           sx={{
             width: "100%",
             flex: 1,
-            py: isSuperAdminDashboard ? { xs: 2, sm: 3 } : { xs: 2.5, sm: 3.5 },
-            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 2.5, sm: 3 },
+            px: { xs: 2, sm: 3, md: 3.5 },
           }}
         >
           <Outlet context={{ onMenuClick: handleDrawerToggle }} />

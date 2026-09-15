@@ -70,8 +70,8 @@ export const StatCard = ({
       )}
       <CardContent
         sx={{
-          p: { xs: 2.25, sm: 2.75 },
-          "&:last-child": { pb: { xs: 2.25, sm: 2.75 } },
+          p: { xs: 1.75, sm: 2 },
+          "&:last-child": { pb: { xs: 1.75, sm: 2 } },
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -83,9 +83,9 @@ export const StatCard = ({
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 1.5,
-              mb: 1.25,
+              alignItems: "center",
+              gap: 1.25,
+              mb: 1,
             }}
           >
             <Typography
@@ -94,7 +94,7 @@ export const StatCard = ({
                 fontWeight: 600,
                 color: DESIGN_TOKENS.text.secondary,
                 fontSize: "0.8125rem",
-                lineHeight: 1.35,
+                lineHeight: 1.25,
                 letterSpacing: "-0.01em",
               }}
             >
@@ -104,9 +104,9 @@ export const StatCard = ({
             {icon ? (
               <Box
                 sx={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "10px",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "8px",
                   bgcolor: resolvedBg,
                   color: resolvedColor,
                   display: "flex",
@@ -119,7 +119,7 @@ export const StatCard = ({
                   },
                 }}
               >
-                {React.cloneElement(icon, { sx: { fontSize: 20, ...icon.props?.sx } })}
+                {React.cloneElement(icon, { sx: { fontSize: 18, ...icon.props?.sx } })}
               </Box>
             ) : action ? (
               <Box>{action}</Box>
@@ -129,11 +129,11 @@ export const StatCard = ({
           <Typography
             sx={{
               fontFamily: FONT_UI,
-              fontSize: { xs: "1.625rem", sm: "1.875rem" },
+              fontSize: { xs: "1.375rem", sm: "1.625rem" },
               lineHeight: 1.15,
               fontWeight: 700,
               color: DESIGN_TOKENS.text.primary,
-              letterSpacing: "-0.03em",
+              letterSpacing: "-0.025em",
             }}
           >
             {value}
@@ -146,8 +146,8 @@ export const StatCard = ({
             sx={{
               display: "flex",
               alignItems: "center",
-              mt: 2,
-              pt: 1.25,
+              mt: 1,
+              pt: 0.75,
               borderTop: "1px solid #F1F5F9",
             }}
           >
@@ -158,7 +158,7 @@ export const StatCard = ({
                 color: DESIGN_TOKENS.text.secondary,
                 fontSize: "0.75rem",
                 fontWeight: 500,
-                lineHeight: 1.3,
+                lineHeight: 1.25,
               }}
             >
               {delta}

@@ -21,6 +21,7 @@ export const TrendChart = ({
   metric = null,
   height = 140,
   emptyMessage = "No payments recorded yet this period",
+  compact = false,
   sx = {},
 }) => {
   const [hoverIndex, setHoverIndex] = useState(null);
@@ -86,23 +87,31 @@ export const TrendChart = ({
         ...sx,
       }}
     >
-      <CardContent sx={{ p: 3, pb: 2, "&:last-child": { pb: 2.5 } }}>
+      <CardContent
+        sx={{
+          p: compact || height <= 100 ? { xs: 1.75, sm: 2 } : 3,
+          pb: compact || height <= 100 ? { xs: 1.25, sm: 1.5 } : 2,
+          "&:last-child": {
+            pb: compact || height <= 100 ? { xs: 1.25, sm: 1.5 } : 2.5,
+          },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            mb: 2,
+            mb: compact || height <= 100 ? 1 : 2,
           }}
         >
           <Box>
             {title && (
               <Typography
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: DESIGN_TOKENS.text.primary,
-                  fontSize: "1.125rem", // 18px per spec
-                  lineHeight: 1.3,
+                  fontSize: compact || height <= 100 ? "0.9375rem" : "1.125rem",
+                  lineHeight: 1.25,
                 }}
               >
                 {title}
@@ -113,7 +122,7 @@ export const TrendChart = ({
                 variant="body2"
                 sx={{
                   color: DESIGN_TOKENS.text.secondary,
-                  fontSize: "0.875rem", // 14px per spec
+                  fontSize: compact || height <= 100 ? "0.75rem" : "0.875rem",
                   fontWeight: 400,
                   display: "block",
                   mt: 0.25,
@@ -126,7 +135,12 @@ export const TrendChart = ({
           {metric && (
             <Typography
               variant="subtitle1"
-              sx={{ fontWeight: 700, color, fontSize: "1.125rem", letterSpacing: "-0.01em" }}
+              sx={{
+                fontWeight: 700,
+                color,
+                fontSize: compact || height <= 100 ? "0.9375rem" : "1.125rem",
+                letterSpacing: "-0.01em",
+              }}
             >
               {metric}
             </Typography>
