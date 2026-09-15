@@ -9,6 +9,7 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
+import Rating from "@mui/material/Rating";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import AddIcon from "@mui/icons-material/Add";
 import BuildIcon from "@mui/icons-material/Build";
@@ -17,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ApartmentIcon from "@mui/icons-material/Apartment";
+import PeopleIcon from "@mui/icons-material/People";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
@@ -29,14 +31,20 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DoorSlidingIcon from "@mui/icons-material/DoorSliding";
-import { Link as RouterLink, useNavigate, useOutletContext } from "react-router-dom";
-import { SuperAdminDashboardView } from "./components/SuperAdminDashboardView.jsx";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import StarRateIcon from "@mui/icons-material/StarRate";
+import HistoryIcon from "@mui/icons-material/History";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../../providers/auth-context.js";
-import { ROLES } from "../../lib/constants/roles.js";
+import { ROLES, ROLE_LABELS } from "../../lib/constants/roles.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { StatCard } from "../../components/common/StatCard.jsx";
 import { StatusChip } from "../../components/common/StatusChip.jsx";
 import { TableLoadingSkeleton } from "../../components/common/LoadingSkeleton.jsx";
+import { EmptyState } from "../../components/common/EmptyState.jsx";
+import { DataTable } from "../../components/common/DataTable.jsx";
+import { TrendChart } from "../../components/common/TrendChart.jsx";
 import { useMaintenanceRequestsList } from "../../features/maintenance-requests/hooks/use-maintenance-requests.js";
 import { useInvoicesList } from "../../features/invoices/hooks/use-invoices.js";
 import { usePaymentsList } from "../../features/payments/hooks/use-payments.js";
@@ -49,7 +57,7 @@ import { useUsersList } from "../../features/users/hooks/use-users.js";
 import { useAuditLogsList } from "../../features/audit-logs/hooks/use-audit-logs.js";
 import { useExpensesList } from "../../features/expenses/hooks/use-expenses.js";
 import { useStaffList } from "../../features/staff/hooks/use-staff.js";
-import { TrendChart } from "../../components/common/TrendChart.jsx";
+import { useTenantsList } from "../../features/tenants/hooks/use-tenants.js";
 import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
@@ -61,7 +69,7 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
   <Paper
     variant="outlined"
     sx={{
-      p: 3,
+      p: { xs: 2.25, sm: 3 },
       borderRadius: "14px",
       borderColor: DESIGN_TOKENS.line[200],
       backgroundColor: "#FFFFFF",
@@ -89,10 +97,10 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         <Typography
           sx={{
             fontFamily: FONT_UI,
-            fontSize: "1.125rem",
-            fontWeight: 600,
+            fontSize: "1.0625rem",
+            fontWeight: 700,
             color: DESIGN_TOKENS.text.primary,
-            letterSpacing: "-0.01em",
+            letterSpacing: "-0.015em",
             lineHeight: 1.3,
           }}
         >
@@ -100,13 +108,13 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
         </Typography>
         {subtitle && (
           <Typography
-            variant="body2"
+            variant="caption"
             sx={{
+              fontFamily: FONT_UI,
               color: DESIGN_TOKENS.text.secondary,
-              mt: 0.25,
               display: "block",
-              fontSize: "0.875rem",
-              fontWeight: 400,
+              mt: 0.5,
+              fontSize: "0.8125rem",
               lineHeight: 1.4,
             }}
           >
@@ -114,42 +122,46 @@ const DashboardCard = ({ title, subtitle, action, actionLink, children, sx = {} 
           </Typography>
         )}
       </Box>
-      {actionLink ? (
+      {action && actionLink && (
         <Button
           component={RouterLink}
           to={actionLink}
           size="small"
-          endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: "0.875rem !important" }} />}
           sx={{
-            fontWeight: 600,
+            textTransform: "none",
             fontSize: "0.8125rem",
+            fontWeight: 600,
             color: DESIGN_TOKENS.brand[600],
-            p: 0.5,
+            p: "4px 8px",
             minWidth: "auto",
-            "&:hover": { bgcolor: "transparent", color: DESIGN_TOKENS.brand[700] },
+            flexShrink: 0,
+            "&:hover": {
+              bgcolor: DESIGN_TOKENS.brand[50],
+              color: DESIGN_TOKENS.brand[700],
+            },
           }}
         >
-          {action || "View All"}
+          {action}
         </Button>
-      ) : (
-        action
       )}
     </Box>
-    <Box sx={{ flex: 1 }}>{children}</Box>
+    <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>{children}</Box>
   </Paper>
 );
 
 const DashboardEmptyState = ({ message, subtext = null, action = null, icon = null }) => (
   <Box
     sx={{
-      py: 4,
-      px: 3,
+      flex: 1,
+      minHeight: 140,
+      p: 3,
       textAlign: "center",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      bgcolor: DESIGN_TOKENS.surface[50],
+      bgcolor: "#F8FAFC",
       borderRadius: "12px",
       border: `1px dashed ${DESIGN_TOKENS.line[200]}`,
       my: 0.5,
@@ -157,9 +169,9 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
   >
     <Box
       sx={{
-        width: 44,
-        height: 44,
-        borderRadius: "12px",
+        width: 40,
+        height: 40,
+        borderRadius: "10px",
         bgcolor: "#FFFFFF",
         border: `1px solid ${DESIGN_TOKENS.line[200]}`,
         display: "flex",
@@ -167,13 +179,13 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
         justifyContent: "center",
         color: DESIGN_TOKENS.brand[600],
         boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
-        mb: 1.5,
+        mb: 1.25,
       }}
     >
       {icon ? (
-        React.cloneElement(icon, { sx: { fontSize: 22, ...icon.props?.sx } })
+        React.cloneElement(icon, { sx: { fontSize: 20, ...icon.props?.sx } })
       ) : (
-        <CheckCircleOutlinedIcon sx={{ fontSize: 22 }} />
+        <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
       )}
     </Box>
     <Typography
@@ -181,7 +193,7 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
       sx={{
         fontWeight: 600,
         color: DESIGN_TOKENS.text.primary,
-        fontSize: "0.9375rem",
+        fontSize: "0.875rem",
         maxWidth: 380,
         lineHeight: 1.4,
         mb: subtext ? 0.5 : 0,
@@ -196,14 +208,14 @@ const DashboardEmptyState = ({ message, subtext = null, action = null, icon = nu
           color: DESIGN_TOKENS.text.secondary,
           maxWidth: 360,
           display: "block",
-          fontSize: "0.8125rem",
+          fontSize: "0.75rem",
           lineHeight: 1.45,
         }}
       >
         {subtext}
       </Typography>
     )}
-    {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
+    {action && <Box sx={{ mt: 2 }}>{action}</Box>}
   </Box>
 );
 
@@ -224,7 +236,7 @@ const DashboardListItem = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        p: "12px 14px",
+        p: "10px 12px",
         borderRadius: "10px",
         border: "1px solid",
         borderColor: "#F1F5F9",
@@ -234,41 +246,41 @@ const DashboardListItem = ({
         transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
           borderColor: DESIGN_TOKENS.brand[300],
-          bgcolor: "rgba(67, 56, 202, 0.03)",
+          bgcolor: "rgba(79, 70, 229, 0.03)",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         },
         ...sx,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, mr: 1.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, mr: 1.5 }}>
         {icon && (
           <Box
             sx={{
-              width: 36,
-              height: 36,
+              width: 34,
+              height: 34,
               borderRadius: "8px",
               bgcolor: iconBg,
-              color: iconColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              color: iconColor,
               flexShrink: 0,
+              "& svg": { fontSize: 18 },
             }}
           >
-            {React.cloneElement(icon, { sx: { fontSize: 18, ...icon.props?.sx } })}
+            {icon}
           </Box>
         )}
         <Box sx={{ minWidth: 0 }}>
           <Typography
-            variant="body2"
             sx={{
+              fontFamily: FONT_UI,
               fontWeight: 600,
+              fontSize: "0.84rem",
               color: DESIGN_TOKENS.text.primary,
-              fontSize: "0.875rem",
-              lineHeight: 1.35,
+              whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
             }}
           >
             {title}
@@ -277,14 +289,13 @@ const DashboardListItem = ({
             <Typography
               variant="caption"
               sx={{
+                fontFamily: FONT_UI,
                 color: DESIGN_TOKENS.text.secondary,
-                fontSize: "0.75rem",
-                display: "block",
-                mt: 0.25,
-                lineHeight: 1.3,
+                whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                display: "block",
+                fontSize: "0.75rem",
               }}
             >
               {subtitle}
@@ -292,7 +303,7 @@ const DashboardListItem = ({
           )}
         </Box>
       </Box>
-      {rightContent && <Box sx={{ flexShrink: 0 }}>{rightContent}</Box>}
+      {rightContent && <Box sx={{ flexShrink: 0, ml: 1 }}>{rightContent}</Box>}
     </Box>
   );
 
@@ -328,11 +339,11 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const role = user?.role || ROLES.TENANT;
 
-  // Interactive Perspective Switcher State
+  // Interactive Perspective Switcher State (allows viewing all 8 role dashboards)
   const [selectedRoleView, setSelectedRoleView] = useState(null);
   const effectiveRole = selectedRoleView || role;
 
-  // 1. Live Domain Queries (Full Datasets for Dashboard Computation)
+  // Live Domain Queries
   const { data: buildingsData, isLoading: loadingBuildings } = useBuildingsList({ limit: 100 });
   const { data: flatsData } = useFlatsList({
     buildingId: activeBuildingId || undefined,
@@ -366,6 +377,10 @@ export const DashboardPage = () => {
     limit: 50,
   });
   const { data: staffData } = useStaffList({
+    buildingId: activeBuildingId || undefined,
+    limit: 50,
+  });
+  const { data: tenantsData } = useTenantsList({
     buildingId: activeBuildingId || undefined,
     limit: 50,
   });
@@ -422,18 +437,27 @@ export const DashboardPage = () => {
     () => staffData?.staff || (Array.isArray(staffData) ? staffData : []),
     [staffData]
   );
+  const tenants = useMemo(
+    () => tenantsData?.tenants || (Array.isArray(tenantsData) ? tenantsData : []),
+    [tenantsData]
+  );
 
-  // Compute Live Operational Metrics (100% Real Backend Data)
+  // Active building name for scoped titles
+  const activeBuilding = useMemo(() => {
+    return buildings.find((b) => (b.id || b._id) === activeBuildingId);
+  }, [buildings, activeBuildingId]);
+
+  // Compute Live Operational Metrics
   const openRequests = useMemo(
-    () => requests.filter((r) => r.status === "OPEN" || r.status === "TRIAGED"),
+    () => requests.filter((r) => r.status === "OPEN" || r.status === "TRIAGED" || r.status === "ASSIGNED" || r.status === "IN_PROGRESS"),
     [requests]
   );
   const unassignedRequests = useMemo(
-    () => requests.filter((r) => !r.assignedStaffId && r.status !== "RESOLVED"),
+    () => requests.filter((r) => !r.assignedStaffId && r.status !== "RESOLVED" && r.status !== "CLOSED"),
     [requests]
   );
   const urgentRequests = useMemo(
-    () => requests.filter((r) => r.priority === "EMERGENCY" || r.priority === "HIGH"),
+    () => requests.filter((r) => (r.priority === "EMERGENCY" || r.priority === "HIGH") && r.status !== "CLOSED" && r.status !== "RESOLVED"),
     [requests]
   );
 
@@ -455,9 +479,27 @@ export const DashboardPage = () => {
     [overdueInvoices]
   );
   const paidInvoices = useMemo(() => invoices.filter((i) => i.status === "PAID"), [invoices]);
+  const totalBilled = useMemo(
+    () => invoices.reduce((acc, curr) => acc + (Number(curr.totalAmount) || 0), 0),
+    [invoices]
+  );
+  const totalCollected = useMemo(
+    () =>
+      invoices.reduce(
+        (acc, curr) =>
+          acc + (Number(curr.paidAmount) || (curr.status === "PAID" ? Number(curr.totalAmount) || 0 : 0)),
+        0
+      ),
+    [invoices]
+  );
   const collectionRate = useMemo(
-    () => (invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 0),
-    [invoices, paidInvoices]
+    () =>
+      totalBilled > 0
+        ? Math.round((totalCollected / totalBilled) * 100)
+        : invoices.length > 0
+        ? Math.round((paidInvoices.length / invoices.length) * 100)
+        : 0,
+    [totalBilled, totalCollected, invoices, paidInvoices]
   );
 
   const pendingExpenses = useMemo(
@@ -479,7 +521,7 @@ export const DashboardPage = () => {
   // Security gate quick-entry state
   const [passCodeInput, setPassCodeInput] = useState("");
 
-  // Real Dynamic Collections Trend Calculation
+  // Real Dynamic Collections Trend Calculation (trailing 6 months)
   const collectionsTrend = useMemo(() => {
     const months = [];
     const now = new Date();
@@ -508,54 +550,72 @@ export const DashboardPage = () => {
     };
   }, [invoices]);
 
-  const roleSubtitles = {
-    [ROLES.SUPER_ADMIN]:
-      "Manage residential complexes, administrative accounts, and platform operations.",
-    [ROLES.BUILDING_ADMIN]:
-      "Monitor flat occupancies, active service work orders, and billing collections.",
-    [ROLES.MANAGER]:
-      "Triage incoming maintenance requests, assign technicians, and track resident arrivals.",
-    [ROLES.ACCOUNTANT]:
-      "Track monthly maintenance fee collections, overdue invoices, and operational expenses.",
-    [ROLES.MAINTENANCE_STAFF]:
-      "View and resolve your assigned work orders and emergency repair requests.",
-    [ROLES.SECURITY_STAFF]:
-      "Verify visitor passes, manage gate entries, and monitor visitors inside the premises.",
-    [ROLES.OWNER]: "View your flat maintenance dues, service work orders, and community notices.",
-    [ROLES.TENANT]: "View your flat maintenance dues, service work orders, and community notices.",
+  // Platform Growth Trend Calculation (trailing 6 months)
+  const platformGrowthTrend = useMemo(() => {
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("en-US", { month: "short" });
+      months.push({ key, label, count: 0 });
+    }
+
+    users.forEach((u) => {
+      const p = u.createdAt ? String(u.createdAt).slice(0, 7) : "";
+      const target = months.find((m) => m.key === p);
+      if (target) {
+        target.count += 1;
+      }
+    });
+
+    return {
+      labels: months.map((m) => m.label),
+      counts: months.map((m) => m.count),
+    };
+  }, [users]);
+
+  // Buildings Ranked by Lowest Collection / Open Complaints
+  const rankedBuildings = useMemo(() => {
+    return buildings
+      .map((b) => {
+        const bInvoices = invoices.filter((i) => i.buildingId === (b.id || b._id));
+        const bPaid = bInvoices.filter((i) => i.status === "PAID").length;
+        const bRate = bInvoices.length > 0 ? Math.round((bPaid / bInvoices.length) * 100) : 100;
+        const bComplaints = complaints.filter(
+          (c) => c.buildingId === (b.id || b._id) && c.status !== "RESOLVED"
+        ).length;
+        return {
+          ...b,
+          collectionRate: bRate,
+          openComplaints: bComplaints,
+        };
+      })
+      .sort((a, b) => a.collectionRate - b.collectionRate || b.openComplaints - a.openComplaints)
+      .slice(0, 5);
+  }, [buildings, invoices, complaints]);
+
+  // Time-aware warm greeting pattern
+  const getGreeting = (name) => {
+    const hour = new Date().getHours();
+    let timeStr = "Good morning";
+    if (hour >= 12 && hour < 17) timeStr = "Good afternoon";
+    else if (hour >= 17) timeStr = "Good evening";
+    return `${timeStr}, ${name || "Resident"}`;
   };
 
-  const outletContext = useOutletContext();
-
-  // 1. SUPER ADMIN EXECUTIVE CONSOLE VIEW (WITH 100% REAL DATA PROPS)
-  if (effectiveRole === ROLES.SUPER_ADMIN) {
-    return (
-      <SuperAdminDashboardView
-        buildings={buildings}
-        flats={flats}
-        users={users}
-        invoices={invoices}
-        payments={payments}
-        requests={requests}
-        complaints={complaints}
-        auditLogs={auditLogs}
-        isLoading={loadingBuildings || loadingUsers || loadingInvoices}
-        selectedRoleView={selectedRoleView}
-        onSelectRoleView={setSelectedRoleView}
-        onMenuClick={outletContext?.onMenuClick}
-      />
-    );
-  }
+  // Check if Super Admin portfolio has 0 buildings
+  const isSuperAdminEmpty = effectiveRole === ROLES.SUPER_ADMIN && buildings.length === 0 && !loadingBuildings;
 
   return (
-    <Box sx={{ width: "100%", pb: 4 }}>
-      {/* Perspective Switcher for Admins (Big Companies Multi-Perspective Suite) */}
+    <Box sx={{ width: "100%", pb: 5 }}>
+      {/* Interactive Perspective Switcher for Multi-Role Inspection */}
       {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.BUILDING_ADMIN) && (
         <Paper
           variant="outlined"
           sx={{
             p: 1,
-            mb: 2.5,
+            mb: 3,
             borderRadius: "12px",
             borderColor: DESIGN_TOKENS.line[200],
             bgcolor: "#FFFFFF",
@@ -575,15 +635,17 @@ export const DashboardPage = () => {
               px: 1,
             }}
           >
-            Dashboard Perspective:
+            Perspective Switcher:
           </Typography>
           {[
-            { id: ROLES.SUPER_ADMIN, label: "Super Admin (SaaS Console)" },
-            { id: ROLES.BUILDING_ADMIN, label: "Building Operations" },
-            { id: ROLES.MANAGER, label: "Work Order Dispatch" },
-            { id: ROLES.ACCOUNTANT, label: "Financial Ledger" },
-            { id: ROLES.SECURITY_STAFF, label: "Security Gate" },
-            { id: ROLES.TENANT, label: "Resident Portal" },
+            { id: ROLES.SUPER_ADMIN, label: "Super Admin" },
+            { id: ROLES.BUILDING_ADMIN, label: "Building Admin" },
+            { id: ROLES.MANAGER, label: "Manager (Triage Queue)" },
+            { id: ROLES.ACCOUNTANT, label: "Accountant" },
+            { id: ROLES.MAINTENANCE_STAFF, label: "Maintenance Staff" },
+            { id: ROLES.SECURITY_STAFF, label: "Security Staff" },
+            { id: ROLES.OWNER, label: "Flat Owner" },
+            { id: ROLES.TENANT, label: "Tenant" },
           ].map((roleItem) => {
             const isSelected = effectiveRole === roleItem.id;
             return (
@@ -613,12 +675,42 @@ export const DashboardPage = () => {
         </Paper>
       )}
 
-      {/* Header */}
+      {/* -------------------------------------------------------------------------
+          0. STANDARD PAGE HEADER
+          ------------------------------------------------------------------------- */}
       <PageHeader
-        title={`Good day, ${user?.firstName || "Resident"}`}
-        subtitle={roleSubtitles[effectiveRole] || "Welcome to your operations overview."}
+        title={getGreeting(user?.firstName)}
+        subtitle={
+          effectiveRole === ROLES.BUILDING_ADMIN && activeBuilding
+            ? `Currently managing: ${activeBuilding.name || "Building Operations"}`
+            : effectiveRole === ROLES.ACCOUNTANT && activeBuilding
+            ? `Financial ledger scope: ${activeBuilding.name || "Portfolio Ledger"}`
+            : effectiveRole === ROLES.SECURITY_STAFF
+            ? "Gate control & entry pass verification terminal"
+            : effectiveRole === ROLES.MAINTENANCE_STAFF
+            ? "Today's work orders & assigned technical tickets"
+            : effectiveRole === ROLES.OWNER
+            ? "Flat 101 • Residence maintenance dues & service requests"
+            : effectiveRole === ROLES.TENANT
+            ? "Flat 101 • Resident portal & active dues"
+            : undefined
+        }
         action={
-          (effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
+          effectiveRole === ROLES.SECURITY_STAFF ? (
+            <Button
+              component={RouterLink}
+              to="/visitors/verify"
+              variant="contained"
+              startIcon={<ExitToAppIcon />}
+              sx={{
+                bgcolor: DESIGN_TOKENS.brand[600],
+                fontWeight: 700,
+                "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+              }}
+            >
+              Open Gate Terminal
+            </Button>
+          ) : (effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) ? (
             <Stack direction="row" spacing={1.5}>
               <Button
                 component={RouterLink}
@@ -637,6 +729,7 @@ export const DashboardPage = () => {
                 component={RouterLink}
                 to="/visitors"
                 variant="outlined"
+                startIcon={<BadgeIcon />}
                 sx={{
                   borderColor: DESIGN_TOKENS.line[200],
                   fontWeight: 600,
@@ -650,721 +743,1171 @@ export const DashboardPage = () => {
                 Create Guest Pass
               </Button>
             </Stack>
-          )
+          ) : null
         }
       />
 
-      {/* =========================================================================
-          ROLE-SPECIFIC STATCARD ROWS
-          ========================================================================= */}
-      <Box sx={{ mb: 4 }}>
-        {/* 1. BUILDING ADMIN */}
-        {effectiveRole === ROLES.BUILDING_ADMIN && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={`${occupancyPct}%`}
-                label="Occupancy Rate"
-                delta={`${occupiedFlats} occupied, ${vacantFlats} vacant`}
-                icon={<HomeWorkIcon />}
-                iconBg="#ECFDF5"
-                iconColor="#059669"
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={openRequests.length}
-                label="Active Work Orders"
-                delta={`${openRequests.length} awaiting dispatch`}
-                icon={<BuildIcon />}
-                iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
-                iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
-                isHero={openRequests.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={`${collectionRate}%`}
-                label="This Month's Collection Rate"
-                delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
-                icon={<AccountBalanceWalletIcon />}
-                iconBg="#EEF2FF"
-                iconColor={DESIGN_TOKENS.brand[600]}
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 2. MANAGER */}
-        {effectiveRole === ROLES.MANAGER && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={openRequests.length}
-                label="Open Work Orders"
-                delta="Tickets currently open"
-                icon={<BuildIcon />}
-                iconBg="#FEF3C7"
-                iconColor="#B45309"
-                isHero={openRequests.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={unassignedRequests.length}
-                label="Unassigned Tickets"
-                delta="Requires technician assignment"
-                icon={<AssignmentLateIcon />}
-                iconBg={unassignedRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
-                iconColor={unassignedRequests.length > 0 ? "#DC2626" : "#059669"}
-                isHero={unassignedRequests.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={urgentRequests.length}
-                label="High / Urgent Priority"
-                delta="Requires immediate dispatch"
-                icon={<WarningAmberIcon />}
-                iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#F1F5F9"}
-                iconColor={urgentRequests.length > 0 ? "#DC2626" : "#64748B"}
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 3. ACCOUNTANT */}
-        {effectiveRole === ROLES.ACCOUNTANT && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={`${collectionRate}%`}
-                label="Collection Rate"
-                delta={`${paidInvoices.length} settled this billing period`}
-                icon={<TrendingUpIcon />}
-                iconBg="#ECFDF5"
-                iconColor="#059669"
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={overdueInvoices.length}
-                label="Overdue Invoices"
-                delta={
-                  totalOverdueAmount > 0
-                    ? `₨${totalOverdueAmount.toLocaleString()} total pending`
-                    : "Zero overdue dues"
-                }
-                icon={<ReceiptLongIcon />}
-                iconBg={overdueInvoices.length > 0 ? "#FEE2E2" : "#ECFDF5"}
-                iconColor={overdueInvoices.length > 0 ? "#DC2626" : "#059669"}
-                isHero={overdueInvoices.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                value={pendingExpenses.length}
-                label="Pending Expense Approvals"
-                delta="Awaiting financial review"
-                icon={<PendingActionsIcon />}
-                iconBg="#FEF3C7"
-                iconColor="#B45309"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 4. MAINTENANCE STAFF */}
-        {effectiveRole === ROLES.MAINTENANCE_STAFF && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={6}>
-              <StatCard
-                value={requests.length}
-                label="Assigned Work Orders"
-                delta="Prioritized duty queue"
-                icon={<BuildIcon />}
-                iconBg="#EEF2FF"
-                iconColor={DESIGN_TOKENS.brand[600]}
-                isHero={true}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <StatCard
-                value={urgentRequests.length}
-                label="Emergency / High Urgency"
-                delta="Requires immediate attention"
-                icon={<WarningAmberIcon />}
-                iconBg={urgentRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
-                iconColor={urgentRequests.length > 0 ? "#DC2626" : "#059669"}
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 5. SECURITY STAFF */}
-        {effectiveRole === ROLES.SECURITY_STAFF && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={6}>
-              <StatCard
-                value={expectedVisitors.length}
-                label="Expected Arrivals Today"
-                delta="Pre-approved resident passes"
-                icon={<BadgeIcon />}
-                iconBg="#EEF2FF"
-                iconColor={DESIGN_TOKENS.brand[600]}
-                isHero={true}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <StatCard
-                value={checkedInVisitors.length}
-                label="Currently Inside Premises"
-                delta="Active visitor passes"
-                icon={<DoorSlidingIcon />}
-                iconBg="#ECFDF5"
-                iconColor="#059669"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* 6. OWNER & TENANT RESIDENTS */}
-        {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} sm={effectiveRole === ROLES.OWNER ? 4 : 6}>
-              <StatCard
-                value={
-                  overdueInvoices.length > 0
-                    ? `₨${totalOverdueAmount.toLocaleString()}`
-                    : "₨0"
-                }
-                label="Current Dues Status"
-                delta={
-                  overdueInvoices.length > 0
-                    ? "Maintenance fee overdue"
-                    : "All maintenance dues settled"
-                }
-                icon={<ReceiptIcon />}
-                iconBg={overdueInvoices.length > 0 ? "#FEE2E2" : "#ECFDF5"}
-                iconColor={overdueInvoices.length > 0 ? "#DC2626" : "#059669"}
-                isHero={overdueInvoices.length > 0}
-              />
-            </Grid>
-            <Grid item xs={12} sm={effectiveRole === ROLES.OWNER ? 4 : 6}>
-              <StatCard
-                value={requests.length}
-                label="Open Work Orders"
-                delta="Active service tickets in your flat"
-                icon={<BuildIcon />}
-                iconBg="#EEF2FF"
-                iconColor={DESIGN_TOKENS.brand[600]}
-              />
-            </Grid>
-            {effectiveRole === ROLES.OWNER && (
-              <Grid item xs={12} sm={4}>
-                <StatCard
-                  value={notices.length}
-                  label="Community Bulletins"
-                  delta="Official notices from management"
-                  icon={<CampaignIcon />}
-                  iconBg="#FEF3C7"
-                  iconColor="#B45309"
-                />
-              </Grid>
-            )}
-          </Grid>
-        )}
-      </Box>
-
-      {/* =========================================================================
-          ROLE-SPECIFIC PRIMARY CONTENT PANELS
-          ========================================================================= */}
-
-      {/* 1. BUILDING ADMIN: WORK ORDERS NEEDING ATTENTION & COLLECTIONS TREND */}
-      {effectiveRole === ROLES.BUILDING_ADMIN && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Work Orders Needing Attention */}
-          <Grid item xs={12} md={7}>
-            <DashboardCard
-              title="Work Orders Needing Attention"
-              subtitle="Requests waiting to be reviewed or assigned"
-              action="View All"
-              actionLink="/maintenance-requests"
-            >
-              {loadingMaintenance ? (
-                <TableLoadingSkeleton rows={4} />
-              ) : openRequests.length === 0 ? (
-                <DashboardEmptyState message="All caught up — no work orders need attention right now." />
-              ) : (
-                <Stack spacing={1}>
-                  {openRequests.slice(0, 5).map((req) => (
-                    <DashboardListItem
-                      key={req._id}
-                      to="/maintenance-requests"
-                      icon={<BuildIcon />}
-                      iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "rgba(67, 56, 202, 0.08)"}
-                      iconColor={
-                        req.priority === "EMERGENCY"
-                          ? DESIGN_TOKENS.danger[600]
-                          : DESIGN_TOKENS.brand[600]
-                      }
-                      title={req.title}
-                      subtitle={`#${req.requestNumber || req._id?.slice(-6)}, ${req.category}, Flat ${req.flatId?.flatNumber || "Assigned"}`}
-                      rightContent={
-                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                          <Chip
-                            label={req.priority}
-                            size="small"
-                            sx={{
-                              fontSize: "0.6875rem",
-                              fontWeight: 600,
-                              height: 22,
-                              borderRadius: "999px",
-                              bgcolor:
-                                req.priority === "EMERGENCY"
-                                  ? "#FEE2E2"
-                                  : DESIGN_TOKENS.surface[100],
-                              color:
-                                req.priority === "EMERGENCY"
-                                  ? DESIGN_TOKENS.danger[600]
-                                  : DESIGN_TOKENS.text.secondary,
-                            }}
-                          />
-                          <StatusChip status={req.status} />
-                        </Stack>
-                      }
-                    />
-                  ))}
-                </Stack>
-              )}
-            </DashboardCard>
-          </Grid>
-
-          {/* Right Column: Collections Trend (100% Real Invoices Data) */}
-          <Grid item xs={12} md={5}>
-            <TrendChart
-              title="Collections Trend"
-              subtitle="Percentage of billed fees collected across recent periods"
-              metric={`${collectionRate}% Paid`}
-              color={DESIGN_TOKENS.brand[600]}
-              data={collectionsTrend.rates}
-              labels={collectionsTrend.labels}
-              emptyMessage="No payments recorded yet this period"
-            />
-          </Grid>
-
-          {/* Latest Notices */}
-          <Grid item xs={12}>
-            <DashboardCard
-              title="Latest Notices"
-              subtitle="Published community announcements"
-              action="All Notices"
-              actionLink="/notices"
-            >
-              {notices.length === 0 ? (
-                <DashboardEmptyState message="No notices published yet." />
-              ) : (
-                <Grid container spacing={2}>
-                  {notices.slice(0, 4).map((notice) => (
-                    <Grid item xs={12} sm={6} key={notice._id}>
-                      <Box
-                        sx={{
-                          p: "14px 16px",
-                          borderRadius: "10px",
-                          bgcolor:
-                            notice.priority === "URGENT_EMERGENCY"
-                              ? "#FFFBEB"
-                              : DESIGN_TOKENS.surface[50],
-                          border: "1px solid",
-                          borderColor:
-                            notice.priority === "URGENT_EMERGENCY" ? "#FDE68A" : "#F1F5F9",
-                          height: "100%",
-                        }}
-                      >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 600, fontSize: "0.875rem" }}
-                          >
-                            {notice.title}
-                          </Typography>
-                          <Chip
-                            label={notice.priority}
-                            size="small"
-                            sx={{
-                              fontSize: "0.6875rem",
-                              height: 20,
-                              borderRadius: "999px",
-                              bgcolor:
-                                notice.priority === "URGENT_EMERGENCY" ? "#FEF3C7" : "#E2E8F0",
-                              color: notice.priority === "URGENT_EMERGENCY" ? "#B45309" : "#475569",
-                              fontWeight: 600,
-                            }}
-                          />
-                        </Box>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: DESIGN_TOKENS.text.secondary,
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            fontSize: "0.8125rem",
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {notice.content}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </DashboardCard>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* 2. MANAGER: PRIMARY TRIAGE QUEUE & WORK ORDERS */}
-      {effectiveRole === ROLES.MANAGER && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={7}>
-            <DashboardCard
-              title="Triage & Assignment Queue"
-              subtitle="Select any ticket to assign a technician"
-              action="Work Order Registry"
-              actionLink="/maintenance-requests"
-            >
-              {loadingMaintenance ? (
-                <TableLoadingSkeleton rows={4} />
-              ) : openRequests.length === 0 ? (
-                <DashboardEmptyState message="Nothing needs triage right now." />
-              ) : (
-                <Stack spacing={1}>
-                  {openRequests.slice(0, 6).map((req) => (
-                    <DashboardListItem
-                      key={req._id}
-                      to="/maintenance-requests"
-                      icon={<BuildIcon />}
-                      iconBg={req.assignedStaffId ? "#ECFDF5" : "#FEF3C7"}
-                      iconColor={req.assignedStaffId ? "#047857" : "#B45309"}
-                      title={req.title}
-                      subtitle={`#${req.requestNumber || req._id?.slice(-6)}, ${req.category}, Flat ${req.flatId?.flatNumber || "Assigned Unit"}`}
-                      rightContent={
-                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                          <Chip
-                            label={req.assignedStaffId ? "Assigned" : "Unassigned"}
-                            size="small"
-                            sx={{
-                              fontSize: "0.6875rem",
-                              fontWeight: 600,
-                              borderRadius: "999px",
-                              bgcolor: req.assignedStaffId ? "#ECFDF5" : "#FEF3C7",
-                              color: req.assignedStaffId ? "#047857" : "#B45309",
-                            }}
-                          />
-                          <StatusChip status={req.status} />
-                        </Stack>
-                      }
-                    />
-                  ))}
-                </Stack>
-              )}
-            </DashboardCard>
-          </Grid>
-
-          <Grid item xs={12} md={5}>
-            <DashboardCard
-              title="Assigned Technical Staff"
-              subtitle="Operational staff roster"
-              action="Manage Staff"
-              actionLink="/staff"
-            >
-              {staff.length === 0 ? (
-                <DashboardEmptyState message="No staff accounts registered yet." />
-              ) : (
-                <Stack spacing={1}>
-                  {staff.slice(0, 5).map((s) => (
-                    <DashboardListItem
-                      key={s._id || s.id}
-                      icon={<SupervisorAccountIcon />}
-                      title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.name || "Technician"}`}
-                      subtitle={`Specialty: ${s.department || s.role || "General Maintenance"}`}
-                      rightContent={
-                        <Chip
-                          label={s.status || "ACTIVE"}
-                          size="small"
-                          sx={{
-                            fontSize: "0.7rem",
-                            fontWeight: 700,
-                            bgcolor: "#DCFCE7",
-                            color: "#15803D",
-                          }}
-                        />
-                      }
-                    />
-                  ))}
-                </Stack>
-              )}
-            </DashboardCard>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* 3. ACCOUNTANT: COLLECTIONS & OVERDUE LIST */}
-      {effectiveRole === ROLES.ACCOUNTANT && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} lg={7}>
-            <DashboardCard
-              title="Ranked Overdue Accounts"
-              subtitle="Flats with unpaid dues. Select any row to view billing details"
-              action="Billing Registry"
-              actionLink="/invoices"
-            >
-              {loadingInvoices ? (
-                <TableLoadingSkeleton rows={4} />
-              ) : overdueInvoices.length === 0 ? (
-                <DashboardEmptyState message="No overdue invoices — collections are fully up to date." />
-              ) : (
-                <Stack spacing={1}>
-                  {overdueInvoices.slice(0, 5).map((inv) => (
-                    <DashboardListItem
-                      key={inv._id}
-                      to={`/invoices/${inv._id}`}
-                      icon={<ReceiptLongIcon />}
-                      iconBg="#FEE2E2"
-                      iconColor={DESIGN_TOKENS.danger[600]}
-                      title={`Invoice #${inv.invoiceNumber}`}
-                      subtitle={`Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
-                      rightContent={
-                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                          <Typography
-                            sx={{
-                              fontFamily: FONT_UI,
-                              fontSize: "0.9375rem",
-                              fontWeight: 700,
-                              color: DESIGN_TOKENS.danger[600],
-                              letterSpacing: "-0.01em",
-                            }}
-                          >
-                            ₨{(Number(inv.dueAmount) || Number(inv.totalAmount) || 0).toLocaleString()}
-                          </Typography>
-                          <StatusChip status={inv.status} />
-                        </Stack>
-                      }
-                    />
-                  ))}
-                </Stack>
-              )}
-            </DashboardCard>
-          </Grid>
-
-          <Grid item xs={12} lg={5}>
-            <TrendChart
-              title="Collections Trend"
-              subtitle="Percentage of billed fees collected across recent periods"
-              metric={`${collectionRate}% Cleared`}
-              color={DESIGN_TOKENS.accent.green}
-              data={collectionsTrend.rates}
-              labels={collectionsTrend.labels}
-              emptyMessage="No payments recorded yet this period"
-            />
-          </Grid>
-        </Grid>
-      )}
-
-      {/* 4. MAINTENANCE STAFF: ACTION LIST TODAY */}
-      {effectiveRole === ROLES.MAINTENANCE_STAFF && (
-        <Box sx={{ mb: 4 }}>
-          <DashboardCard
-            title="My Work Orders — Today"
-            subtitle="Your assigned maintenance tasks for today"
-          >
-            {requests.length === 0 ? (
-              <DashboardEmptyState message="Nothing assigned to you today." />
-            ) : (
-              <Stack spacing={1.25}>
-                {requests.map((req) => (
-                  <DashboardListItem
-                    key={req._id}
-                    to="/maintenance-requests"
-                    icon={<BuildIcon />}
-                    iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "rgba(67, 56, 202, 0.08)"}
-                    iconColor={
-                      req.priority === "EMERGENCY"
-                        ? DESIGN_TOKENS.danger[600]
-                        : DESIGN_TOKENS.brand[600]
-                    }
-                    title={req.title}
-                    subtitle={`Flat ${req.flatId?.flatNumber || "Assigned Unit"}, ${req.category}`}
-                    sx={{
-                      minHeight: 48,
-                      borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#F1F5F9",
-                      bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
-                    }}
-                    rightContent={
-                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                        <Chip
-                          label={req.priority}
-                          size="small"
-                          sx={{
-                            borderRadius: "999px",
-                            fontWeight: 600,
-                            bgcolor:
-                              req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.surface[100],
-                            color:
-                              req.priority === "EMERGENCY"
-                                ? DESIGN_TOKENS.danger[600]
-                                : DESIGN_TOKENS.text.secondary,
-                          }}
-                        />
-                        <StatusChip status={req.status} />
-                      </Stack>
-                    }
-                  />
-                ))}
-              </Stack>
-            )}
-          </DashboardCard>
-        </Box>
-      )}
-
-      {/* 5. SECURITY STAFF: GATE TERMINAL & ROSTER */}
-      {effectiveRole === ROLES.SECURITY_STAFF && (
-        <Stack spacing={3} sx={{ mb: 4 }}>
-          <DashboardCard
-            title="Gate Terminal Quick Entry"
-            subtitle="Enter a 6-digit visitor code or check in guests"
-          >
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ maxWidth: 540 }}>
-              <TextField
-                fullWidth
-                size="medium"
-                placeholder="Enter 6-digit pass code..."
-                value={passCodeInput}
-                onChange={(e) => setPassCodeInput(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: 48,
-                    borderRadius: "8px",
-                  },
-                }}
-              />
+      {/* -------------------------------------------------------------------------
+          SUPER ADMIN EMPTY STATE (Section §1: No Buildings Yet)
+          ------------------------------------------------------------------------- */}
+      {isSuperAdminEmpty ? (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 6,
+            borderRadius: "16px",
+            borderColor: DESIGN_TOKENS.line[200],
+            bgcolor: "#FFFFFF",
+            textAlign: "center",
+            mt: 2,
+          }}
+        >
+          <EmptyState
+            icon={<ApartmentIcon sx={{ fontSize: 48, color: DESIGN_TOKENS.brand[600] }} />}
+            title="No buildings yet"
+            description="Add your first building to start managing your residential portfolio and operational staff."
+            action={
               <Button
+                component={RouterLink}
+                to="/buildings"
                 variant="contained"
-                onClick={() => {
-                  if (passCodeInput.trim()) {
-                    navigate(`/visitors/verify?code=${encodeURIComponent(passCodeInput.trim())}`);
-                  } else {
-                    navigate("/visitors/verify");
-                  }
-                }}
-                startIcon={<CheckCircleOutlinedIcon />}
+                startIcon={<AddIcon />}
                 sx={{
-                  minHeight: 48,
-                  px: 3,
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
                   bgcolor: DESIGN_TOKENS.brand[600],
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
                   "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
                 }}
               >
-                Verify Pass
+                Add Building
               </Button>
-            </Stack>
-          </DashboardCard>
-
-          <DashboardCard
-            title="Currently Inside Premises"
-            subtitle="Visitors on site who need to be checked out upon leaving"
-            action="Full Visitor Log"
-            actionLink="/visitors"
-          >
-            {loadingVisitors ? (
-              <TableLoadingSkeleton rows={3} />
-            ) : checkedInVisitors.length === 0 ? (
-              <DashboardEmptyState message="No visitors currently inside." />
-            ) : (
-              <Stack spacing={1}>
-                {checkedInVisitors.map((v) => (
-                  <DashboardListItem
-                    key={v._id || v.id}
-                    icon={<BadgeIcon />}
-                    title={v.visitorName || v.name || "Guest Visitor"}
-                    subtitle={`Visiting Flat ${v.flatId?.flatNumber || v.flat?.flatNumber || "Visiting Unit"}, Phone: ${v.visitorPhone || v.phone || "—"}`}
-                    rightContent={
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<ExitToAppIcon sx={{ fontSize: 16 }} />}
-                        onClick={() => navigate("/visitors/verify")}
-                        sx={{
-                          minHeight: 44,
-                          borderColor: DESIGN_TOKENS.line[200],
-                          color: DESIGN_TOKENS.text.primary,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Check Out
-                      </Button>
-                    }
+            }
+          />
+        </Paper>
+      ) : (
+        <>
+          {/* =========================================================================
+              1. STATCARD ROW (Symmetric 4 or 3 Equal Columns across All Dashboards)
+              ========================================================================= */}
+          <Box sx={{ mb: 3.5 }}>
+            {/* 1. SUPER ADMIN (Section §1) */}
+            {effectiveRole === ROLES.SUPER_ADMIN && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={buildings.length}
+                    label="Total Buildings"
+                    delta="+1 this quarter"
+                    icon={<ApartmentIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
                   />
-                ))}
-              </Stack>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={users.length}
+                    label="Total Active Users"
+                    delta="Across all platform roles"
+                    icon={<PeopleIcon />}
+                    iconBg="#F0FDF4"
+                    iconColor="#16A34A"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={`${collectionRate}%`}
+                    label="Platform Collection Rate"
+                    delta="Trailing fees recovered"
+                    icon={<AccountBalanceWalletIcon />}
+                    iconBg="#ECFDF5"
+                    iconColor="#059669"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={openRequests.length}
+                    label="Open Work Orders"
+                    delta="Platform-wide active tickets"
+                    icon={<BuildIcon />}
+                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
+                    iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
+                    isHero={openRequests.length > 0}
+                  />
+                </Grid>
+              </Grid>
             )}
-          </DashboardCard>
-        </Stack>
-      )}
 
-      {/* 6. RESIDENT (OWNER / TENANT): MY FLAT OVERVIEW & INVOICES */}
-      {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
-        <DashboardCard
-          title={effectiveRole === ROLES.OWNER ? "Residence Ledger & Invoices" : "Recent Invoices"}
-          subtitle="Monthly maintenance bills and payment records for your flat"
-          action="View Invoices"
-          actionLink="/invoices"
-          sx={{ mb: 4 }}
-        >
-          {invoices.length === 0 ? (
-            <DashboardEmptyState message="No invoices issued yet for your residence." />
-          ) : (
-            <Stack spacing={1}>
-              {invoices.slice(0, 4).map((inv) => (
-                <DashboardListItem
-                  key={inv._id}
-                  to={`/invoices/${inv._id}`}
-                  icon={<ReceiptIcon />}
-                  title={`Invoice #${inv.invoiceNumber}`}
-                  subtitle={`Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
-                  rightContent={
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                      <Typography
-                        sx={{
-                          fontFamily: FONT_UI,
-                          fontWeight: 700,
-                          fontSize: "0.9375rem",
-                          color: DESIGN_TOKENS.text.primary,
-                          letterSpacing: "-0.01em",
-                        }}
-                      >
-                        ₨{(Number(inv.totalAmount) || 0).toLocaleString()}
-                      </Typography>
-                      <StatusChip status={inv.status} />
-                    </Stack>
-                  }
-                />
-              ))}
+            {/* 2. BUILDING ADMIN (Section §2) */}
+            {effectiveRole === ROLES.BUILDING_ADMIN && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={`${occupancyPct}%`}
+                    label="Occupancy Rate"
+                    delta={`${occupiedFlats} of ${totalFlats} flats occupied`}
+                    icon={<HomeWorkIcon />}
+                    iconBg="#ECFDF5"
+                    iconColor="#059669"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={openRequests.length}
+                    label="Open Work Orders"
+                    delta={`${unassignedRequests.length} awaiting technician dispatch`}
+                    icon={<BuildIcon />}
+                    iconBg={openRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
+                    iconColor={openRequests.length > 0 ? "#B45309" : "#64748B"}
+                    isHero={openRequests.length > 0}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={`${collectionRate}%`}
+                    label="This Month's Collection"
+                    delta={`${paidInvoices.length} of ${invoices.length} invoices settled`}
+                    icon={<AccountBalanceWalletIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={complaints.filter((c) => c.status !== "RESOLVED").length}
+                    label="Open Complaints"
+                    delta="Resident grievances under triage"
+                    icon={<ReportProblemIcon />}
+                    iconBg="#FEE2E2"
+                    iconColor="#DC2626"
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {/* 3. MANAGER (Section §3 - Working Queue) */}
+            {effectiveRole === ROLES.MANAGER && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={unassignedRequests.length}
+                    label="Unassigned Work Orders"
+                    delta="Require technician assignment"
+                    icon={<AssignmentLateIcon />}
+                    iconBg={unassignedRequests.length > 0 ? "#FEE2E2" : "#ECFDF5"}
+                    iconColor={unassignedRequests.length > 0 ? "#DC2626" : "#059669"}
+                    isHero={unassignedRequests.length > 0}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={urgentRequests.length}
+                    label="Urgent / SLA At Risk"
+                    delta="Emergency priority work orders"
+                    icon={<WarningAmberIcon />}
+                    iconBg={urgentRequests.length > 0 ? "#FEF3C7" : "#F1F5F9"}
+                    iconColor={urgentRequests.length > 0 ? "#B45309" : "#64748B"}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={staff.filter((s) => s.status === "ACTIVE" || s.isAvailable !== false).length}
+                    label="Staff Available"
+                    delta={`${staff.length} technicians registered`}
+                    icon={<SupervisorAccountIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={tenants.slice(0, 3).length}
+                    label="Scheduled Move-ins"
+                    delta="Active resident transitions"
+                    icon={<DoorSlidingIcon />}
+                    iconBg="#F1F5F9"
+                    iconColor="#475569"
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {/* 4. ACCOUNTANT (Section §4) */}
+            {effectiveRole === ROLES.ACCOUNTANT && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={`${collectionRate}%`}
+                    label="This Month's Collection Rate"
+                    delta={`${paidInvoices.length} invoices settled this period`}
+                    icon={<TrendingUpIcon />}
+                    iconBg="#ECFDF5"
+                    iconColor="#059669"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={`₨${totalOverdueAmount.toLocaleString()}`}
+                    label="Total Outstanding"
+                    delta="Accumulated unpaid ledger balances"
+                    icon={<AccountBalanceWalletIcon />}
+                    iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
+                    iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
+                    isHero={totalOverdueAmount > 0}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={overdueInvoices.length}
+                    label="Overdue Invoices"
+                    delta="Invoices past grace period deadline"
+                    icon={<ReceiptLongIcon />}
+                    iconBg={overdueInvoices.length > 0 ? "#FEF3C7" : "#F1F5F9"}
+                    iconColor={overdueInvoices.length > 0 ? "#B45309" : "#64748B"}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard
+                    value={pendingExpenses.length}
+                    label="Pending Expense Approvals"
+                    delta="Operational claims awaiting review"
+                    icon={<PendingActionsIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {/* 5. MAINTENANCE STAFF (Section §5 - Mobile-First Compact Pair) */}
+            {effectiveRole === ROLES.MAINTENANCE_STAFF && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <StatCard
+                    value={requests.filter((r) => r.status !== "CLOSED" && r.status !== "CANCELLED").length}
+                    label="Assigned to You Today"
+                    delta="Active work orders in your queue"
+                    icon={<BuildIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                    isHero={true}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <StatCard
+                    value={requests.filter((r) => r.status === "COMPLETED" || r.status === "VERIFIED").length}
+                    label="Completed This Week"
+                    delta="Successfully resolved jobs"
+                    icon={<CheckCircleOutlinedIcon />}
+                    iconBg="#ECFDF5"
+                    iconColor="#059669"
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {/* 6. SECURITY STAFF (Section §6 - Gate Launcher) */}
+            {effectiveRole === ROLES.SECURITY_STAFF && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} sm={6}>
+                  <StatCard
+                    value={checkedInVisitors.length}
+                    label="Currently Inside Premises"
+                    delta="Guests on site awaiting checkout"
+                    icon={<BadgeIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                    isHero={true}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <StatCard
+                    value={expectedVisitors.length}
+                    label="Expected Today"
+                    delta="Pre-approved resident entry passes"
+                    icon={<DoorSlidingIcon />}
+                    iconBg="#ECFDF5"
+                    iconColor="#059669"
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {/* 7 & 8. RESIDENTS (FLAT OWNER & TENANT - Sections §7 & §8) */}
+            {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
+              <Grid container spacing={2.5}>
+                <Grid item xs={12} md={4}>
+                  <StatCard
+                    value={totalOverdueAmount > 0 ? `₨${totalOverdueAmount.toLocaleString()} Due` : "All Paid"}
+                    label="Dues Status"
+                    delta={
+                      totalOverdueAmount > 0
+                        ? "Outstanding maintenance dues"
+                        : "Your maintenance fees are caught up"
+                    }
+                    icon={<AccountBalanceWalletIcon />}
+                    iconBg={totalOverdueAmount > 0 ? "#FEE2E2" : "#ECFDF5"}
+                    iconColor={totalOverdueAmount > 0 ? "#DC2626" : "#059669"}
+                    isHero={totalOverdueAmount > 0}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <StatCard
+                    value={requests.length}
+                    label="Open Work Orders"
+                    delta="Service tickets logged for your unit"
+                    icon={<BuildIcon />}
+                    iconBg="#EEF2FF"
+                    iconColor={DESIGN_TOKENS.brand[600]}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <StatCard
+                    value={visitors.filter((v) => v.status === "EXPECTED" || v.status === "CHECKED_IN").length}
+                    label="Active Visitor Passes"
+                    delta="Valid guest codes currently active"
+                    icon={<BadgeIcon />}
+                    iconBg="#F0FDF4"
+                    iconColor="#16A34A"
+                  />
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* =========================================================================
+              2. ROW 2 & ROW 3 PANELS (Standard 60/40 Split or Full Width)
+              ========================================================================= */}
+
+          {/* 1. SUPER ADMIN DASHBOARD PANELS (Section §1) */}
+          {effectiveRole === ROLES.SUPER_ADMIN && (
+            <Stack spacing={3}>
+              {/* Row 2: 60/40 Split */}
+              <Grid container spacing={3}>
+                {/* Left: TrendChart Platform Growth */}
+                <Grid item xs={12} md={7.2}>
+                  <TrendChart
+                    title="Platform Growth"
+                    subtitle="New resident registrations and portfolio expansion over trailing 6 months"
+                    metric={`+${users.length} Residents`}
+                    color={DESIGN_TOKENS.brand[600]}
+                    data={platformGrowthTrend.counts}
+                    labels={platformGrowthTrend.labels}
+                    emptyMessage="Growth data will appear as accounts register"
+                  />
+                </Grid>
+
+                {/* Right: Ranked List Buildings Needing Attention */}
+                <Grid item xs={12} md={4.8}>
+                  <DashboardCard
+                    title="Buildings Needing Attention"
+                    subtitle="Ranked by lowest collection rate or open complaints"
+                    action="All Buildings"
+                    actionLink="/buildings"
+                  >
+                    {rankedBuildings.length === 0 ? (
+                      <DashboardEmptyState message="All buildings are in good standing." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {rankedBuildings.map((b) => (
+                          <DashboardListItem
+                            key={b.id || b._id}
+                            to={`/buildings/${b.id || b._id}`}
+                            icon={<ApartmentIcon />}
+                            title={b.name}
+                            subtitle={`Code: ${b.code || "BLD"} • ${b.address || "Complex"}`}
+                            rightContent={
+                              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <Chip
+                                  label={`${b.collectionRate}% Col.`}
+                                  size="small"
+                                  sx={{
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 700,
+                                    bgcolor: b.collectionRate < 80 ? "#FEE2E2" : "#ECFDF5",
+                                    color: b.collectionRate < 80 ? "#DC2626" : "#059669",
+                                  }}
+                                />
+                                {b.openComplaints > 0 && (
+                                  <Chip
+                                    label={`${b.openComplaints} CMP`}
+                                    size="small"
+                                    sx={{
+                                      fontSize: "0.6875rem",
+                                      fontWeight: 700,
+                                      bgcolor: "#FEF3C7",
+                                      color: "#B45309",
+                                    }}
+                                  />
+                                )}
+                              </Stack>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+
+              {/* Row 3: Paired Cards (Recent Activity + Latest Notices) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Recent Admin Activity"
+                    subtitle="Platform mutations and security audit events"
+                    action="View Full Audit Log"
+                    actionLink="/audit-logs"
+                  >
+                    {auditLogs.length === 0 ? (
+                      <DashboardEmptyState message="No recent admin activity recorded." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {auditLogs.slice(0, 4).map((log) => (
+                          <DashboardListItem
+                            key={log.id || log._id}
+                            to="/audit-logs"
+                            icon={<HistoryIcon />}
+                            title={log.action?.replace(/_/g, " ") || "System Action"}
+                            subtitle={`${log.resourceType || "RESOURCE"} • ${log.actorUserId?.firstName ? `${log.actorUserId.firstName} ${log.actorUserId.lastName || ""}` : "System Administrator"}`}
+                            rightContent={
+                              <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "0.75rem" }}>
+                                {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently"}
+                              </Typography>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Latest Notices Across Platform"
+                    subtitle="Recent bulletins published across residential complexes"
+                    action="All Notices"
+                    actionLink="/notices"
+                  >
+                    {notices.length === 0 ? (
+                      <DashboardEmptyState message="No notices published yet." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {notices.slice(0, 4).map((n) => (
+                          <DashboardListItem
+                            key={n.id || n._id}
+                            to="/notices"
+                            icon={<CampaignIcon />}
+                            title={n.title}
+                            subtitle={`Target: ${n.targetAudience || "All Residents"} • ${n.buildingId?.name || "General"}`}
+                            rightContent={
+                              <Chip
+                                label={n.priority || "NORMAL"}
+                                size="small"
+                                sx={{
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 600,
+                                  bgcolor: n.priority === "URGENT_EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
+                                  color: n.priority === "URGENT_EMERGENCY" ? "#DC2626" : "#475569",
+                                }}
+                              />
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
             </Stack>
           )}
-        </DashboardCard>
+
+          {/* 2. BUILDING ADMIN DASHBOARD PANELS (Section §2) */}
+          {effectiveRole === ROLES.BUILDING_ADMIN && (
+            <Stack spacing={3}>
+              {/* Row 2: 60/40 Split */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={7.2}>
+                  <TrendChart
+                    title="Collections Trend"
+                    subtitle="Trailing 6-month collection recovery velocity"
+                    metric={`${collectionRate}% Cleared`}
+                    color={DESIGN_TOKENS.brand[600]}
+                    data={collectionsTrend.rates}
+                    labels={collectionsTrend.labels}
+                    emptyMessage="No billing records available for this period"
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4.8}>
+                  <DashboardCard
+                    title="Work Orders Needing Attention"
+                    subtitle="Highest-priority and unassigned service tickets"
+                    action="View All"
+                    actionLink="/maintenance-requests"
+                  >
+                    {openRequests.length === 0 ? (
+                      <DashboardEmptyState message="All caught up — no work orders need attention." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {openRequests.slice(0, 5).map((req) => (
+                          <DashboardListItem
+                            key={req._id || req.id}
+                            to="/maintenance-requests"
+                            icon={<BuildIcon />}
+                            iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.brand[50]}
+                            iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
+                            title={req.title}
+                            subtitle={`#${req.requestNumber || "WO"}, ${req.category}`}
+                            rightContent={
+                              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <Chip
+                                  label={req.priority}
+                                  size="small"
+                                  sx={{
+                                    fontSize: "0.6875rem",
+                                    fontWeight: 600,
+                                    bgcolor: req.priority === "EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
+                                    color: req.priority === "EMERGENCY" ? "#DC2626" : "#475569",
+                                  }}
+                                />
+                                <StatusChip status={req.status} />
+                              </Stack>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+
+              {/* Row 3: Paired Cards (Latest Notices + Staff Snapshot) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Latest Notices"
+                    subtitle="Community bulletins published for residents"
+                    action="All Notices"
+                    actionLink="/notices"
+                  >
+                    {notices.length === 0 ? (
+                      <DashboardEmptyState message="No notices published yet." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {notices.slice(0, 4).map((n) => (
+                          <DashboardListItem
+                            key={n._id || n.id}
+                            to="/notices"
+                            icon={<CampaignIcon />}
+                            title={n.title}
+                            subtitle={n.content?.slice(0, 60) + "..."}
+                            rightContent={<StatusChip status={n.priority} />}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Staff Performance Snapshot"
+                    subtitle="Technicians ranked by resolution rating and duty availability"
+                    action="Manage Staff"
+                    actionLink="/staff"
+                  >
+                    {staff.length === 0 ? (
+                      <DashboardEmptyState message="No staff registered for this building." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {staff.slice(0, 4).map((s) => (
+                          <DashboardListItem
+                            key={s._id || s.id}
+                            to="/staff"
+                            icon={<SupervisorAccountIcon />}
+                            title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Technician"}`}
+                            subtitle={`Specialty: ${s.category || "Maintenance"} • Shift: ${s.shift || "Morning"}`}
+                            rightContent={
+                              <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                                <Rating value={s.averageRating || 4.5} precision={0.5} size="small" readOnly />
+                                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, ml: 0.5 }}>
+                                  {s.averageRating || "4.5"}
+                                </Typography>
+                              </Stack>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+            </Stack>
+          )}
+
+          {/* 3. MANAGER DASHBOARD (Section §3 - Working Triage Queue) */}
+          {effectiveRole === ROLES.MANAGER && (
+            <Stack spacing={3}>
+              {/* Row 2: Full-Width Primary Working Triage Queue */}
+              <DashboardCard
+                title="Live Triage & Dispatch Queue"
+                subtitle="Review, prioritize, and assign incoming service requests"
+                action="Work Order Registry"
+                actionLink="/maintenance-requests"
+              >
+                {openRequests.length === 0 ? (
+                  <DashboardEmptyState
+                    message="Nothing needs triage right now — new work orders will appear here the moment they're submitted."
+                    icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                  />
+                ) : (
+                  <DataTable
+                    columns={[
+                      { id: "requestNumber", label: "WO #", minWidth: 90, render: (r) => <Typography sx={{ fontWeight: 700, fontSize: "0.8125rem" }}>#{r.requestNumber || r._id?.slice(-6)}</Typography> },
+                      { id: "title", label: "Request Title", render: (r) => <Typography sx={{ fontWeight: 600, fontSize: "0.875rem" }}>{r.title}</Typography> },
+                      { id: "category", label: "Category", render: (r) => <Chip label={r.category} size="small" sx={{ fontSize: "0.75rem" }} /> },
+                      { id: "priority", label: "Priority", render: (r) => <StatusChip status={r.priority} /> },
+                      { id: "status", label: "Status", render: (r) => <StatusChip status={r.status} /> },
+                      {
+                        id: "actions",
+                        label: "Action",
+                        align: "right",
+                        render: (r) => (
+                          <Button
+                            component={RouterLink}
+                            to={`/maintenance-requests`}
+                            size="small"
+                            variant="contained"
+                            sx={{
+                              bgcolor: DESIGN_TOKENS.brand[600],
+                              fontSize: "0.75rem",
+                              py: 0.25,
+                              px: 1.5,
+                              fontWeight: 600,
+                              "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                            }}
+                          >
+                            Assign Staff
+                          </Button>
+                        ),
+                      },
+                    ]}
+                    rows={openRequests.slice(0, 6)}
+                    totalCount={openRequests.length}
+                    rowsPerPage={6}
+                    page={0}
+                  />
+                )}
+              </DashboardCard>
+
+              {/* Row 3: Paired Cards (Staff Availability + Scheduled Move-ins) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Staff Availability by Trade"
+                    subtitle="Duty roster of active technicians ready for dispatch"
+                    action="Staff Registry"
+                    actionLink="/staff"
+                  >
+                    {staff.length === 0 ? (
+                      <DashboardEmptyState message="No staff registered." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {staff.slice(0, 4).map((s) => (
+                          <DashboardListItem
+                            key={s._id || s.id}
+                            to="/staff"
+                            icon={<SupervisorAccountIcon />}
+                            title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Staff"}`}
+                            subtitle={`Trade: ${s.category || "General"} • Shift: ${s.shift || "Morning"}`}
+                            rightContent={
+                              <Chip
+                                label={s.status === "ACTIVE" ? "Available" : "On Leave"}
+                                size="small"
+                                sx={{
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 700,
+                                  bgcolor: s.status === "ACTIVE" ? "#DCFCE7" : "#FEE2E2",
+                                  color: s.status === "ACTIVE" ? "#15803D" : "#DC2626",
+                                }}
+                              />
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Today's Move-ins & Move-outs"
+                    subtitle="Scheduled resident tenancy changes and gate checklists"
+                    action="Tenants Registry"
+                    actionLink="/tenants"
+                  >
+                    {tenants.length === 0 ? (
+                      <DashboardEmptyState message="No tenant transitions scheduled for today." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {tenants.slice(0, 4).map((t) => (
+                          <DashboardListItem
+                            key={t._id || t.id}
+                            to="/tenants"
+                            icon={<DoorSlidingIcon />}
+                            title={`${t.userId?.firstName || "Resident"} ${t.userId?.lastName || ""}`}
+                            subtitle={`Lease Start: ${t.leaseStartDate ? new Date(t.leaseStartDate).toLocaleDateString() : "Active"}`}
+                            rightContent={<StatusChip status={t.status} />}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+            </Stack>
+          )}
+
+          {/* 4. ACCOUNTANT DASHBOARD (Section §4) */}
+          {effectiveRole === ROLES.ACCOUNTANT && (
+            <Stack spacing={3}>
+              {/* Row 2: 60/40 Split */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={7.2}>
+                  <TrendChart
+                    title="Collections Trend"
+                    subtitle="Monthly maintenance fee collections and recovery trajectory"
+                    metric={`${collectionRate}% Cleared`}
+                    color={DESIGN_TOKENS.accent.green}
+                    data={collectionsTrend.rates}
+                    labels={collectionsTrend.labels}
+                    emptyMessage="No collections recorded yet"
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4.8}>
+                  <DashboardCard
+                    title="Top Overdue Flats"
+                    subtitle="Residents with outstanding unpaid ledger balances"
+                    action="View Invoices"
+                    actionLink="/invoices"
+                  >
+                    {overdueInvoices.length === 0 ? (
+                      <DashboardEmptyState
+                        message="No overdue accounts — every resident is caught up."
+                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                      />
+                    ) : (
+                      <Stack spacing={1}>
+                        {overdueInvoices.slice(0, 5).map((inv) => (
+                          <DashboardListItem
+                            key={inv._id || inv.id}
+                            to={`/invoices/${inv._id || inv.id}`}
+                            icon={<ReceiptLongIcon />}
+                            iconBg="#FEE2E2"
+                            iconColor="#DC2626"
+                            title={`Invoice #${inv.invoiceNumber}`}
+                            subtitle={`Due Date: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Past Due"}`}
+                            rightContent={
+                              <Typography
+                                sx={{
+                                  fontFamily: FONT_UI,
+                                  fontWeight: 700,
+                                  fontSize: "0.875rem",
+                                  color: DESIGN_TOKENS.danger[600],
+                                }}
+                              >
+                                ₨{(Number(inv.dueAmount) || Number(inv.totalAmount) || 0).toLocaleString()}
+                              </Typography>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+
+              {/* Row 3: Paired Cards (Pending Expense Approvals + Billing Summary) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Pending Expense Approvals"
+                    subtitle="Operational claims and invoices submitted for financial approval"
+                    action="Expenses Queue"
+                    actionLink="/expenses"
+                  >
+                    {pendingExpenses.length === 0 ? (
+                      <DashboardEmptyState message="No pending expenses awaiting approval." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {pendingExpenses.slice(0, 4).map((exp) => (
+                          <DashboardListItem
+                            key={exp._id || exp.id}
+                            to="/expenses"
+                            icon={<PendingActionsIcon />}
+                            title={exp.title}
+                            subtitle={`Vendor: ${exp.vendor || "Operational"} • Category: ${exp.category}`}
+                            rightContent={
+                              <Typography sx={{ fontWeight: 700, fontSize: "0.875rem", color: "#B45309" }}>
+                                ₨{(Number(exp.amount) || 0).toLocaleString()}
+                              </Typography>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="This Month's Billing Summary"
+                    subtitle="Overview of total billed fees vs actual collected funds"
+                  >
+                    <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                      <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
+                        <Box>
+                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>TOTAL BILLED</Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mt: 0.5 }}>
+                            ₨{totalBilled.toLocaleString()}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ textAlign: "right" }}>
+                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>TOTAL COLLECTED</Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 800, color: "#059669", mt: 0.5 }}>
+                            ₨{totalCollected.toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                      <Divider sx={{ my: 1.5 }} />
+                      <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: totalBilled > totalCollected ? "#D97706" : "#059669" }}>
+                        {totalBilled > totalCollected
+                          ? `₨${(totalBilled - totalCollected).toLocaleString()} still to collect this month`
+                          : "100% of this month's maintenance billing has been collected"}
+                      </Typography>
+                    </Box>
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+            </Stack>
+          )}
+
+          {/* 5. MAINTENANCE STAFF DASHBOARD (Section §5 - Mobile-First Worklist) */}
+          {effectiveRole === ROLES.MAINTENANCE_STAFF && (
+            <Stack spacing={3}>
+              <DashboardCard
+                title="Assigned Work Orders — Priority Queue"
+                subtitle="Your prioritized field repair queue. Tap any ticket to update progress"
+              >
+                {requests.length === 0 ? (
+                  <DashboardEmptyState
+                    message="Nothing assigned to you right now — check back soon or ask your manager."
+                    icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                  />
+                ) : (
+                  <Stack spacing={1.5}>
+                    {requests.map((req) => (
+                      <DashboardListItem
+                        key={req._id || req.id}
+                        to="/maintenance-requests"
+                        icon={<BuildIcon />}
+                        iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : "#EEF2FF"}
+                        iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
+                        title={req.title}
+                        subtitle={`Location: Flat ${req.flatId?.flatNumber || "Assigned Unit"} • Category: ${req.category}`}
+                        sx={{
+                          py: 1.75,
+                          px: 2,
+                          bgcolor: req.priority === "EMERGENCY" ? "#FEF2F2" : "#FFFFFF",
+                          borderColor: req.priority === "EMERGENCY" ? "#FECACA" : "#E2E8F0",
+                        }}
+                        rightContent={
+                          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                            <StatusChip status={req.priority} />
+                            <StatusChip status={req.status} />
+                          </Stack>
+                        }
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </DashboardCard>
+
+              {/* Secondary Rating Snapshot */}
+              <DashboardCard
+                title="This Week's Resident Rating"
+                subtitle="Verified customer satisfaction from completed work orders"
+              >
+                <Stack direction="row" spacing={3} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: "14px",
+                      bgcolor: "#FEF3C7",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#B45309",
+                    }}
+                  >
+                    <StarRateIcon sx={{ fontSize: 36 }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A" }}>
+                      4.9 <Typography component="span" sx={{ fontSize: "1rem", color: "#64748B" }}>/ 5.0</Typography>
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                      Outstanding performance rating based on verified resident feedback
+                    </Typography>
+                  </Box>
+                </Stack>
+              </DashboardCard>
+            </Stack>
+          )}
+
+          {/* 6. SECURITY STAFF DASHBOARD (Section §6 - Gate Launcher) */}
+          {effectiveRole === ROLES.SECURITY_STAFF && (
+            <Stack spacing={3}>
+              {/* Quick Entry Pass Code Terminal */}
+              <DashboardCard
+                title="Gate Terminal Verification"
+                subtitle="Quickly enter a 6-digit visitor pass code or launch the full terminal"
+              >
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ maxWidth: 580 }}>
+                  <TextField
+                    fullWidth
+                    placeholder="Enter 6-digit visitor pass code..."
+                    value={passCodeInput}
+                    onChange={(e) => setPassCodeInput(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#64748B" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": { height: 48, borderRadius: "10px" },
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (passCodeInput.trim()) {
+                        navigate(`/visitors/verify?code=${encodeURIComponent(passCodeInput.trim())}`);
+                      } else {
+                        navigate("/visitors/verify");
+                      }
+                    }}
+                    startIcon={<CheckCircleOutlinedIcon />}
+                    sx={{
+                      minHeight: 48,
+                      px: 3,
+                      fontWeight: 700,
+                      whiteSpace: "nowrap",
+                      bgcolor: DESIGN_TOKENS.brand[600],
+                      "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                    }}
+                  >
+                    Verify Pass
+                  </Button>
+                </Stack>
+              </DashboardCard>
+
+              {/* Today's Expected Visitors List */}
+              <DashboardCard
+                title="Today's Expected Visitors"
+                subtitle="Pre-authorized guest passes scheduled for arrival"
+                action="All Visitors"
+                actionLink="/visitors"
+              >
+                {expectedVisitors.length === 0 ? (
+                  <DashboardEmptyState message="No visitors expected right now." />
+                ) : (
+                  <Stack spacing={1}>
+                    {expectedVisitors.slice(0, 5).map((v) => (
+                      <DashboardListItem
+                        key={v._id || v.id}
+                        icon={<BadgeIcon />}
+                        title={v.visitorName}
+                        subtitle={`Visiting Flat ${v.flatId?.flatNumber || "Unit"} • Expected: ${v.expectedArrival || "Today"}`}
+                        rightContent={
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => navigate(`/visitors/verify?code=${v.passCode}`)}
+                            sx={{
+                              borderColor: DESIGN_TOKENS.line[200],
+                              color: DESIGN_TOKENS.text.primary,
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            Check In
+                          </Button>
+                        }
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </DashboardCard>
+            </Stack>
+          )}
+
+          {/* 7 & 8. RESIDENTS: FLAT OWNER & TENANT (Sections §7 & §8) */}
+          {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
+            <Stack spacing={3}>
+              {/* Row 2: Paired Cards (Ledger Summary / "My Dues" + Quick Actions) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title={effectiveRole === ROLES.OWNER ? "Residence Ledger Summary" : "My Active Dues"}
+                    subtitle={
+                      effectiveRole === ROLES.OWNER
+                        ? "Recent maintenance billings and settlement receipts"
+                        : "Maintenance fees and charges for your flat"
+                    }
+                    action="Full Ledger"
+                    actionLink="/invoices"
+                  >
+                    {invoices.length === 0 ? (
+                      <DashboardEmptyState
+                        message="You're all caught up — no outstanding dues."
+                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                      />
+                    ) : (
+                      <Stack spacing={1}>
+                        {invoices.slice(0, 4).map((inv) => (
+                          <DashboardListItem
+                            key={inv._id || inv.id}
+                            to={`/invoices/${inv._id || inv.id}`}
+                            icon={<ReceiptIcon />}
+                            title={`Invoice #${inv.invoiceNumber}`}
+                            subtitle={`Period: ${inv.billingPeriod || "Monthly"} • Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "—"}`}
+                            rightContent={
+                              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                                <Typography sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                                  ₨{(Number(inv.totalAmount) || 0).toLocaleString()}
+                                </Typography>
+                                <StatusChip status={inv.status} />
+                              </Stack>
+                            }
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Resident Quick Actions"
+                    subtitle="Frequent resident workflows and requests"
+                  >
+                    <Stack spacing={2} sx={{ my: "auto" }}>
+                      <Button
+                        component={RouterLink}
+                        to="/maintenance-requests"
+                        variant="contained"
+                        size="large"
+                        startIcon={<BuildIcon />}
+                        sx={{
+                          py: 1.75,
+                          fontSize: "0.9375rem",
+                          fontWeight: 700,
+                          bgcolor: DESIGN_TOKENS.brand[600],
+                          "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                          borderRadius: "10px",
+                        }}
+                      >
+                        Submit a Work Order
+                      </Button>
+                      <Button
+                        component={RouterLink}
+                        to="/visitors"
+                        variant="outlined"
+                        size="large"
+                        startIcon={<BadgeIcon />}
+                        sx={{
+                          py: 1.75,
+                          fontSize: "0.9375rem",
+                          fontWeight: 700,
+                          borderColor: DESIGN_TOKENS.line[200],
+                          color: DESIGN_TOKENS.text.primary,
+                          "&:hover": {
+                            borderColor: DESIGN_TOKENS.line[300],
+                            bgcolor: DESIGN_TOKENS.surface[50],
+                          },
+                          borderRadius: "10px",
+                        }}
+                      >
+                        Generate a Visitor Pass
+                      </Button>
+                    </Stack>
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+
+              {/* Row 3: Paired Cards (My Open Work Orders + Recent Notices) */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="My Open Work Orders"
+                    subtitle="Track progress of reported repairs and service tickets"
+                    action="All Tickets"
+                    actionLink="/maintenance-requests"
+                  >
+                    {requests.length === 0 ? (
+                      <DashboardEmptyState message="No open work orders for your flat." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {requests.slice(0, 4).map((r) => (
+                          <DashboardListItem
+                            key={r._id || r.id}
+                            to="/maintenance-requests"
+                            icon={<BuildIcon />}
+                            title={r.title}
+                            subtitle={`#${r.requestNumber || "WO"} • Category: ${r.category}`}
+                            rightContent={<StatusChip status={r.status} />}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <DashboardCard
+                    title="Recent Community Notices"
+                    subtitle="Official bulletins from building management"
+                    action="All Notices"
+                    actionLink="/notices"
+                  >
+                    {notices.length === 0 ? (
+                      <DashboardEmptyState message="No community notices posted." />
+                    ) : (
+                      <Stack spacing={1}>
+                        {notices.slice(0, 3).map((n) => (
+                          <DashboardListItem
+                            key={n._id || n.id}
+                            to="/notices"
+                            icon={<CampaignIcon />}
+                            title={n.title}
+                            subtitle={n.content?.slice(0, 60) + "..."}
+                            rightContent={<StatusChip status={n.priority} />}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </DashboardCard>
+                </Grid>
+              </Grid>
+            </Stack>
+          )}
+        </>
       )}
     </Box>
   );
