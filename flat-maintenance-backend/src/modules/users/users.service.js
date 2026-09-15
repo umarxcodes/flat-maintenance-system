@@ -279,7 +279,8 @@ class UsersService {
 
     // 3. Search Filter (across name and email)
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const escaped = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const searchRegex = new RegExp(escaped, "i");
       filter.$or = [
         { firstName: searchRegex },
         { lastName: searchRegex },

@@ -385,9 +385,7 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const role = user?.role || ROLES.TENANT;
 
-  // Interactive Perspective Switcher State (allows viewing all 8 role dashboards)
-  const [selectedRoleView, setSelectedRoleView] = useState(null);
-  const effectiveRole = selectedRoleView || role;
+  const effectiveRole = role;
 
   // Live Domain Queries
   const { data: buildingsData, isLoading: loadingBuildings } = useBuildingsList({ limit: 100 });
@@ -674,86 +672,6 @@ export const DashboardPage = () => {
 
   return (
     <Box sx={{ width: "100%", pb: 5 }}>
-      {/* QA Preview Mode: Role Perspective Switcher */}
-      {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.BUILDING_ADMIN) && (
-        <Paper
-          variant="outlined"
-          sx={{
-            p: "8px 14px",
-            mb: 3,
-            borderRadius: "12px",
-            borderColor: "#CBD5E1",
-            borderStyle: "dashed",
-            bgcolor: "#F8FAFC",
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 1.25,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 0.5 }}>
-            <Chip
-              label="QA preview mode"
-              size="small"
-              sx={{
-                height: 22,
-                fontSize: "0.6875rem",
-                fontWeight: 600,
-                bgcolor: "#EEF2FF",
-                color: DESIGN_TOKENS.brand[700],
-                borderRadius: "6px",
-              }}
-            />
-            <Typography
-              sx={{
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                color: DESIGN_TOKENS.text.secondary,
-              }}
-            >
-              Viewing as:
-            </Typography>
-          </Box>
-          {[
-            { id: ROLES.SUPER_ADMIN, label: "Super Admin" },
-            { id: ROLES.BUILDING_ADMIN, label: "Building Admin" },
-            { id: ROLES.MANAGER, label: "Manager" },
-            { id: ROLES.ACCOUNTANT, label: "Accountant" },
-            { id: ROLES.MAINTENANCE_STAFF, label: "Maintenance Staff" },
-            { id: ROLES.SECURITY_STAFF, label: "Security Staff" },
-            { id: ROLES.OWNER, label: "Flat Owner" },
-            { id: ROLES.TENANT, label: "Tenant" },
-          ].map((roleItem) => {
-            const isSelected = effectiveRole === roleItem.id;
-            return (
-              <Button
-                key={roleItem.id}
-                size="small"
-                onClick={() => setSelectedRoleView(roleItem.id)}
-                variant={isSelected ? "contained" : "outlined"}
-                sx={{
-                  textTransform: "none",
-                  fontWeight: isSelected ? 700 : 500,
-                  fontSize: "0.8125rem",
-                  borderRadius: "8px",
-                  py: 0.4,
-                  px: 1.25,
-                  bgcolor: isSelected ? DESIGN_TOKENS.brand[600] : "#FFFFFF",
-                  borderColor: isSelected ? DESIGN_TOKENS.brand[600] : DESIGN_TOKENS.line[200],
-                  color: isSelected ? "#FFFFFF" : DESIGN_TOKENS.text.primary,
-                  boxShadow: isSelected ? "0 1px 2px rgba(79, 70, 229, 0.15)" : "none",
-                  "&:hover": {
-                    bgcolor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.surface[50],
-                    borderColor: isSelected ? DESIGN_TOKENS.brand[700] : DESIGN_TOKENS.line[300],
-                  },
-                }}
-              >
-                {roleItem.label}
-              </Button>
-            );
-          })}
-        </Paper>
-      )}
 
       {/* -------------------------------------------------------------------------
           0. STANDARD PAGE HEADER

@@ -108,7 +108,26 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
   const complaints = useMemo(() => complaintsData?.complaints || (Array.isArray(complaintsData) ? complaintsData : []), [complaintsData]);
   const notices = useMemo(() => noticesData?.notices || (Array.isArray(noticesData) ? noticesData : []), [noticesData]);
 
-  // Filter and group search results
+/**
+ * Safely format physical address without crashing if address is an object
+ */
+const formatAddress = (addr) => {
+  if (!addr) return "";
+  if (typeof addr === "string") return addr;
+  const parts = [addr.street, addr.city, addr.state].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : (addr.city || "");
+};
+
+/**
+ * Format enum to sentence case
+ */
+const toSentenceCase = (str) => {
+  if (!str) return "";
+  const clean = String(str).replace(/_/g, " ").trim().toLowerCase();
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
+
+  // Filter and group search results safely across all entities
   const groupedResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
@@ -117,13 +136,18 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 1. Buildings
     const matchedBuildings = buildings
-      .filter((b) => b.name?.toLowerCase().includes(q) || b.code?.toLowerCase().includes(q) || b.address?.toLowerCase().includes(q))
+      .filter((b) => {
+        const addrStr = formatAddress(b.address).toLowerCase();
+        const nameStr = String(b.name || "").toLowerCase();
+        const codeStr = String(b.code || "").toLowerCase();
+        return nameStr.includes(q) || codeStr.includes(q) || addrStr.includes(q);
+      })
       .slice(0, 4)
       .map((b) => ({
-        id: b.id,
+        id: b._id || b.id,
         title: b.name,
-        subtitle: `Code: ${b.code} • ${b.address || "Complex"}`,
-        link: `/buildings/${b.id}`,
+        subtitle: `${b.code ? `Code: ${b.code}` : "Building"}${formatAddress(b.address) ? ` — ${formatAddress(b.address)}` : ""}`,
+        link: b._id || b.id ? `/buildings/${b._id || b.id}` : "/buildings",
         icon: <ApartmentIcon fontSize="small" sx={{ color: DESIGN_TOKENS.brand[600] }} />,
         category: "Buildings",
       }));
@@ -133,13 +157,17 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 2. Flats
     const matchedFlats = flats
-      .filter((f) => f.flatNumber?.toLowerCase().includes(q) || f.flatType?.toLowerCase().includes(q))
+      .filter((f) => {
+        const numStr = String(f.flatNumber || "").toLowerCase();
+        const typeStr = String(f.flatType || "").toLowerCase();
+        return numStr.includes(q) || typeStr.includes(q);
+      })
       .slice(0, 4)
       .map((f) => ({
-        id: f.id,
+        id: f._id || f.id,
         title: `Flat ${f.flatNumber}`,
-        subtitle: `${f.flatType || "Apartment"} • Status: ${f.status || "VACANT"}`,
-        link: `/flats/${f.id}`,
+        subtitle: `${toSentenceCase(f.flatType || "Apartment")} — ${toSentenceCase(f.status || "Vacant")}`,
+        link: f._id || f.id ? `/flats/${f._id || f.id}` : "/flats",
         icon: <MeetingRoomIcon fontSize="small" sx={{ color: "#0284C7" }} />,
         category: "Flats",
       }));
@@ -149,12 +177,17 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 3. Maintenance Requests
     const matchedRequests = requests
-      .filter((r) => r.title?.toLowerCase().includes(q) || r.requestNumber?.toLowerCase().includes(q))
+      .filter((r) => {
+        const titleStr = String(r.title || "").toLowerCase();
+        const numStr = String(r.requestNumber || "").toLowerCase();
+        const catStr = String(r.category || "").toLowerCase();
+        return titleStr.includes(q) || numStr.includes(q) || catStr.includes(q);
+      })
       .slice(0, 4)
       .map((r) => ({
-        id: r.id,
+        id: r._id || r.id,
         title: r.title,
-        subtitle: `${r.requestNumber || "WO"} • Priority: ${r.priority} • ${r.status}`,
+        subtitle: `Ticket #${r.requestNumber || "WO"} — ${toSentenceCase(r.category)} (${toSentenceCase(r.status)})`,
         link: `/maintenance-requests`,
         icon: <BuildIcon fontSize="small" sx={{ color: "#D97706" }} />,
         category: "Maintenance Requests",
@@ -165,13 +198,17 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 4. Invoices
     const matchedInvoices = invoices
-      .filter((i) => i.invoiceNumber?.toLowerCase().includes(q) || i.billingPeriod?.toLowerCase().includes(q))
+      .filter((i) => {
+        const numStr = String(i.invoiceNumber || "").toLowerCase();
+        const periodStr = String(i.billingPeriod || "").toLowerCase();
+        return numStr.includes(q) || periodStr.includes(q);
+      })
       .slice(0, 4)
       .map((i) => ({
-        id: i.id,
-        title: `Invoice ${i.invoiceNumber}`,
-        subtitle: `Period: ${i.billingPeriod || "Monthly"} • Due: ₨${i.dueAmount || i.totalAmount || 0} • ${i.status}`,
-        link: `/invoices/${i.id}`,
+        id: i._id || i.id,
+        title: `Invoice #${i.invoiceNumber}`,
+        subtitle: `Period: ${i.billingPeriod || "Monthly"} — ₨${(Number(i.dueAmount) || Number(i.totalAmount) || 0).toLocaleString()} (${toSentenceCase(i.status)})`,
+        link: i._id || i.id ? `/invoices/${i._id || i.id}` : "/invoices",
         icon: <ReceiptLongIcon fontSize="small" sx={{ color: "#059669" }} />,
         category: "Invoices",
       }));
@@ -181,12 +218,16 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 5. Complaints
     const matchedComplaints = complaints
-      .filter((c) => c.title?.toLowerCase().includes(q) || c.complaintNumber?.toLowerCase().includes(q))
+      .filter((c) => {
+        const titleStr = String(c.title || "").toLowerCase();
+        const numStr = String(c.complaintNumber || "").toLowerCase();
+        return titleStr.includes(q) || numStr.includes(q);
+      })
       .slice(0, 3)
       .map((c) => ({
-        id: c.id,
+        id: c._id || c.id,
         title: c.title,
-        subtitle: `${c.complaintNumber || "CMP"} • Type: ${c.type} • ${c.status}`,
+        subtitle: `${c.complaintNumber ? `#${c.complaintNumber} — ` : ""}${toSentenceCase(c.type || "General")} (${toSentenceCase(c.status)})`,
         link: `/complaints`,
         icon: <ReportProblemIcon fontSize="small" sx={{ color: "#DC2626" }} />,
         category: "Complaints",
@@ -197,12 +238,16 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 6. Notices
     const matchedNotices = notices
-      .filter((n) => n.title?.toLowerCase().includes(q))
+      .filter((n) => {
+        const titleStr = String(n.title || "").toLowerCase();
+        const contentStr = String(n.content || "").toLowerCase();
+        return titleStr.includes(q) || contentStr.includes(q);
+      })
       .slice(0, 3)
       .map((n) => ({
-        id: n.id,
+        id: n._id || n.id,
         title: n.title,
-        subtitle: `Audience: ${n.targetAudience} • Priority: ${n.priority}`,
+        subtitle: `${toSentenceCase(n.targetAudience || "All residents")} — Priority: ${toSentenceCase(n.priority || "Normal")}`,
         link: `/notices`,
         icon: <CampaignIcon fontSize="small" sx={{ color: "#7C3AED" }} />,
         category: "Notices",
@@ -213,13 +258,17 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
 
     // 7. Users
     const matchedUsers = users
-      .filter((u) => `${u.firstName || ""} ${u.lastName || ""}`.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
+      .filter((u) => {
+        const nameStr = `${u.firstName || ""} ${u.lastName || ""}`.toLowerCase();
+        const emailStr = String(u.email || "").toLowerCase();
+        return nameStr.includes(q) || emailStr.includes(q);
+      })
       .slice(0, 3)
       .map((u) => ({
-        id: u.id,
+        id: u._id || u.id,
         title: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.email,
-        subtitle: `Role: ${u.role} • ${u.email}`,
-        link: `/users/${u.id}`,
+        subtitle: `${toSentenceCase(u.role || "User")} — ${u.email}`,
+        link: u._id || u.id ? `/users/${u._id || u.id}` : "/users",
         icon: <PersonIcon fontSize="small" sx={{ color: "#475569" }} />,
         category: "Users",
       }));
@@ -433,12 +482,12 @@ export const GlobalSearch = ({ buttonOnly = false, sx = {} }) => {
                   >
                     {group.category} ({group.items.length})
                   </ListSubheader>
-                  {group.items.map((item) => {
+                  {group.items.map((item, idx) => {
                     const itemGlobalIndex = flatItems.findIndex((fi) => fi.id === item.id && fi.category === item.category);
                     const isSelected = itemGlobalIndex === selectedIndex;
 
                     return (
-                      <ListItem key={`${item.category}-${item.id}`} disablePadding>
+                      <ListItem key={`${item.category}-${item.id || idx}`} disablePadding>
                         <ListItemButton
                           selected={isSelected}
                           onClick={() => handleSelect(item.link)}

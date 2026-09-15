@@ -147,12 +147,12 @@ export const MaintenanceRequestsListPage = () => {
 
   const filteredRequests = useMemo(() => {
     if (!search) return rawRequests;
-    const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
     return rawRequests.filter((r) => {
-      const title = (r.title || "").toLowerCase();
-      const desc = (r.description || "").toLowerCase();
-      const cat = (r.category || "").toLowerCase();
-      const ticketId = (r.ticketNumber || r.id || r._id || "").toLowerCase();
+      const title = String(r.title || "").toLowerCase();
+      const desc = String(r.description || "").toLowerCase();
+      const cat = String(r.category || "").toLowerCase();
+      const ticketId = String(r.ticketNumber || r.requestNumber || r.id || r._id || "").toLowerCase();
       return title.includes(q) || desc.includes(q) || cat.includes(q) || ticketId.includes(q);
     });
   }, [rawRequests, search]);

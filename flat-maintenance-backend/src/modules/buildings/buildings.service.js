@@ -137,7 +137,9 @@ class BuildingsService {
 
     // 3. Search filter
     if (search) {
-      filter.name = new RegExp(search, "i");
+      const escaped = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const searchRegex = new RegExp(escaped, "i");
+      filter.$or = [{ name: searchRegex }, { code: searchRegex }];
     }
 
     // 4. Paginated database execution

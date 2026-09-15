@@ -223,6 +223,10 @@ export class FlatsService {
     if (query.floorId) filter.floorId = query.floorId;
     if (query.status) filter.status = query.status;
     if (query.flatType) filter.flatType = query.flatType;
+    if (query.search) {
+      const escaped = String(query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.flatNumber = new RegExp(escaped, "i");
+    }
 
     // 3. Pagination & Execution
     const page = Math.max(1, parseInt(query.page, 10) || 1);

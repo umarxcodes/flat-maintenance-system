@@ -123,11 +123,11 @@ export const FlatsListPage = () => {
   // Client-side search filtering by flat number
   const filteredFlats = flats.filter((flat) => {
     if (!search.trim()) return true;
-    const term = search.toLowerCase();
+    const term = search.trim().toLowerCase();
     return (
-      flat.flatNumber?.toLowerCase().includes(term) ||
-      flat.flatType?.toLowerCase().includes(term) ||
-      flat.blockId?.name?.toLowerCase().includes(term)
+      String(flat.flatNumber || "").toLowerCase().includes(term) ||
+      String(flat.flatType || "").toLowerCase().includes(term) ||
+      String(flat.blockId?.name || "").toLowerCase().includes(term)
     );
   });
 
