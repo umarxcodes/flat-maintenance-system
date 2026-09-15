@@ -1,4 +1,5 @@
 // =====================  IMPORTS  ==========================
+import mongoose from "mongoose";
 import { Owner } from "./owners.model.js";
 import { User } from "../../models/user.model.js";
 import { Building } from "../../models/building.model.js";
@@ -169,17 +170,42 @@ class OwnersService {
       }
     }
 
-    // 6. Safe Owner Document Construction (Mass-assignment protection)
+    // 6. Transactional Owner Profile Registration & Flat Linkage
     let createdOwner;
+    const session = await mongoose.startSession();
     try {
-      createdOwner = await Owner.create({
-        userId,
-        buildingId,
-        flatsOwned: uniqueFlatIds,
-        emergencyContact: emergencyContact || null,
-        idProofType: idProofType || null,
-        idProofUrl: idProofUrl || null,
-        isResidingInBuilding: Boolean(isResidingInBuilding),
+      await session.withTransaction(async () => {
+        const [newOwner] = await Owner.create(
+          [
+            {
+              userId,
+              buildingId,
+              flatsOwned: uniqueFlatIds,
+              emergencyContact: emergencyContact || null,
+              idProofType: idProofType || null,
+              idProofUrl: idProofUrl || null,
+              isResidingInBuilding: Boolean(isResidingInBuilding),
+            },
+          ],
+          { session }
+        );
+        createdOwner = newOwner;
+
+        // 7. Bidirectional Flat Ownership Synchronization
+        if (uniqueFlatIds.length > 0) {
+          await Flat.updateMany(
+            { _id: { $in: uniqueFlatIds } },
+            { $set: { currentOwnerId: createdOwner._id } },
+            { session }
+          );
+        }
+
+        // 8. Synchronize User's assignedBuildingIds
+        await User.updateOne(
+          { _id: userId },
+          { $addToSet: { assignedBuildingIds: buildingId } },
+          { session }
+        );
       });
     } catch (err) {
       // Catch MongoDB unique index collision under concurrent race conditions
@@ -192,21 +218,9 @@ class OwnersService {
         );
       }
       throw err;
+    } finally {
+      await session.endSession();
     }
-
-    // 7. Bidirectional Flat Ownership Synchronization
-    if (uniqueFlatIds.length > 0) {
-      await Flat.updateMany(
-        { _id: { $in: uniqueFlatIds } },
-        { $set: { currentOwnerId: createdOwner._id } }
-      );
-    }
-
-    // 8. Synchronize User's assignedBuildingIds
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { assignedBuildingIds: buildingId } }
-    );
 
     // 9. Security Audit Logging
     logger.security("OWNER_REGISTERED", {
