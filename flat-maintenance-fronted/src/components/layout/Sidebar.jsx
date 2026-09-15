@@ -117,12 +117,17 @@ export const Sidebar = ({
       href: "/dashboard",
       icon: <DashboardOutlinedIcon sx={{ fontSize: 20 }} />,
     },
+    { title: "Building Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
     {
-      title: "Buildings",
+      title: "Maintenance & Facilities",
+      href: "/maintenance-requests",
+      icon: <BuildIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      title: "Property Management",
       href: "/buildings",
       icon: <ApartmentOutlinedIcon sx={{ fontSize: 20 }} />,
     },
-    { title: "Building Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
     {
       title: "Roles & Permissions",
       href: "/roles",

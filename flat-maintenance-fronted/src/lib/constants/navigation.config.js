@@ -40,35 +40,6 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Property management",
-    items: [
-      {
-        title: "Buildings",
-        href: "/buildings",
-        iconName: "Apartment",
-        permission: PERMISSIONS.BUILDING_READ,
-      },
-      {
-        title: "Blocks / Towers",
-        href: "/blocks",
-        iconName: "Domain",
-        permission: PERMISSIONS.BLOCK_READ,
-      },
-      {
-        title: "Floors",
-        href: "/floors",
-        iconName: "Layers",
-        permission: PERMISSIONS.FLOOR_READ,
-      },
-      {
-        title: "Flats & Units",
-        href: "/flats",
-        iconName: "MeetingRoom",
-        permission: PERMISSIONS.FLAT_READ,
-      },
-    ],
-  },
-  {
     category: "Community & people",
     items: [
       {
@@ -105,6 +76,35 @@ export const NAVIGATION_CONFIG = Object.freeze([
         href: "/maintenance-requests",
         iconName: "Build",
         permission: PERMISSIONS.REQUEST_READ,
+      },
+    ],
+  },
+  {
+    category: "Property management",
+    items: [
+      {
+        title: "Buildings",
+        href: "/buildings",
+        iconName: "Apartment",
+        permission: PERMISSIONS.BUILDING_READ,
+      },
+      {
+        title: "Blocks / Towers",
+        href: "/blocks",
+        iconName: "Domain",
+        permission: PERMISSIONS.BLOCK_READ,
+      },
+      {
+        title: "Floors",
+        href: "/floors",
+        iconName: "Layers",
+        permission: PERMISSIONS.FLOOR_READ,
+      },
+      {
+        title: "Flats & Units",
+        href: "/flats",
+        iconName: "MeetingRoom",
+        permission: PERMISSIONS.FLAT_READ,
       },
     ],
   },
