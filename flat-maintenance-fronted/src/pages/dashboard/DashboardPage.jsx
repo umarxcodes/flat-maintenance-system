@@ -10,6 +10,7 @@ import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import Rating from "@mui/material/Rating";
+import Divider from "@mui/material/Divider";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import AddIcon from "@mui/icons-material/Add";
 import BuildIcon from "@mui/icons-material/Build";
@@ -1498,146 +1499,152 @@ export const DashboardPage = () => {
 
           {/* 2. BUILDING ADMIN DASHBOARD PANELS (Section §2) */}
           {effectiveRole === ROLES.BUILDING_ADMIN && (
-            <Stack spacing={3}>
+            <Stack spacing={2.5} sx={{ width: "100%" }}>
               {/* Row 2: 60/40 Split */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={7.2}>
-                  <TrendChart
-                    title="Collections Trend"
-                    subtitle="Trailing 6-month collection recovery velocity"
-                    metric={`${collectionRate}% collected`}
-                    color={DESIGN_TOKENS.brand[600]}
-                    data={collectionsTrend.rates}
-                    labels={collectionsTrend.labels}
-                    emptyMessage="No billing records available for this period"
-                  />
-                </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1.65fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <TrendChart
+                  title="Collections Trend"
+                  subtitle="Trailing 6-month collection recovery velocity"
+                  metric={`${collectionRate}% collected`}
+                  color={DESIGN_TOKENS.brand[600]}
+                  data={collectionsTrend.rates}
+                  labels={collectionsTrend.labels}
+                  emptyMessage="No billing records available for this period"
+                />
 
-                <Grid item xs={12} md={4.8}>
-                  <DashboardCard
-                    title="Work Orders Needing Attention"
-                    subtitle="Highest-priority and unassigned service tickets"
-                    action="View All"
-                    actionLink="/maintenance-requests"
-                  >
-                    {openRequests.length === 0 ? (
-                      <DashboardEmptyState message="All caught up — no work orders need attention." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {openRequests.slice(0, 5).map((req) => (
-                          <DashboardListItem
-                            key={req._id || req.id}
-                            to="/maintenance-requests"
-                            icon={<BuildIcon />}
-                            iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.brand[50]}
-                            iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
-                            title={req.title}
-                            subtitle={`Ticket #${req.requestNumber || "WO"}, category: ${toSentenceCase(req.category)}`}
-                            rightContent={
-                              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                                <Chip
-                                  label={toSentenceCase(req.priority)}
-                                  size="small"
-                                  sx={{
-                                    fontSize: "0.6875rem",
-                                    fontWeight: 600,
-                                    bgcolor: req.priority === "EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
-                                    color: req.priority === "EMERGENCY" ? "#DC2626" : "#475569",
-                                    borderRadius: "6px",
-                                  }}
-                                />
-                                <StatusChip status={req.status} />
-                              </Stack>
-                            }
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                <DashboardCard
+                  title="Work Orders Needing Attention"
+                  subtitle="Highest-priority and unassigned service tickets"
+                  action="View All"
+                  actionLink="/maintenance-requests"
+                >
+                  {openRequests.length === 0 ? (
+                    <DashboardEmptyState message="All caught up — no work orders need attention." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {openRequests.slice(0, 5).map((req) => (
+                        <DashboardListItem
+                          key={req._id || req.id}
+                          to="/maintenance-requests"
+                          icon={<BuildIcon />}
+                          iconBg={req.priority === "EMERGENCY" ? "#FEE2E2" : DESIGN_TOKENS.brand[50]}
+                          iconColor={req.priority === "EMERGENCY" ? "#DC2626" : DESIGN_TOKENS.brand[600]}
+                          title={req.title}
+                          subtitle={`Ticket #${req.requestNumber || "WO"}, category: ${toSentenceCase(req.category)}`}
+                          rightContent={
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                              <Chip
+                                label={toSentenceCase(req.priority)}
+                                size="small"
+                                sx={{
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 600,
+                                  bgcolor: req.priority === "EMERGENCY" ? "#FEE2E2" : "#F1F5F9",
+                                  color: req.priority === "EMERGENCY" ? "#DC2626" : "#475569",
+                                  borderRadius: "6px",
+                                }}
+                              />
+                              <StatusChip status={req.status} />
+                            </Stack>
+                          }
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
+              </Box>
 
               {/* Row 3: Paired Cards (Latest Notices + Staff Snapshot) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="Latest Notices"
-                    subtitle="Community bulletins published for residents"
-                    action="All Notices"
-                    actionLink="/notices"
-                  >
-                    {notices.length === 0 ? (
-                      <DashboardEmptyState message="No notices published yet." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {notices.slice(0, 4).map((n) => (
-                          <DashboardListItem
-                            key={n._id || n.id}
-                            to="/notices"
-                            icon={<CampaignIcon />}
-                            title={n.title}
-                            subtitle={n.content?.slice(0, 60) + "..."}
-                            rightContent={<StatusChip status={n.priority} />}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <DashboardCard
+                  title="Latest Notices"
+                  subtitle="Community bulletins published for residents"
+                  action="All Notices"
+                  actionLink="/notices"
+                >
+                  {notices.length === 0 ? (
+                    <DashboardEmptyState message="No notices published yet." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {notices.slice(0, 4).map((n) => (
+                        <DashboardListItem
+                          key={n._id || n.id}
+                          to="/notices"
+                          icon={<CampaignIcon />}
+                          title={n.title}
+                          subtitle={n.content?.slice(0, 60) + "..."}
+                          rightContent={<StatusChip status={n.priority} />}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
 
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="Staff Performance Snapshot"
-                    subtitle="Technicians ranked by resolution rating and duty availability"
-                    action="Manage Staff"
-                    actionLink="/staff"
-                  >
-                    {staff.length === 0 ? (
-                      <DashboardEmptyState message="No staff registered for this building." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {staff.slice(0, 4).map((s) => (
-                          <DashboardListItem
-                            key={s._id || s.id}
-                            to="/staff"
-                            icon={<SupervisorAccountIcon />}
-                            title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Technician"}`}
-                            subtitle={
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
-                                <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
-                                  {toSentenceCase(s.category || s.specialization || "General")}
-                                </Typography>
-                                <Chip
-                                  label={`Shift: ${toSentenceCase(s.shift || "Morning")}`}
-                                  size="small"
-                                  sx={{
-                                    height: 18,
-                                    fontSize: "0.6875rem",
-                                    fontWeight: 600,
-                                    bgcolor: "#F1F5F9",
-                                    color: "#475569",
-                                    borderRadius: "4px",
-                                    px: 0.5,
-                                    "& .MuiChip-label": { px: 0.5 },
-                                  }}
-                                />
-                              </Box>
-                            }
-                            rightContent={
-                              <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
-                                <Rating value={s.averageRating || 4.5} precision={0.5} size="small" readOnly />
-                                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, ml: 0.5 }}>
-                                  {s.averageRating || "4.5"}
-                                </Typography>
-                              </Stack>
-                            }
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                <DashboardCard
+                  title="Staff Performance Snapshot"
+                  subtitle="Technicians ranked by resolution rating and duty availability"
+                  action="Manage Staff"
+                  actionLink="/staff"
+                >
+                  {staff.length === 0 ? (
+                    <DashboardEmptyState message="No staff registered for this building." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {staff.slice(0, 4).map((s) => (
+                        <DashboardListItem
+                          key={s._id || s.id}
+                          to="/staff"
+                          icon={<SupervisorAccountIcon />}
+                          title={`${s.userId?.firstName || ""} ${s.userId?.lastName || s.designation || "Technician"}`}
+                          subtitle={
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25 }}>
+                              <Typography variant="caption" sx={{ color: DESIGN_TOKENS.text.secondary, fontSize: "0.75rem" }}>
+                                {toSentenceCase(s.category || s.specialization || "General")}
+                              </Typography>
+                              <Chip
+                                label={`Shift: ${toSentenceCase(s.shift || "Morning")}`}
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 600,
+                                  bgcolor: "#F1F5F9",
+                                  color: "#475569",
+                                  borderRadius: "4px",
+                                  px: 0.5,
+                                  "& .MuiChip-label": { px: 0.5 },
+                                }}
+                              />
+                            </Box>
+                          }
+                          rightContent={
+                            <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                              <Rating value={s.averageRating || 4.5} precision={0.5} size="small" readOnly />
+                              <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, ml: 0.5 }}>
+                                {s.averageRating || "4.5"}
+                              </Typography>
+                            </Stack>
+                          }
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
+              </Box>
             </Stack>
           )}
 
@@ -2008,132 +2015,145 @@ export const DashboardPage = () => {
 
           {/* 4. ACCOUNTANT DASHBOARD (Section §4) */}
           {effectiveRole === ROLES.ACCOUNTANT && (
-            <Stack spacing={3}>
+            <Stack spacing={2.5} sx={{ width: "100%" }}>
               {/* Row 2: 60/40 Split */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={7.2}>
-                  <TrendChart
-                    title="Collections Trend"
-                    subtitle="Monthly maintenance fee collections and recovery trajectory"
-                    metric={`${collectionRate}% collected`}
-                    color={DESIGN_TOKENS.accent.green}
-                    data={collectionsTrend.rates}
-                    labels={collectionsTrend.labels}
-                    emptyMessage="No collections recorded yet"
-                  />
-                </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1.65fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <TrendChart
+                  title="Collections Trend"
+                  subtitle="Monthly maintenance fee collections and recovery trajectory"
+                  metric={`${collectionRate}% collected`}
+                  color={DESIGN_TOKENS.accent.green}
+                  data={collectionsTrend.rates}
+                  labels={collectionsTrend.labels}
+                  emptyMessage="No collections recorded yet"
+                />
 
-                <Grid item xs={12} md={4.8}>
-                  <DashboardCard
-                    title="Top Overdue Flats"
-                    subtitle="Residents with outstanding unpaid ledger balances"
-                    action="View Invoices"
-                    actionLink="/invoices"
-                  >
-                    {overdueInvoices.length === 0 ? (
-                      <DashboardEmptyState
-                        message="No overdue accounts — every resident is caught up."
-                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
-                      />
-                    ) : (
-                      <Stack spacing={1}>
-                        {overdueInvoices.slice(0, 5).map((inv) => (
-                          <DashboardListItem
-                            key={inv._id || inv.id}
-                            to={`/invoices/${inv._id || inv.id}`}
-                            icon={<ReceiptLongIcon />}
-                            iconBg="#FEE2E2"
-                            iconColor="#DC2626"
-                            title={`Invoice #${inv.invoiceNumber}`}
-                            subtitle={`Due date: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Past due"}`}
-                            rightContent={
-                              <Typography
-                                sx={{
-                                  fontFamily: FONT_UI,
-                                  fontWeight: 700,
-                                  fontSize: "0.875rem",
-                                  color: DESIGN_TOKENS.danger[600],
-                                }}
-                              >
-                                ₨{(Number(inv.dueAmount) || Number(inv.totalAmount) || 0).toLocaleString()}
-                              </Typography>
-                            }
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                <DashboardCard
+                  title="Top Overdue Flats"
+                  subtitle="Residents with outstanding unpaid ledger balances"
+                  action="View Invoices"
+                  actionLink="/invoices"
+                >
+                  {overdueInvoices.length === 0 ? (
+                    <DashboardEmptyState
+                      message="No overdue accounts — every resident is caught up."
+                      icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                    />
+                  ) : (
+                    <Stack spacing={1}>
+                      {overdueInvoices.slice(0, 5).map((inv) => (
+                        <DashboardListItem
+                          key={inv._id || inv.id}
+                          to={`/invoices/${inv._id || inv.id}`}
+                          icon={<ReceiptLongIcon />}
+                          iconBg="#FEE2E2"
+                          iconColor="#DC2626"
+                          title={`Invoice #${inv.invoiceNumber}`}
+                          subtitle={`Due date: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Past due"}`}
+                          rightContent={
+                            <Typography
+                              sx={{
+                                fontFamily: FONT_UI,
+                                fontWeight: 700,
+                                fontSize: "0.875rem",
+                                color: DESIGN_TOKENS.danger[600],
+                              }}
+                            >
+                              ₨{(Number(inv.dueAmount) || Number(inv.totalAmount) || 0).toLocaleString()}
+                            </Typography>
+                          }
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
+              </Box>
 
               {/* Row 3: Paired Cards (Pending Expense Approvals + Billing Summary) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="Pending Expense Approvals"
-                    subtitle="Operational claims and invoices submitted for financial approval"
-                    action="Expenses Queue"
-                    actionLink="/expenses"
-                  >
-                    {pendingExpenses.length === 0 ? (
-                      <DashboardEmptyState message="No pending expenses awaiting approval." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {pendingExpenses.slice(0, 4).map((exp) => (
-                          <DashboardListItem
-                            key={exp._id || exp.id}
-                            to="/expenses"
-                            icon={<PendingActionsIcon />}
-                            title={exp.title}
-                            subtitle={`Vendor: ${exp.vendor || "Operational"}, category: ${toSentenceCase(exp.category)}`}
-                            rightContent={
-                              <Typography sx={{ fontWeight: 700, fontSize: "0.875rem", color: "#B45309" }}>
-                                ₨{(Number(exp.amount) || 0).toLocaleString()}
-                              </Typography>
-                            }
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <DashboardCard
+                  title="Pending Expense Approvals"
+                  subtitle="Operational claims and invoices submitted for financial approval"
+                  action="Expenses Queue"
+                  actionLink="/expenses"
+                >
+                  {pendingExpenses.length === 0 ? (
+                    <DashboardEmptyState message="No pending expenses awaiting approval." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {pendingExpenses.slice(0, 4).map((exp) => (
+                        <DashboardListItem
+                          key={exp._id || exp.id}
+                          to="/expenses"
+                          icon={<PendingActionsIcon />}
+                          title={exp.title}
+                          subtitle={`Vendor: ${exp.vendor || "Operational"}, category: ${toSentenceCase(exp.category)}`}
+                          rightContent={
+                            <Typography sx={{ fontWeight: 700, fontSize: "0.875rem", color: "#B45309" }}>
+                              ₨{(Number(exp.amount) || 0).toLocaleString()}
+                            </Typography>
+                          }
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
 
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="This Month's Billing Summary"
-                    subtitle="Overview of total billed fees vs actual collected funds"
-                  >
-                    <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
-                      <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-                        <Box>
-                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total billed</Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mt: 0.5 }}>
-                            ₨{totalBilled.toLocaleString()}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ textAlign: "right" }}>
-                          <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total collected</Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 800, color: "#059669", mt: 0.5 }}>
-                            ₨{totalCollected.toLocaleString()}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                      <Divider sx={{ my: 1.5 }} />
-                      <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: totalBilled > totalCollected ? "#D97706" : "#059669" }}>
-                        {totalBilled > totalCollected
-                          ? `₨${(totalBilled - totalCollected).toLocaleString()} still to collect this month`
-                          : "100% of this month's maintenance billing has been collected"}
-                      </Typography>
-                    </Box>
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                <DashboardCard
+                  title="This Month's Billing Summary"
+                  subtitle="Overview of total billed fees vs actual collected funds"
+                >
+                  <Box sx={{ p: 2, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total billed</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", mt: 0.5 }}>
+                          ₨{totalBilled.toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: "right" }}>
+                        <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>Total collected</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: "#059669", mt: 0.5 }}>
+                          ₨{totalCollected.toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: totalBilled > totalCollected ? "#D97706" : "#059669" }}>
+                      {totalBilled > totalCollected
+                        ? `₨${(totalBilled - totalCollected).toLocaleString()} still to collect this month`
+                        : "100% of this month's maintenance billing has been collected"}
+                    </Typography>
+                  </Box>
+                </DashboardCard>
+              </Box>
             </Stack>
           )}
 
           {/* 5. MAINTENANCE STAFF DASHBOARD (Section §5 - Mobile-First Worklist) */}
           {effectiveRole === ROLES.MAINTENANCE_STAFF && (
-            <Stack spacing={3}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", lg: "1.65fr 1fr" },
+                gap: 2.5,
+                width: "100%",
+              }}
+            >
               <DashboardCard
                 title="Assigned Work Orders — Priority Queue"
                 subtitle="Your prioritized field repair queue. Tap any ticket to update progress"
@@ -2202,12 +2222,19 @@ export const DashboardPage = () => {
                   </Box>
                 </Stack>
               </DashboardCard>
-            </Stack>
+            </Box>
           )}
 
           {/* 6. SECURITY STAFF DASHBOARD (Section §6 - Gate Launcher) */}
           {effectiveRole === ROLES.SECURITY_STAFF && (
-            <Stack spacing={3}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", lg: "1fr 1.35fr" },
+                gap: 2.5,
+                width: "100%",
+              }}
+            >
               {/* Quick Entry Pass Code Terminal */}
               <DashboardCard
                 title="Gate Terminal Verification"
@@ -2296,157 +2323,163 @@ export const DashboardPage = () => {
                   </Stack>
                 )}
               </DashboardCard>
-            </Stack>
+            </Box>
           )}
 
           {/* 7 & 8. RESIDENTS: FLAT OWNER & TENANT (Sections §7 & §8) */}
           {(effectiveRole === ROLES.OWNER || effectiveRole === ROLES.TENANT) && (
-            <Stack spacing={3}>
+            <Stack spacing={2.5} sx={{ width: "100%" }}>
               {/* Row 2: Paired Cards (Ledger Summary / "My Dues" + Quick Actions) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title={effectiveRole === ROLES.OWNER ? "Residence Ledger Summary" : "My Active Dues"}
-                    subtitle={
-                      effectiveRole === ROLES.OWNER
-                        ? "Recent maintenance billings and settlement receipts"
-                        : "Maintenance fees and charges for your flat"
-                    }
-                    action="Full Ledger"
-                    actionLink="/invoices"
-                  >
-                    {invoices.length === 0 ? (
-                      <DashboardEmptyState
-                        message="You're all caught up — no outstanding dues."
-                        icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
-                      />
-                    ) : (
-                      <Stack spacing={1}>
-                        {invoices.slice(0, 4).map((inv) => (
-                          <DashboardListItem
-                            key={inv._id || inv.id}
-                            to={`/invoices/${inv._id || inv.id}`}
-                            icon={<ReceiptIcon />}
-                            title={`Invoice #${inv.invoiceNumber}`}
-                            subtitle={`Billing period: ${toSentenceCase(inv.billingPeriod || "Monthly")}`}
-                            rightContent={
-                              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                                <Typography sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
-                                  ₨{(Number(inv.totalAmount) || 0).toLocaleString()}
-                                </Typography>
-                                <StatusChip status={inv.status} />
-                              </Stack>
-                            }
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="Resident Quick Actions"
-                    subtitle="Frequent resident workflows and requests"
-                  >
-                    <Stack spacing={2} sx={{ my: "auto" }}>
-                      <Button
-                        component={RouterLink}
-                        to="/maintenance-requests"
-                        variant="contained"
-                        size="large"
-                        startIcon={<BuildIcon />}
-                        sx={{
-                          py: 1.75,
-                          fontSize: "0.9375rem",
-                          fontWeight: 700,
-                          bgcolor: DESIGN_TOKENS.brand[600],
-                          "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
-                          borderRadius: "10px",
-                        }}
-                      >
-                        Submit a Work Order
-                      </Button>
-                      <Button
-                        component={RouterLink}
-                        to="/visitors"
-                        variant="outlined"
-                        size="large"
-                        startIcon={<BadgeIcon />}
-                        sx={{
-                          py: 1.75,
-                          fontSize: "0.9375rem",
-                          fontWeight: 700,
-                          borderColor: DESIGN_TOKENS.line[200],
-                          color: DESIGN_TOKENS.text.primary,
-                          "&:hover": {
-                            borderColor: DESIGN_TOKENS.line[300],
-                            bgcolor: DESIGN_TOKENS.surface[50],
-                          },
-                          borderRadius: "10px",
-                        }}
-                      >
-                        Generate a Visitor Pass
-                      </Button>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1.5fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <DashboardCard
+                  title={effectiveRole === ROLES.OWNER ? "Residence Ledger Summary" : "My Active Dues"}
+                  subtitle={
+                    effectiveRole === ROLES.OWNER
+                      ? "Recent maintenance billings and settlement receipts"
+                      : "Maintenance fees and charges for your flat"
+                  }
+                  action="Full Ledger"
+                  actionLink="/invoices"
+                >
+                  {invoices.length === 0 ? (
+                    <DashboardEmptyState
+                      message="You're all caught up — no outstanding dues."
+                      icon={<CheckCircleOutlinedIcon sx={{ color: "#059669" }} />}
+                    />
+                  ) : (
+                    <Stack spacing={1}>
+                      {invoices.slice(0, 4).map((inv) => (
+                        <DashboardListItem
+                          key={inv._id || inv.id}
+                          to={`/invoices/${inv._id || inv.id}`}
+                          icon={<ReceiptIcon />}
+                          title={`Invoice #${inv.invoiceNumber}`}
+                          subtitle={`Billing period: ${toSentenceCase(inv.billingPeriod || "Monthly")}`}
+                          rightContent={
+                            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                              <Typography sx={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                                ₨{(Number(inv.totalAmount) || 0).toLocaleString()}
+                              </Typography>
+                              <StatusChip status={inv.status} />
+                            </Stack>
+                          }
+                        />
+                      ))}
                     </Stack>
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                  )}
+                </DashboardCard>
+
+                <DashboardCard
+                  title="Resident Quick Actions"
+                  subtitle="Frequent resident workflows and requests"
+                >
+                  <Stack spacing={2} sx={{ my: "auto" }}>
+                    <Button
+                      component={RouterLink}
+                      to="/maintenance-requests"
+                      variant="contained"
+                      size="large"
+                      startIcon={<BuildIcon />}
+                      sx={{
+                        py: 1.75,
+                        fontSize: "0.9375rem",
+                        fontWeight: 700,
+                        bgcolor: DESIGN_TOKENS.brand[600],
+                        "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
+                        borderRadius: "10px",
+                      }}
+                    >
+                      Submit a Work Order
+                    </Button>
+                    <Button
+                      component={RouterLink}
+                      to="/visitors"
+                      variant="outlined"
+                      size="large"
+                      startIcon={<BadgeIcon />}
+                      sx={{
+                        py: 1.75,
+                        fontSize: "0.9375rem",
+                        fontWeight: 700,
+                        borderColor: DESIGN_TOKENS.line[200],
+                        color: DESIGN_TOKENS.text.primary,
+                        "&:hover": {
+                          borderColor: DESIGN_TOKENS.line[300],
+                          bgcolor: DESIGN_TOKENS.surface[50],
+                        },
+                        borderRadius: "10px",
+                      }}
+                    >
+                      Generate a Visitor Pass
+                    </Button>
+                  </Stack>
+                </DashboardCard>
+              </Box>
 
               {/* Row 3: Paired Cards (My Open Work Orders + Recent Notices) */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="My Open Work Orders"
-                    subtitle="Track progress of reported repairs and service tickets"
-                    action="All Tickets"
-                    actionLink="/maintenance-requests"
-                  >
-                    {requests.length === 0 ? (
-                      <DashboardEmptyState message="No open work orders for your flat." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {requests.slice(0, 4).map((r) => (
-                          <DashboardListItem
-                            key={r._id || r.id}
-                            to="/maintenance-requests"
-                            icon={<BuildIcon />}
-                            title={r.title}
-                            subtitle={`Ticket #${r.requestNumber || "WO"}, category: ${toSentenceCase(r.category)}`}
-                            rightContent={<StatusChip status={r.status} />}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+                  gap: 2.5,
+                  width: "100%",
+                }}
+              >
+                <DashboardCard
+                  title="My Open Work Orders"
+                  subtitle="Track progress of reported repairs and service tickets"
+                  action="All Tickets"
+                  actionLink="/maintenance-requests"
+                >
+                  {requests.length === 0 ? (
+                    <DashboardEmptyState message="No open work orders for your flat." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {requests.slice(0, 4).map((r) => (
+                        <DashboardListItem
+                          key={r._id || r.id}
+                          to="/maintenance-requests"
+                          icon={<BuildIcon />}
+                          title={r.title}
+                          subtitle={`Ticket #${r.requestNumber || "WO"}, category: ${toSentenceCase(r.category)}`}
+                          rightContent={<StatusChip status={r.status} />}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
 
-                <Grid item xs={12} md={6}>
-                  <DashboardCard
-                    title="Recent Community Notices"
-                    subtitle="Official bulletins from building management"
-                    action="All Notices"
-                    actionLink="/notices"
-                  >
-                    {notices.length === 0 ? (
-                      <DashboardEmptyState message="No community notices posted." />
-                    ) : (
-                      <Stack spacing={1}>
-                        {notices.slice(0, 3).map((n) => (
-                          <DashboardListItem
-                            key={n._id || n.id}
-                            to="/notices"
-                            icon={<CampaignIcon />}
-                            title={n.title}
-                            subtitle={n.content?.slice(0, 60) + "..."}
-                            rightContent={<StatusChip status={n.priority} />}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </DashboardCard>
-                </Grid>
-              </Grid>
+                <DashboardCard
+                  title="Recent Community Notices"
+                  subtitle="Official bulletins from building management"
+                  action="All Notices"
+                  actionLink="/notices"
+                >
+                  {notices.length === 0 ? (
+                    <DashboardEmptyState message="No community notices posted." />
+                  ) : (
+                    <Stack spacing={1}>
+                      {notices.slice(0, 3).map((n) => (
+                        <DashboardListItem
+                          key={n._id || n.id}
+                          to="/notices"
+                          icon={<CampaignIcon />}
+                          title={n.title}
+                          subtitle={n.content?.slice(0, 60) + "..."}
+                          rightContent={<StatusChip status={n.priority} />}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </DashboardCard>
+              </Box>
             </Stack>
           )}
         </>

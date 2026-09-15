@@ -51,6 +51,7 @@ import { useUsersList } from "../../features/users/hooks/use-users.js";
 import { PageHeader } from "../../components/common/PageHeader.jsx";
 import { DataTable } from "../../components/common/DataTable.jsx";
 import { FilterBar } from "../../components/common/FilterBar.jsx";
+import { StatCard } from "../../components/common/StatCard.jsx";
 import {
   AUDIT_ACTIONS,
   AUDIT_RESOURCE_TYPES,
@@ -501,184 +502,53 @@ export const AuditLogsListPage = () => {
         }
       />
 
-      {/* KPI Stat Cards */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: "14px",
-              border: `1px solid ${DESIGN_TOKENS.slate[200]}`,
-              bgcolor: "#FFFFFF",
-              p: 0.5,
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" },
-            }}
-          >
-            <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Total Audit Records
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: DESIGN_TOKENS.navy, mt: 0.5 }}>
-                    {isLoading ? <Skeleton width={60} /> : kpiMetrics.total.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "12px",
-                    bgcolor: DESIGN_TOKENS.brand[50],
-                    color: DESIGN_TOKENS.brand[600],
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <SecurityIcon fontSize="small" />
-                </Box>
-              </Stack>
-              <Typography variant="caption" sx={{ color: "text.secondary", mt: 1, display: "block", fontSize: "0.72rem" }}>
-                Immutable append-only ledger
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: "14px",
-              border: `1px solid ${DESIGN_TOKENS.slate[200]}`,
-              bgcolor: "#FFFFFF",
-              p: 0.5,
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" },
-            }}
-          >
-            <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Financial Operations
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: DESIGN_TOKENS.emerald[600], mt: 0.5 }}>
-                    {isLoading ? <Skeleton width={60} /> : kpiMetrics.financialOps.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "12px",
-                    bgcolor: DESIGN_TOKENS.emerald[50],
-                    color: DESIGN_TOKENS.emerald[600],
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <AccountBalanceIcon fontSize="small" />
-                </Box>
-              </Stack>
-              <Typography variant="caption" sx={{ color: "text.secondary", mt: 1, display: "block", fontSize: "0.72rem" }}>
-                Invoices, payments & expenses
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: "14px",
-              border: `1px solid ${DESIGN_TOKENS.slate[200]}`,
-              bgcolor: "#FFFFFF",
-              p: 0.5,
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" },
-            }}
-          >
-            <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Security & Access
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: DESIGN_TOKENS.purple[600], mt: 0.5 }}>
-                    {isLoading ? <Skeleton width={60} /> : kpiMetrics.securityOps.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "12px",
-                    bgcolor: DESIGN_TOKENS.purple[50],
-                    color: DESIGN_TOKENS.purple[600],
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <VpnKeyIcon fontSize="small" />
-                </Box>
-              </Stack>
-              <Typography variant="caption" sx={{ color: "text.secondary", mt: 1, display: "block", fontSize: "0.72rem" }}>
-                Role shifts, invites & gates
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: "14px",
-              border: `1px solid ${DESIGN_TOKENS.slate[200]}`,
-              bgcolor: "#FFFFFF",
-              p: 0.5,
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" },
-            }}
-          >
-            <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Operational Activity
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: DESIGN_TOKENS.amber[600], mt: 0.5 }}>
-                    {isLoading ? <Skeleton width={60} /> : kpiMetrics.maintenanceOps.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "12px",
-                    bgcolor: DESIGN_TOKENS.amber[50],
-                    color: DESIGN_TOKENS.amber[600],
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <BuildIcon fontSize="small" />
-                </Box>
-              </Stack>
-              <Typography variant="caption" sx={{ color: "text.secondary", mt: 1, display: "block", fontSize: "0.72rem" }}>
-                Work orders, tickets & docs
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* KPI Stat Cards (100% Full-Width Responsive CSS Grid) */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
+          },
+          gap: 2,
+          width: "100%",
+          mb: 3,
+        }}
+      >
+        <StatCard
+          value={isLoading ? "..." : kpiMetrics.total.toLocaleString()}
+          label="Total Audit Records"
+          delta="Immutable append-only ledger"
+          icon={<SecurityIcon />}
+          iconBg="#EEF2FF"
+          iconColor={DESIGN_TOKENS.brand[600]}
+        />
+        <StatCard
+          value={isLoading ? "..." : kpiMetrics.financialOps.toLocaleString()}
+          label="Financial Operations"
+          delta="Invoices, payments & expenses"
+          icon={<AccountBalanceIcon />}
+          iconBg="#ECFDF5"
+          iconColor="#059669"
+        />
+        <StatCard
+          value={isLoading ? "..." : kpiMetrics.securityOps.toLocaleString()}
+          label="Security & Access"
+          delta="Role shifts, invites & gates"
+          icon={<VpnKeyIcon />}
+          iconBg="#F5F3FF"
+          iconColor="#7C3AED"
+        />
+        <StatCard
+          value={isLoading ? "..." : kpiMetrics.maintenanceOps.toLocaleString()}
+          label="Operational Activity"
+          delta="Work orders, tickets & docs"
+          icon={<BuildIcon />}
+          iconBg="#FEF3C7"
+          iconColor="#D97706"
+        />
+      </Box>
 
       {/* Filter Bar with Building, Action, Domain, Date Range & Search */}
       <FilterBar onReset={handleResetFilters} hasActiveFilters={hasActiveFilters}>
