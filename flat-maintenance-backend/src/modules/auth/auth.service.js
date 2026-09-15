@@ -15,6 +15,7 @@ import {
   generateUUID,
 } from "../../utils/crypto.util.js";
 import { AUTH_SECURITY_EVENTS, emitAuthSecurityEvent } from "./auth.events.js";
+import { sendPasswordResetEmail } from "../../utils/email.util.js";
 
 // =====================  AUTHENTICATION SERVICE  =============
 /**
@@ -501,6 +502,7 @@ class AuthService {
     });
 
     let generatedRawToken = null;
+    let emailResult = null;
 
     if (user) {
       const rawToken = generateCryptoToken(32);
@@ -516,12 +518,23 @@ class AuthService {
         email: normalizedEmail,
         ...context,
       });
+
+      // Dispatch reset email with direct link
+      const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+      emailResult = await sendPasswordResetEmail({
+        to: user.email,
+        resetToken: rawToken,
+        userName: fullName || user.email,
+      });
     }
 
     // Generic safe response to prevent email enumeration
     return {
       message:
         "If an account with that email exists, password reset instructions have been dispatched.",
+      ...(process.env.NODE_ENV !== "production" && emailResult?.resetUrl
+        ? { devResetUrl: emailResult.resetUrl }
+        : {}),
       // In non-production test environments, allow test harness to inspect rawToken if needed
       ...(process.env.NODE_ENV === "test" && generatedRawToken
         ? { testOnlyResetToken: generatedRawToken }
@@ -534,11 +547,22 @@ class AuthService {
    *
    * @param {Object} payload
    * @param {string} payload.token - Plaintext reset token.
-   * @param {string} payload.newPassword - New plaintext password.
+   * @param {string} [payload.newPassword] - New plaintext password.
+   * @param {string} [payload.password] - Alternative password key.
    * @param {Object} [context={}]
    * @returns {Promise<{ success: boolean }>}
    */
-  async resetPassword({ token, newPassword }, context = {}) {
+  async resetPassword({ token, newPassword, password }, context = {}) {
+    const candidatePassword = newPassword || password;
+    if (!candidatePassword) {
+      throw new ApiError(
+        400,
+        "New password is required",
+        [],
+        ERROR_CODES.VALIDATION_ERROR
+      );
+    }
+
     const tokenHash = hashToken(token);
 
     const user = await User.findOne({
@@ -556,7 +580,7 @@ class AuthService {
       );
     }
 
-    user.password = newPassword;
+    user.password = candidatePassword;
     user.passwordResetTokenHash = null;
     user.passwordResetExpiresAt = null;
 

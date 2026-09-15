@@ -69,14 +69,26 @@ export const forgotPasswordSchema = z.object({
  * Validation schema for POST /api/v1/auth/reset-password
  */
 export const resetPasswordSchema = z.object({
-  body: z.object({
-    token: z
-      .string()
-      .min(32, "Password reset token must be at least 32 characters"),
-    newPassword: z
-      .string()
-      .min(8, "New password must be at least 8 characters")
-      .max(128)
-      .regex(STRONG_PASSWORD_REGEX, PASSWORD_REQUIREMENTS_MESSAGE),
-  }),
+  body: z
+    .object({
+      token: z
+        .string()
+        .min(32, "Password reset token must be at least 32 characters"),
+      newPassword: z
+        .string()
+        .min(8, "New password must be at least 8 characters")
+        .max(128)
+        .regex(STRONG_PASSWORD_REGEX, PASSWORD_REQUIREMENTS_MESSAGE)
+        .optional(),
+      password: z
+        .string()
+        .min(8, "Password must be at least 8 characters")
+        .max(128)
+        .regex(STRONG_PASSWORD_REGEX, PASSWORD_REQUIREMENTS_MESSAGE)
+        .optional(),
+    })
+    .refine((data) => Boolean(data.newPassword || data.password), {
+      message: "New password is required",
+      path: ["newPassword"],
+    }),
 });

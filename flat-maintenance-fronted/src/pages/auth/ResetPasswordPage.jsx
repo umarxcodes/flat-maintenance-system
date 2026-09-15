@@ -18,10 +18,19 @@ import { useResetPasswordMutation } from "../../features/auth/hooks/use-auth-mut
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 import { FONT_UI } from "../../theme/typography.js";
 
+const STRONG_PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 const resetSchema = z
   .object({
     token: z.string().min(1, "Reset token is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        STRONG_PASSWORD_REGEX,
+        "Must contain uppercase, lowercase, number, and special character (@$!%*?&)"
+      ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -67,7 +76,11 @@ export const ResetPasswordPage = () => {
 
   const onSubmit = (values) => {
     resetMutation.mutate(
-      { token: values.token, password: values.password },
+      {
+        token: values.token.trim(),
+        newPassword: values.password,
+        password: values.password,
+      },
       {
         onSuccess: () => {
           setSuccess(true);
@@ -76,8 +89,13 @@ export const ResetPasswordPage = () => {
     );
   };
 
+  const isTokenExpiredOrInvalid =
+    resetMutation.isError &&
+    (resetMutation.error?.message?.toLowerCase().includes("token") ||
+      resetMutation.error?.message?.toLowerCase().includes("expired"));
+
   // Dedicated Expired / Invalid Token Card per Master Spec
-  if (resetMutation.isError) {
+  if (isTokenExpiredOrInvalid) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <Box
@@ -106,13 +124,13 @@ export const ResetPasswordPage = () => {
             mb: 1,
           }}
         >
-          This link has expired — request a new one
+          This link has expired or is invalid
         </Typography>
         <Typography
           variant="body2"
           sx={{ color: DESIGN_TOKENS.text.secondary, mb: 3.5, maxWidth: 380, mx: "auto" }}
         >
-          Password reset authorizations are time-limited for security. Please initiate a new
+          Password reset tokens are time-limited for security (15 minutes). Please initiate a new
           recovery request.
         </Typography>
         <Button
@@ -128,7 +146,7 @@ export const ResetPasswordPage = () => {
             "&:hover": { bgcolor: DESIGN_TOKENS.brand[700] },
           }}
         >
-          Back to Forgot Password
+          Request New Reset Link
         </Button>
       </Box>
     );
@@ -178,6 +196,12 @@ export const ResetPasswordPage = () => {
         </Stack>
       ) : (
         <Stack spacing={2.5}>
+          {resetMutation.isError && !isTokenExpiredOrInvalid && (
+            <Alert severity="error" sx={{ borderRadius: "8px" }}>
+              {resetMutation.error?.message || "Failed to reset password. Please try again."}
+            </Alert>
+          )}
+
           <TextField
             label="Reset Token"
             fullWidth

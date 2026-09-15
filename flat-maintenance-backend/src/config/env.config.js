@@ -31,6 +31,18 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRY: z.string().default("7d"),
   COOKIE_SECURE: z.enum(["true", "false"]).default("false"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  CLIENT_URL: z.string().default("http://localhost:5173"),
+  SMTP_HOST: z.string().default("smtp.gmail.com"),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_SECURE: z
+    .preprocess(
+      (val) => val === true || val === "true" || val === "1",
+      z.boolean()
+    )
+    .default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default("Flat Maintenance <muhammadumar.xcodes@gmail.com>"),
 });
 
 // =====================  SCHEMA PARSING  ====================

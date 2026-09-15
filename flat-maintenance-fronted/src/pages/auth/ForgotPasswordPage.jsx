@@ -23,6 +23,7 @@ const forgotSchema = z.object({
 
 export const ForgotPasswordPage = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState(null);
 
   const {
     register,
@@ -37,7 +38,8 @@ export const ForgotPasswordPage = () => {
 
   const onSubmit = (values) => {
     forgotMutation.mutate(values.email, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        setSubmittedData(data || {});
         setSubmitted(true);
       },
     });
@@ -55,10 +57,25 @@ export const ForgotPasswordPage = () => {
       </Box>
 
       {submitted ? (
-        <Stack spacing={3}>
+        <Stack spacing={2.5}>
           <Alert severity="success" sx={{ borderRadius: "8px" }}>
-            If that email is registered, a reset link is on its way.
+            If that email is registered in the system, a password reset link has been dispatched to
+            your email inbox. Please check your inbox and spam folders.
           </Alert>
+          {submittedData?.devResetUrl && (
+            <Alert severity="info" sx={{ borderRadius: "8px" }}>
+              <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 700 }}>
+                ⚡ Developer Reset Link:
+              </Typography>
+              <Link
+                href={submittedData.devResetUrl}
+                variant="caption"
+                sx={{ wordBreak: "break-all" }}
+              >
+                {submittedData.devResetUrl}
+              </Link>
+            </Alert>
+          )}
           <Button
             component={RouterLink}
             to="/login"
