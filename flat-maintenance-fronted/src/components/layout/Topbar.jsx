@@ -23,6 +23,7 @@ import { BuildingSelector } from "../common/BuildingSelector.jsx";
 import Badge from "@mui/material/Badge";
 import { useNotificationsList } from "../../features/notifications/hooks/use-notifications.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { BrandLogo } from "../common/BrandLogo.jsx";
 
 export const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
@@ -69,8 +70,8 @@ export const Topbar = ({ onMenuClick }) => {
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between", minHeight: 64, px: { xs: 2, sm: 3 } }}>
-        {/* Left Side: Mobile Menu Button & Building Scope Selector */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Left Side: Mobile Menu Button, Brand Mark & Building Scope Selector */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -80,6 +81,11 @@ export const Topbar = ({ onMenuClick }) => {
           >
             <MenuIcon />
           </IconButton>
+
+          {/* Mobile-Only Brand Logo Mark */}
+          <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center" }}>
+            <BrandLogo theme="light" variant="icon" size={32} href="/dashboard" />
+          </Box>
 
           {/* Building Selector if applicable */}
           <BuildingSelector />

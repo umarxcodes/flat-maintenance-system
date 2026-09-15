@@ -9,6 +9,7 @@ import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
 import { Outlet } from "react-router-dom";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
+import { BrandLogo } from "../common/BrandLogo.jsx";
 
 const HIGHLIGHTS = [
   {
@@ -68,46 +69,13 @@ export const AuthLayout = () => {
 
         {/* Brand Logo & Name */}
         <Box sx={{ position: "relative", zIndex: 1 }}>
-          <Stack direction="row" spacing={1.75} alignItems="center">
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: "10px",
-                bgcolor: DESIGN_TOKENS.brand[600], // #4338CA
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#FFFFFF",
-                boxShadow: "0 4px 14px rgba(67, 56, 202, 0.4)",
-              }}
-            >
-              <ApartmentRoundedIcon sx={{ fontSize: 24 }} />
-            </Box>
-            <Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: "1.125rem",
-                  color: "#FFFFFF",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Flat Maintenance
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.65)",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Residential Operations Platform
-              </Typography>
-            </Box>
-          </Stack>
+          <BrandLogo
+            theme="dark"
+            variant="full"
+            size={46}
+            subtitle="Residential Operations Platform"
+            href="/login"
+          />
         </Box>
 
         {/* Core Value Proposition */}
@@ -213,32 +181,17 @@ export const AuthLayout = () => {
           sx={{
             display: { xs: "flex", md: "none" },
             alignItems: "center",
-            gap: 1.5,
-            mb: 3,
+            justifyContent: "center",
+            mb: 3.5,
           }}
         >
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: "8px",
-              bgcolor: DESIGN_TOKENS.brand[600],
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFFFFF",
-            }}
-          >
-            <ApartmentRoundedIcon sx={{ fontSize: 20 }} />
-          </Box>
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-              Flat Maintenance
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Residential Portal
-            </Typography>
-          </Box>
+          <BrandLogo
+            theme="light"
+            variant="full"
+            size={40}
+            subtitle="Residential Portal"
+            href="/login"
+          />
         </Box>
 
         {/* Clean Form Card */}

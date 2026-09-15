@@ -1,4 +1,97 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="16" fill="#4F46E5"/>
-  <circle cx="32" cy="32" r="13" fill="#FFFFFF"/>
+  <defs>
+    <!-- Rich Deep Indigo & Navy Background Gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#1E1B4B"/>
+      <stop offset="50%" stopColor="#0F172A"/>
+      <stop offset="100%" stopColor="#0B132B"/>
+    </linearGradient>
+
+    <!-- Glowing Cyber Border Gradient -->
+    <linearGradient id="borderGlow" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#818CF8"/>
+      <stop offset="50%" stopColor="#4F46E5"/>
+      <stop offset="100%" stopColor="#38BDF8"/>
+    </linearGradient>
+
+    <!-- Center Skyscraper Gradient -->
+    <linearGradient id="centerTowerGrad" x1="25" y1="10" x2="39" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#6366F1"/>
+      <stop offset="50%" stopColor="#4F46E5"/>
+      <stop offset="100%" stopColor="#312E81"/>
+    </linearGradient>
+
+    <!-- Left Wing Tower (Cyan/Sky) -->
+    <linearGradient id="leftTowerGrad" x1="14" y1="21" x2="23" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#38BDF8"/>
+      <stop offset="100%" stopColor="#0284C7"/>
+    </linearGradient>
+
+    <!-- Right Wing Tower (Purple/Violet) -->
+    <linearGradient id="rightTowerGrad" x1="41" y1="24" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#C084FC"/>
+      <stop offset="100%" stopColor="#7C3AED"/>
+    </linearGradient>
+
+    <!-- Glass Reflection Overlay -->
+    <linearGradient id="glassReflect" x1="25" y1="10" x2="32" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5"/>
+      <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.05"/>
+    </linearGradient>
+
+    <!-- Beacon Light Gradient -->
+    <linearGradient id="beaconLight" x1="30" y1="4" x2="34" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FDE047"/>
+      <stop offset="100%" stopColor="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Housing Squircle with Soft Rim Border -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="16" fill="url(#bg)" stroke="url(#borderGlow)" stroke-width="2"/>
+
+  <!-- Base Podium Ground Line -->
+  <path d="M10 50.5H54" stroke="#334155" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Left Tower (Residential Wing) -->
+  <path d="M14 26L23 21V50H14V26Z" fill="url(#leftTowerGrad)"/>
+  <path d="M14 26L23 21L23 20L14 25V26Z" fill="#BAE6FD"/>
+  <circle cx="18.5" cy="28" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="18.5" cy="33" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="18.5" cy="38" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="18.5" cy="43" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Right Tower (Executive Suites) -->
+  <path d="M41 29L50 24V50H41V29Z" fill="url(#rightTowerGrad)"/>
+  <path d="M41 29L50 24L50 23L41 28V29Z" fill="#DDD6FE"/>
+  <circle cx="45.5" cy="31" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="45.5" cy="36" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="45.5" cy="41" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="45.5" cy="46" r="1" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Center Master Skyscraper -->
+  <path d="M25 15L32 10L39 15V50H25V15Z" fill="url(#centerTowerGrad)"/>
+  <path d="M25 15L32 10V50H25V15Z" fill="url(#glassReflect)"/>
+
+  <!-- Center Tower Spine Divider -->
+  <line x1="32" y1="10" x2="32" y2="50" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.4"/>
+
+  <!-- Center Tower Window Grids -->
+  <rect x="27.5" y="18" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="33.5" y="18" width="3" height="2.5" rx="0.5" fill="#38BDF8"/>
+  <rect x="27.5" y="23" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="33.5" y="23" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="27.5" y="28" width="3" height="2.5" rx="0.5" fill="#38BDF8"/>
+  <rect x="33.5" y="28" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="27.5" y="33" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="33.5" y="33" width="3" height="2.5" rx="0.5" fill="#FFFFFF" fill-opacity="0.95"/>
+
+  <!-- Main Entrance Portal -->
+  <rect x="29.5" y="42" width="5" height="8" rx="1" fill="#0B132B"/>
+  <rect x="30.5" y="44" width="3" height="6" rx="0.5" fill="#38BDF8" fill-opacity="0.9"/>
+
+  <!-- Top Crown Spire & Glowing Gold Beacon -->
+  <line x1="32" y1="10" x2="32" y2="6.5" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="32" cy="5.5" r="2.2" fill="url(#beaconLight)"/>
+  <circle cx="32" cy="5.5" r="0.8" fill="#FFFFFF"/>
+  <path d="M28 5C29.2 4 30.5 3.5 32 3.5C33.5 3.5 34.8 4 36 5" stroke="#38BDF8" stroke-width="1.2" stroke-linecap="round"/>
 </svg>

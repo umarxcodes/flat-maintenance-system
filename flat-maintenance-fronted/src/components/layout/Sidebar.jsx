@@ -49,6 +49,7 @@ import { hasPermission } from "../../lib/permissions/rbac.util.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 import { FONT_UI } from "../../theme/typography.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
+import { BrandLogo } from "../common/BrandLogo.jsx";
 
 const DRAWER_WIDTH = 260;
 
@@ -138,49 +139,18 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1.5,
-          px: 3,
-          py: 3,
+          px: 2.5,
+          py: 2.75,
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 36,
-            height: 36,
-            borderRadius: "10px",
-            bgcolor: "#4F46E5",
-            color: "#FFFFFF",
-            boxShadow: "0 2px 10px rgba(79, 70, 229, 0.35)",
-            flexShrink: 0,
-          }}
-        >
-          <Box
-            sx={{
-              width: 14,
-              height: 14,
-              borderRadius: "50%",
-              bgcolor: "#FFFFFF",
-            }}
-          />
-        </Box>
-        <Typography
-          sx={{
-            fontFamily: FONT_UI,
-            fontSize: "1.25rem",
-            fontWeight: 700,
-            lineHeight: 1,
-            color: "#FFFFFF",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Flat
-          <Box component="span" sx={{ color: "#94A3B8", fontWeight: 400 }}>
-            Maint
-          </Box>
-        </Typography>
+        <BrandLogo
+          theme="dark"
+          variant="full"
+          size={38}
+          subtitle="Residential Portal"
+          href="/dashboard"
+        />
       </Box>
 
       {/* Navigation List */}
