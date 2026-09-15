@@ -117,6 +117,11 @@ export const Sidebar = ({
       href: "/dashboard",
       icon: <DashboardOutlinedIcon sx={{ fontSize: 20 }} />,
     },
+    {
+      title: "Property Management",
+      href: "/buildings",
+      icon: <ApartmentOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
     { title: "Building Admins", href: "/users", icon: <ShieldOutlinedIcon sx={{ fontSize: 20 }} /> },
     {
       title: "Maintenance & Facilities",
@@ -124,22 +129,17 @@ export const Sidebar = ({
       icon: <BuildIcon sx={{ fontSize: 20 }} />,
     },
     {
-      title: "Property Management",
-      href: "/buildings",
-      icon: <ApartmentOutlinedIcon sx={{ fontSize: 20 }} />,
-    },
-    {
       title: "Roles & Permissions",
       href: "/roles",
       icon: <LockOutlinedIcon sx={{ fontSize: 20 }} />,
     },
+    { title: "Reports", href: "/reports", icon: <DescriptionOutlinedIcon sx={{ fontSize: 20 }} /> },
     {
       title: "Audit Logs",
       href: "/audit-logs",
       icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
       badge: "99+",
     },
-    { title: "Reports", href: "/reports", icon: <DescriptionOutlinedIcon sx={{ fontSize: 20 }} /> },
   ];
 
   const renderNavButton = (item, isMobile = false) => {

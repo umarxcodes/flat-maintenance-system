@@ -17,69 +17,6 @@ export const NAVIGATION_CONFIG = Object.freeze([
     ],
   },
   {
-    category: "Access & security",
-    items: [
-      {
-        title: "Users",
-        href: "/users",
-        iconName: "People",
-        permission: PERMISSIONS.USER_READ,
-      },
-      {
-        title: "Roles",
-        href: "/roles",
-        iconName: "Shield",
-        permission: PERMISSIONS.ROLE_READ,
-      },
-      {
-        title: "Permissions",
-        href: "/permissions",
-        iconName: "VpnKey",
-        permission: PERMISSIONS.PERMISSION_READ,
-      },
-    ],
-  },
-  {
-    category: "Community & people",
-    items: [
-      {
-        title: "Owners",
-        href: "/owners",
-        iconName: "PersonPin",
-        permission: PERMISSIONS.OWNER_READ,
-      },
-      {
-        title: "Tenants",
-        href: "/tenants",
-        iconName: "Group",
-        permission: PERMISSIONS.TENANT_READ,
-      },
-      {
-        title: "Staff & Crew",
-        href: "/staff",
-        iconName: "Badge",
-        permission: PERMISSIONS.STAFF_READ,
-      },
-    ],
-  },
-  {
-    category: "Maintenance & facilities",
-    items: [
-      {
-        title: "Configurations",
-        href: "/maintenance-configurations",
-        iconName: "Tune",
-        permission: PERMISSIONS.CONFIG_READ,
-      },
-      {
-        title: "Work Requests",
-        href: "/maintenance-requests",
-        iconName: "Build",
-        permission: PERMISSIONS.REQUEST_READ,
-      },
-    ],
-  },
-  {
     category: "Property management",
     items: [
       {
@@ -105,6 +42,52 @@ export const NAVIGATION_CONFIG = Object.freeze([
         href: "/flats",
         iconName: "MeetingRoom",
         permission: PERMISSIONS.FLAT_READ,
+      },
+    ],
+  },
+  {
+    category: "Community & people",
+    items: [
+      {
+        title: "Users",
+        href: "/users",
+        iconName: "People",
+        permission: PERMISSIONS.USER_READ,
+      },
+      {
+        title: "Owners",
+        href: "/owners",
+        iconName: "PersonPin",
+        permission: PERMISSIONS.OWNER_READ,
+      },
+      {
+        title: "Tenants",
+        href: "/tenants",
+        iconName: "Group",
+        permission: PERMISSIONS.TENANT_READ,
+      },
+      {
+        title: "Staff & Crew",
+        href: "/staff",
+        iconName: "Badge",
+        permission: PERMISSIONS.STAFF_READ,
+      },
+    ],
+  },
+  {
+    category: "Maintenance & facilities",
+    items: [
+      {
+        title: "Work Requests",
+        href: "/maintenance-requests",
+        iconName: "Build",
+        permission: PERMISSIONS.REQUEST_READ,
+      },
+      {
+        title: "Configurations",
+        href: "/maintenance-configurations",
+        iconName: "Tune",
+        permission: PERMISSIONS.CONFIG_READ,
       },
     ],
   },
@@ -141,22 +124,10 @@ export const NAVIGATION_CONFIG = Object.freeze([
         permission: PERMISSIONS.COMPLAINT_READ,
       },
       {
-        title: "Reviews",
-        href: "/reviews",
-        iconName: "StarRate",
-        permission: PERMISSIONS.REVIEW_READ,
-      },
-      {
         title: "Notices",
         href: "/notices",
         iconName: "Campaign",
         permission: PERMISSIONS.NOTICE_READ,
-      },
-      {
-        title: "Notifications",
-        href: "/notifications",
-        iconName: "Notifications",
-        permission: PERMISSIONS.NOTIFICATION_READ,
       },
       {
         title: "Visitors & Passes",
@@ -169,6 +140,18 @@ export const NAVIGATION_CONFIG = Object.freeze([
         href: "/documents",
         iconName: "FolderShared",
         permission: PERMISSIONS.DOCUMENT_READ,
+      },
+      {
+        title: "Reviews",
+        href: "/reviews",
+        iconName: "StarRate",
+        permission: PERMISSIONS.REVIEW_READ,
+      },
+      {
+        title: "Notifications",
+        href: "/notifications",
+        iconName: "Notifications",
+        permission: PERMISSIONS.NOTIFICATION_READ,
       },
     ],
   },
@@ -186,6 +169,23 @@ export const NAVIGATION_CONFIG = Object.freeze([
         href: "/audit-logs",
         iconName: "HistoryEdu",
         permission: PERMISSIONS.AUDIT_LOG_READ,
+      },
+    ],
+  },
+  {
+    category: "Access & security",
+    items: [
+      {
+        title: "Roles",
+        href: "/roles",
+        iconName: "Shield",
+        permission: PERMISSIONS.ROLE_READ,
+      },
+      {
+        title: "Permissions",
+        href: "/permissions",
+        iconName: "VpnKey",
+        permission: PERMISSIONS.PERMISSION_READ,
       },
     ],
   },
