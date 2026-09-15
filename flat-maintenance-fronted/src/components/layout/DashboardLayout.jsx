@@ -1,36 +1,63 @@
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar.jsx";
 import { Topbar } from "./Topbar.jsx";
-import { useAuth } from "../../providers/auth-context.js";
-import { ROLES } from "../../lib/constants/roles.js";
 
-const DRAWER_WIDTH = 260;
+const EXPANDED_WIDTH = 260;
+const COLLAPSED_WIDTH = 76;
 
 export const DashboardLayout = () => {
-  const { user } = useAuth();
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("app_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("app_sidebar_collapsed", String(next));
+      } catch {
+        // Fallback if localStorage is disabled
+      }
+      return next;
+    });
+  };
+
+  const currentDrawerWidth = isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-      {/* Sidebar Navigation */}
-      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+      {/* Collapsible Sidebar Navigation */}
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+      />
 
       {/* Main Content Area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          width: { md: `calc(100% - ${currentDrawerWidth}px)` },
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
+          transition: "width 220ms ease-out",
+          "@media (prefers-reduced-motion: reduce)": {
+            transition: "none",
+          },
         }}
       >
         <Topbar onMenuClick={handleDrawerToggle} />

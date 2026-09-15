@@ -54,8 +54,16 @@ import { DocumentsListPage } from "../pages/documents/DocumentsListPage.jsx";
 import { ReportsOverviewPage } from "../pages/reports/ReportsOverviewPage.jsx";
 import { AuditLogsListPage } from "../pages/audit-logs/AuditLogsListPage.jsx";
 import { ErrorPage } from "../pages/error/ErrorPage.jsx";
+import { LandingPage } from "../pages/landing/LandingPage.jsx";
 
 export const router = createBrowserRouter([
+  // Public Marketing Landing Page
+  {
+    path: ROUTES.ROOT,
+    element: <LandingPage />,
+    errorElement: <ErrorPage />,
+  },
+
   // Public Authentication Routes
   {
     element: <AuthLayout />,
@@ -69,7 +77,6 @@ export const router = createBrowserRouter([
 
   // Protected Dashboard Application Routes
   {
-    path: ROUTES.ROOT,
     element: (
       <AuthGuard>
         <DashboardLayout />
@@ -77,7 +84,6 @@ export const router = createBrowserRouter([
     ),
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Navigate to={ROUTES.DASHBOARD} replace /> },
       { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
       { path: ROUTES.PROFILE, element: <ProfilePage /> },
 

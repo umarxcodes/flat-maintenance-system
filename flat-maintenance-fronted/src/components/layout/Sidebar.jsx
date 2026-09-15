@@ -1,4 +1,4 @@
-// =====================  ENTERPRISE SIDEBAR COMPONENT (APPENDIX §A.1)  ========
+// =====================  ENTERPRISE SIDEBAR COMPONENT (COLLAPSIBLE SPEC)  ========
 import React from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -10,6 +10,10 @@ import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+
+// Icons
 import DomainIcon from "@mui/icons-material/Domain";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
@@ -42,6 +46,9 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../providers/auth-context.js";
 import { NAVIGATION_CONFIG } from "../../lib/constants/navigation.config.js";
@@ -51,7 +58,8 @@ import { FONT_UI } from "../../theme/typography.js";
 import { ROLE_LABELS } from "../../lib/constants/roles.js";
 import { BrandLogo } from "../common/BrandLogo.jsx";
 
-const DRAWER_WIDTH = 260;
+const EXPANDED_WIDTH = 260;
+const COLLAPSED_WIDTH = 76;
 
 const ICON_MAP = {
   Dashboard: <DashboardIcon fontSize="small" />,
@@ -80,7 +88,12 @@ const ICON_MAP = {
   HistoryEdu: <HistoryEduIcon fontSize="small" />,
 };
 
-export const Sidebar = ({ mobileOpen, onMobileClose }) => {
+export const Sidebar = ({
+  mobileOpen = false,
+  onMobileClose,
+  isCollapsed = false,
+  onToggleCollapse,
+}) => {
   const { user } = useAuth();
   const location = useLocation();
 
@@ -94,6 +107,8 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
   })).filter((section) => section.items.length > 0);
 
   const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U";
+  const userFullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  const userRoleLabel = user ? ROLE_LABELS[user.role] || user.role : "";
 
   // Super Admin specific navigation matching Figma prototype
   const superAdminNav = [
@@ -124,264 +139,367 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
     { title: "Settings", href: "/profile", icon: <SettingsOutlinedIcon sx={{ fontSize: 20 }} /> },
   ];
 
-  const drawerContent = (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        bgcolor: "#0B132B", // Exact dark navy from Figma
-        color: "#FFFFFF",
-      }}
-    >
-      {/* Brand Header */}
-      <Box
+  const renderNavButton = (item, isMobile = false) => {
+    const isActive =
+      item.href === "/dashboard"
+        ? location.pathname === "/dashboard"
+        : location.pathname.startsWith(item.href);
+
+    const collapsed = isMobile ? false : isCollapsed;
+
+    const button = (
+      <ListItemButton
+        component={RouterLink}
+        to={item.href}
+        onClick={onMobileClose}
+        selected={isActive}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          px: 2.5,
-          py: 2.75,
-          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          borderRadius: "10px",
+          py: collapsed ? 0.85 : 0.9,
+          px: collapsed ? 0.75 : 1.5,
+          minHeight: 42,
+          justifyContent: collapsed ? "center" : "flex-start",
+          color: isActive ? "#FFFFFF" : "#94A3B8",
+          bgcolor: !collapsed && isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
+          border: !collapsed && isActive ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid transparent",
+          transition: "background 0.15s ease, color 0.15s ease",
+          "&.Mui-selected": {
+            bgcolor: !collapsed && isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
+            color: "#FFFFFF",
+            "&:hover": {
+              bgcolor: !collapsed ? "rgba(255, 255, 255, 0.12)" : "transparent",
+            },
+          },
+          "&:hover": {
+            bgcolor: !collapsed ? "rgba(255, 255, 255, 0.04)" : "transparent",
+            color: "#FFFFFF",
+            "& .MuiListItemIcon-root": { color: "#FFFFFF" },
+          },
         }}
       >
-        <BrandLogo
-          theme="dark"
-          variant="full"
-          size={38}
-          subtitle="Residential portal"
-          href="/dashboard"
-        />
-      </Box>
-
-      {/* Navigation List */}
-      <Box
-        sx={{
-          flex: 1,
-          overflowY: "auto",
-          py: 1,
-          px: 2,
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
-        }}
-      >
-        {user?.role === "SUPER_ADMIN" ? (
-          <List dense disablePadding>
-            {superAdminNav.map((item) => {
-              const isActive =
-                item.href === "/dashboard"
-                  ? location.pathname === "/dashboard"
-                  : location.pathname.startsWith(item.href);
-
-              return (
-                <ListItem key={item.title} disablePadding sx={{ mb: 0.75 }}>
-                  <ListItemButton
-                    component={RouterLink}
-                    to={item.href}
-                    onClick={onMobileClose}
-                    selected={isActive}
-                    sx={{
-                      borderRadius: "8px",
-                      py: 1,
-                      px: 1.75,
-                      color: isActive ? "#FFFFFF" : "#94A3B8",
-                      bgcolor: isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
-                      border: isActive
-                        ? "1px solid rgba(255, 255, 255, 0.08)"
-                        : "1px solid transparent",
-                      "&.Mui-selected": {
-                        bgcolor: "rgba(255, 255, 255, 0.08)",
-                        color: "#FFFFFF",
-                        "&:hover": {
-                          bgcolor: "rgba(255, 255, 255, 0.12)",
-                        },
-                        "& .MuiListItemIcon-root": {
-                          color: "#FFFFFF",
-                        },
-                      },
-                      "&:hover": {
-                        bgcolor: "rgba(255, 255, 255, 0.04)",
-                        color: "#FFFFFF",
-                        "& .MuiListItemIcon-root": {
-                          color: "#FFFFFF",
-                        },
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 34,
-                        color: isActive ? "#FFFFFF" : "#94A3B8",
-                      }}
-                    >
-                      {item.icon || ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.title}
-                      slotProps={{
-                        primary: {
-                          sx: {
-                            fontFamily: FONT_UI,
-                            fontSize: "0.875rem",
-                            fontWeight: isActive ? 600 : 500,
-                          },
-                        },
-                      }}
-                    />
-                    {item.badge && (
-                      <Box
-                        sx={{
-                          bgcolor: "#6366F1",
-                          color: "#FFFFFF",
-                          fontSize: "0.6875rem",
-                          fontWeight: 700,
-                          borderRadius: "999px",
-                          px: 1,
-                          py: 0.2,
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {item.badge}
-                      </Box>
-                    )}
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        ) : (
-          authorizedNavigation.map((section) => (
-            <List key={section.category} dense disablePadding sx={{ mb: 2 }}>
-              {section.items.map((item) => {
-                const isActive =
-                  item.href === "/dashboard"
-                    ? location.pathname === "/dashboard"
-                    : location.pathname.startsWith(item.href);
-
-                return (
-                  <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
-                    <ListItemButton
-                      component={RouterLink}
-                      to={item.href}
-                      onClick={onMobileClose}
-                      selected={isActive}
-                      sx={{
-                        borderRadius: "8px",
-                        py: 0.9,
-                        px: 1.5,
-                        color: isActive ? "#FFFFFF" : "#94A3B8",
-                        bgcolor: isActive ? "rgba(255, 255, 255, 0.08)" : "transparent",
-                        border: isActive
-                          ? "1px solid rgba(255, 255, 255, 0.08)"
-                          : "1px solid transparent",
-                        "&.Mui-selected": {
-                          bgcolor: "rgba(255, 255, 255, 0.08)",
-                          color: "#FFFFFF",
-                          "& .MuiListItemIcon-root": {
-                            color: "#FFFFFF",
-                          },
-                        },
-                        "&:hover": {
-                          bgcolor: "rgba(255, 255, 255, 0.04)",
-                          color: "#FFFFFF",
-                          "& .MuiListItemIcon-root": {
-                            color: "#FFFFFF",
-                          },
-                        },
-                      }}
-                    >
-                      <ListItemIcon
-                        sx={{
-                          minWidth: 32,
-                          color: isActive ? "#FFFFFF" : "#94A3B8",
-                        }}
-                      >
-                        {ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.title}
-                        slotProps={{
-                          primary: {
-                            sx: {
-                              fontFamily: FONT_UI,
-                              fontSize: "0.8125rem",
-                              fontWeight: isActive ? 600 : 500,
-                            },
-                          },
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
-            </List>
-          ))
-        )}
-      </Box>
-
-      {/* Footer / User info */}
-      <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          bgcolor: "rgba(0, 0, 0, 0.2)",
-        }}
-      >
+        {/* Icon Container */}
         <Box
           sx={{
-            width: 36,
-            height: 36,
-            borderRadius: "50%",
-            bgcolor: "#4F46E5",
-            color: "#FFFFFF",
+            width: collapsed ? 38 : "auto",
+            height: collapsed ? 38 : "auto",
+            borderRadius: collapsed ? "10px" : 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontWeight: 600,
-            fontSize: "0.8125rem",
+            bgcolor: collapsed && isActive ? DESIGN_TOKENS.brand[600] : "transparent",
+            color: isActive ? "#FFFFFF" : "#94A3B8",
             flexShrink: 0,
+            transition: "all 0.15s ease",
+            ...(collapsed && {
+              "&:hover": {
+                bgcolor: isActive ? DESIGN_TOKENS.brand[600] : "rgba(255, 255, 255, 0.08)",
+                color: "#FFFFFF",
+              },
+            }),
           }}
         >
-          {initials}
-        </Box>
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography
-            variant="body2"
+          <ListItemIcon
             sx={{
-              fontWeight: 600,
+              minWidth: collapsed ? "auto" : 32,
+              color: "inherit",
+              justifyContent: "center",
+            }}
+          >
+            {item.icon || ICON_MAP[item.iconName] || <DashboardIcon fontSize="small" />}
+          </ListItemIcon>
+        </Box>
+
+        {/* Text Label (Completely unmounted/hidden when collapsed) */}
+        {!collapsed && (
+          <ListItemText
+            primary={item.title}
+            slotProps={{
+              primary: {
+                sx: {
+                  fontFamily: FONT_UI,
+                  fontSize: "0.8125rem",
+                  fontWeight: isActive ? 600 : 500,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  ml: 0.5,
+                },
+              },
+            }}
+          />
+        )}
+
+        {!collapsed && item.badge && (
+          <Box
+            sx={{
+              bgcolor: "#6366F1",
               color: "#FFFFFF",
-              fontSize: "0.8125rem",
+              fontSize: "0.6875rem",
+              fontWeight: 700,
+              borderRadius: "999px",
+              px: 1,
+              py: 0.2,
               lineHeight: 1.2,
-              fontFamily: FONT_UI,
+              ml: "auto",
             }}
-            noWrap
           >
-            {user?.firstName} {user?.lastName}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: "#94A3B8",
-              fontFamily: FONT_UI,
-              fontSize: "0.75rem",
-              display: "block",
-              lineHeight: 1.2,
-              mt: 0.25,
-            }}
-            noWrap
-          >
-            {user ? ROLE_LABELS[user.role] || user.role : ""}
-          </Typography>
+            {item.badge}
+          </Box>
+        )}
+      </ListItemButton>
+    );
+
+    if (collapsed) {
+      return (
+        <Tooltip title={item.title} placement="right" arrow enterDelay={150} leaveDelay={100} key={item.href || item.title}>
+          {button}
+        </Tooltip>
+      );
+    }
+
+    return button;
+  };
+
+  const getDrawerContent = (isMobile = false) => {
+    const collapsed = isMobile ? false : isCollapsed;
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          bgcolor: "#0B132B", // Exact dark navy
+          color: "#FFFFFF",
+          overflowX: "hidden",
+        }}
+      >
+        {/* Brand Header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: collapsed ? "center" : "space-between",
+            px: collapsed ? 1.5 : 2.5,
+            py: 2.5,
+            minHeight: 70,
+            borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+            position: "relative",
+          }}
+        >
+          <BrandLogo
+            theme="dark"
+            variant={collapsed ? "icon" : "full"}
+            size={36}
+            subtitle="Residential portal"
+            href="/dashboard"
+          />
+
+          {/* Desktop Collapse Toggle Button */}
+          {!isMobile && onToggleCollapse && (
+            <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"} placement="right" arrow enterDelay={200}>
+              <IconButton
+                onClick={onToggleCollapse}
+                size="small"
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "8px",
+                  bgcolor: "rgba(255, 255, 255, 0.06)",
+                  color: "#94A3B8",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  display: { xs: "none", md: "inline-flex" },
+                  transition: "all 0.15s ease",
+                  "&:hover": {
+                    bgcolor: DESIGN_TOKENS.brand[600],
+                    color: "#FFFFFF",
+                    borderColor: DESIGN_TOKENS.brand[600],
+                  },
+                }}
+              >
+                {collapsed ? <ChevronRightIcon sx={{ fontSize: 16 }} /> : <ChevronLeftIcon sx={{ fontSize: 16 }} />}
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
+
+        {/* Navigation List */}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+            py: 1.5,
+            px: collapsed ? 1 : 1.5,
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+          }}
+        >
+          {user?.role === "SUPER_ADMIN" ? (
+            <List dense disablePadding>
+              {superAdminNav.map((item) => (
+                <ListItem key={item.title} disablePadding sx={{ mb: 0.5 }}>
+                  {renderNavButton(item, isMobile)}
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            authorizedNavigation.map((section, idx) => (
+              <Box key={section.category || idx} sx={{ mb: collapsed ? 1.25 : 2 }}>
+                {!collapsed ? (
+                  <ListSubheader
+                    disableSticky
+                    sx={{
+                      bgcolor: "transparent",
+                      color: "#64748B",
+                      fontSize: "0.6875rem",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      px: 1.5,
+                      py: 0.5,
+                      lineHeight: 1.4,
+                      fontFamily: FONT_UI,
+                    }}
+                  >
+                    {section.category}
+                  </ListSubheader>
+                ) : idx > 0 ? (
+                  <Divider sx={{ my: 1.25, borderColor: "rgba(255, 255, 255, 0.08)", mx: 1 }} />
+                ) : null}
+
+                <List dense disablePadding>
+                  {section.items.map((item) => (
+                    <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
+                      {renderNavButton(item, isMobile)}
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            ))
+          )}
+        </Box>
+
+        {/* Footer / User Profile Card */}
+        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
+        {collapsed ? (
+          <Tooltip title={`${userFullName} • ${userRoleLabel}`} placement="right" arrow enterDelay={150}>
+            <Box
+              component={RouterLink}
+              to="/profile"
+              onClick={onMobileClose}
+              sx={{
+                p: 1.5,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                bgcolor: "rgba(0, 0, 0, 0.2)",
+                textDecoration: "none",
+                color: "inherit",
+                cursor: "pointer",
+                transition: "background 0.15s ease",
+                "&:hover": {
+                  bgcolor: "rgba(255, 255, 255, 0.06)",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: "50%",
+                  bgcolor: DESIGN_TOKENS.brand[600],
+                  color: "#FFFFFF",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontSize: "0.875rem",
+                  flexShrink: 0,
+                  border: "2px solid rgba(255, 255, 255, 0.1)",
+                }}
+              >
+                {initials}
+              </Box>
+            </Box>
+          </Tooltip>
+        ) : (
+          <Box
+            component={RouterLink}
+            to="/profile"
+            onClick={onMobileClose}
+            sx={{
+              p: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              bgcolor: "rgba(0, 0, 0, 0.2)",
+              textDecoration: "none",
+              color: "inherit",
+              cursor: "pointer",
+              transition: "background 0.15s ease",
+              "&:hover": {
+                bgcolor: "rgba(255, 255, 255, 0.06)",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                bgcolor: DESIGN_TOKENS.brand[600],
+                color: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "0.8125rem",
+                flexShrink: 0,
+                border: "2px solid rgba(255, 255, 255, 0.1)",
+              }}
+            >
+              {initials}
+            </Box>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  fontSize: "0.8125rem",
+                  lineHeight: 1.2,
+                  fontFamily: FONT_UI,
+                }}
+                noWrap
+              >
+                {userFullName}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "#94A3B8",
+                  fontFamily: FONT_UI,
+                  fontSize: "0.75rem",
+                  display: "block",
+                  lineHeight: 1.2,
+                  mt: 0.25,
+                }}
+                noWrap
+              >
+                {userRoleLabel}
+              </Typography>
+            </Box>
+          </Box>
+        )}
       </Box>
-    </Box>
-  );
+    );
+  };
 
   return (
     <>
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (always full width overlay, unaffected by desktop collapse) */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -391,35 +509,44 @@ export const Sidebar = ({ mobileOpen, onMobileClose }) => {
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
-            width: DRAWER_WIDTH,
+            width: EXPANDED_WIDTH,
             bgcolor: "#0B132B",
             borderRight: "1px solid rgba(255, 255, 255, 0.06)",
             backgroundImage: "none",
           },
         }}
       >
-        {drawerContent}
+        {getDrawerContent(true)}
       </Drawer>
 
-      {/* Desktop Drawer */}
+      {/* Desktop Permanent Collapsible Drawer */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: "none", md: "block" },
-          width: DRAWER_WIDTH,
+          width: isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
           flexShrink: 0,
+          transition: "width 220ms ease-out",
+          "@media (prefers-reduced-motion: reduce)": {
+            transition: "none",
+          },
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
-            width: DRAWER_WIDTH,
+            width: isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
             borderRight: "1px solid rgba(255, 255, 255, 0.06)",
             bgcolor: "#0B132B",
             backgroundImage: "none",
             boxShadow: "none",
+            overflowX: "hidden",
+            transition: "width 220ms ease-out",
+            "@media (prefers-reduced-motion: reduce)": {
+              transition: "none",
+            },
           },
         }}
         open
       >
-        {drawerContent}
+        {getDrawerContent(false)}
       </Drawer>
     </>
   );
