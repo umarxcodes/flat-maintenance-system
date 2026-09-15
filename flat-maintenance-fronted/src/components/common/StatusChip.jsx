@@ -2,6 +2,7 @@
 import React from "react";
 import Chip from "@mui/material/Chip";
 import { useTheme } from "@mui/material/styles";
+import PropTypes from "prop-types";
 import {
   STATUS_TO_SEMANTIC_MAP,
   SEMANTIC_CATEGORIES,
@@ -46,6 +47,11 @@ export const StatusChip = ({ status, size = "small" }) => {
       }}
     />
   );
+};
+
+StatusChip.propTypes = {
+  status: PropTypes.string,
+  size: PropTypes.oneOf(["small", "medium"]),
 };
 
 export default StatusChip;

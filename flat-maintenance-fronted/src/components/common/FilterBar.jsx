@@ -6,6 +6,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import Button from "@mui/material/Button";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
+import PropTypes from "prop-types";
 
 export const FilterBar = ({
   searchValue = "",
@@ -72,6 +73,15 @@ export const FilterBar = ({
       )}
     </Box>
   );
+};
+
+FilterBar.propTypes = {
+  searchValue: PropTypes.string,
+  onSearchChange: PropTypes.func,
+  searchPlaceholder: PropTypes.string,
+  children: PropTypes.node,
+  onReset: PropTypes.func,
+  hasActiveFilters: PropTypes.bool,
 };
 
 export default FilterBar;

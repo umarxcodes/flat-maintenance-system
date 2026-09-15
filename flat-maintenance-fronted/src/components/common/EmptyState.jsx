@@ -3,6 +3,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import InboxOutlinedIcon from "@mui/icons-material/InboxOutlined";
+import PropTypes from "prop-types";
 
 export const EmptyState = ({
   icon,
@@ -56,6 +57,13 @@ export const EmptyState = ({
       {action && <Box>{action}</Box>}
     </Box>
   );
+};
+
+EmptyState.propTypes = {
+  icon: PropTypes.node,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  action: PropTypes.node,
 };
 
 export default EmptyState;

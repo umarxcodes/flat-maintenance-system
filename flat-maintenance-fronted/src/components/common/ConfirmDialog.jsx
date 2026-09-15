@@ -7,6 +7,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import PropTypes from "prop-types";
 import { FONT_UI } from "../../theme/typography.js";
 
 export const ConfirmDialog = ({
@@ -59,6 +60,18 @@ export const ConfirmDialog = ({
       </DialogActions>
     </Dialog>
   );
+};
+
+ConfirmDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.node.isRequired,
+  confirmLabel: PropTypes.string,
+  cancelLabel: PropTypes.string,
+  confirmColor: PropTypes.oneOf(["primary", "secondary", "error", "warning", "info", "success", "inherit"]),
+  isLoading: PropTypes.bool,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
 };
 
 export default ConfirmDialog;

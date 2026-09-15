@@ -6,6 +6,7 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link as RouterLink } from "react-router-dom";
+import PropTypes from "prop-types";
 
 export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null }) => {
   return (
@@ -87,6 +88,18 @@ export const PageHeader = ({ title, subtitle, breadcrumbs = [], action = null })
       </Box>
     </Box>
   );
+};
+
+PageHeader.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+  breadcrumbs: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      path: PropTypes.string,
+    })
+  ),
+  action: PropTypes.node,
 };
 
 export default PageHeader;

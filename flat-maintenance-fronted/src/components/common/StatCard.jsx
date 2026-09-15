@@ -4,6 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import PropTypes from "prop-types";
 import { FONT_UI } from "../../theme/typography.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 
@@ -136,6 +137,18 @@ export const StatCard = ({
       </CardContent>
     </Card>
   );
+};
+
+StatCard.propTypes = {
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  label: PropTypes.string.isRequired,
+  delta: PropTypes.string,
+  icon: PropTypes.node,
+  iconBg: PropTypes.string,
+  iconColor: PropTypes.string,
+  isHero: PropTypes.bool,
+  action: PropTypes.node,
+  sx: PropTypes.object,
 };
 
 export default StatCard;

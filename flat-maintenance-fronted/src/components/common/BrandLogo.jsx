@@ -3,6 +3,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Link as RouterLink } from "react-router-dom";
+import PropTypes from "prop-types";
 import { FONT_UI } from "../../theme/typography.js";
 
 /**
@@ -315,6 +316,21 @@ export const BrandLogo = ({
   }
 
   return content;
+};
+
+BuildingIcon.propTypes = {
+  size: PropTypes.number,
+  sx: PropTypes.object,
+};
+
+BrandLogo.propTypes = {
+  variant: PropTypes.oneOf(["full", "compact", "icon"]),
+  theme: PropTypes.oneOf(["dark", "light"]),
+  size: PropTypes.number,
+  title: PropTypes.string,
+  subtitle: PropTypes.string,
+  href: PropTypes.string,
+  sx: PropTypes.object,
 };
 
 export default BrandLogo;

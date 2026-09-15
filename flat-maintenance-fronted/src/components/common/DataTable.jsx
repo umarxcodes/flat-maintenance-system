@@ -8,6 +8,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import PropTypes from "prop-types";
 import { TableLoadingSkeleton } from "./LoadingSkeleton.jsx";
 import { EmptyState } from "./EmptyState.jsx";
 
@@ -127,6 +128,30 @@ export const DataTable = ({
       )}
     </Paper>
   );
+};
+
+DataTable.propTypes = {
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      align: PropTypes.oneOf(["left", "right", "center", "justify"]),
+      minWidth: PropTypes.number,
+      render: PropTypes.func,
+    })
+  ).isRequired,
+  rows: PropTypes.array.isRequired,
+  isLoading: PropTypes.bool,
+  emptyTitle: PropTypes.string,
+  emptyDescription: PropTypes.string,
+  emptyAction: PropTypes.node,
+  totalCount: PropTypes.number,
+  page: PropTypes.number,
+  rowsPerPage: PropTypes.number,
+  onPageChange: PropTypes.func,
+  onRowsPerPageChange: PropTypes.func,
+  onRowClick: PropTypes.func,
+  keyExtractor: PropTypes.func,
 };
 
 export default DataTable;

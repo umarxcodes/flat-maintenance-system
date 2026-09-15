@@ -24,6 +24,7 @@ import Badge from "@mui/material/Badge";
 import { useNotificationsList } from "../../features/notifications/hooks/use-notifications.js";
 import { DESIGN_TOKENS } from "../../theme/palette.js";
 import { BrandLogo } from "../common/BrandLogo.jsx";
+import { GlobalSearch } from "../common/GlobalSearch.jsx";
 
 export const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
@@ -89,6 +90,11 @@ export const Topbar = ({ onMenuClick }) => {
 
           {/* Building Selector if applicable */}
           <BuildingSelector />
+        </Box>
+
+        {/* Center: Global Cross-Entity Search (Ctrl+K / Cmd+K) */}
+        <Box sx={{ flex: 1, maxWidth: { xs: 140, sm: 260, md: 340 }, mx: { xs: 1, sm: 2 } }}>
+          <GlobalSearch />
         </Box>
 
         {/* Right Side: Notifications and Profile */}
