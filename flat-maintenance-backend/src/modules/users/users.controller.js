@@ -2,6 +2,8 @@
 import asyncHandler from "express-async-handler";
 import { usersService } from "./users.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import { ApiError } from "../../utils/ApiError.js";
+import { ERROR_CODES } from "../../constants/error-codes.constant.js";
 
 // =====================  ADMINISTRATIVE CONTROLLERS  =======
 /**
@@ -112,4 +114,83 @@ export const updateUserStatus = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, user, "User account status updated successfully")
     );
+});
+
+/**
+ * Controller: Uploads personal avatar for authenticated user.
+ * POST /api/v1/users/profile/avatar
+ */
+export const uploadProfileAvatar = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(
+      400,
+      "Please upload an image file (PNG, JPEG, WebP)",
+      [{ field: "file", message: "File is required" }],
+      ERROR_CODES.VALIDATION_ERROR
+    );
+  }
+
+  const context = {
+    ip: req.ip,
+    userAgent: req.headers["user-agent"],
+  };
+
+  const user = await usersService.uploadAvatar(
+    req.user.id,
+    req.file.buffer,
+    req.file.mimetype,
+    context
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile picture updated successfully"));
+});
+
+/**
+ * Controller: Deletes personal avatar for authenticated user.
+ * DELETE /api/v1/users/profile/avatar
+ */
+export const deleteProfileAvatar = asyncHandler(async (req, res) => {
+  const context = {
+    ip: req.ip,
+    userAgent: req.headers["user-agent"],
+  };
+
+  const user = await usersService.deleteAvatar(req.user.id, context);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile picture removed successfully"));
+});
+
+/**
+ * Controller: Uploads avatar for a specific user ID (Admin).
+ * POST /api/v1/users/:id/avatar
+ */
+export const uploadUserAvatarById = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(
+      400,
+      "Please upload an image file (PNG, JPEG, WebP)",
+      [{ field: "file", message: "File is required" }],
+      ERROR_CODES.VALIDATION_ERROR
+    );
+  }
+
+  const context = {
+    ip: req.ip,
+    userAgent: req.headers["user-agent"],
+  };
+
+  const user = await usersService.uploadAvatar(
+    req.params.id,
+    req.file.buffer,
+    req.file.mimetype,
+    context
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User avatar updated successfully"));
 });

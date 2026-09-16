@@ -135,6 +135,7 @@ export const UserDetailPage = () => {
             }}
           >
             <Avatar
+              src={user?.avatarUrl || ""}
               sx={{
                 width: 80,
                 height: 80,

@@ -136,6 +136,7 @@ export const Topbar = ({ onMenuClick }) => {
             }}
           >
             <Avatar
+              src={user?.avatarUrl || ""}
               sx={{
                 width: 34,
                 height: 34,

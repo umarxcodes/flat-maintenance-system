@@ -18,6 +18,7 @@ import {
   AUDIT_RESOURCE_TYPES,
 } from "../audit-logs/audit-logs.constants.js";
 import { sendInvitationEmail } from "../../utils/email.util.js";
+import { uploadBufferToCloudinary } from "../../utils/cloudinary.util.js";
 
 // =====================  USER SERVICE  ======================
 /**
@@ -539,6 +540,81 @@ class UsersService {
 
     emitUserSecurityEvent(USER_SECURITY_EVENTS.USER_PROFILE_UPDATED, {
       userId,
+      ...context,
+    });
+
+    return user.toSafeUser();
+  }
+
+  /**
+   * Uploads avatar buffer directly to Cloudinary edge nodes and saves secure URL.
+   *
+   * @param {string} userId - Target user ObjectId.
+   * @param {Buffer} fileBuffer - In-memory image buffer.
+   * @param {string} mimeType - Image MIME type (e.g. image/jpeg, image/png, image/webp).
+   * @param {Object} [context={}] - Request telemetry.
+   * @returns {Promise<Object>} Updated safe user with new avatarUrl.
+   */
+  async uploadAvatar(userId, fileBuffer, mimeType, context = {}) {
+    const user = await User.findOne({
+      _id: userId,
+      isDeleted: false,
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User not found", [], ERROR_CODES.NOT_FOUND);
+    }
+
+    if (!fileBuffer) {
+      throw new ApiError(
+        400,
+        "No image file provided for avatar upload",
+        [{ field: "file", message: "Image file is required" }],
+        ERROR_CODES.VALIDATION_ERROR
+      );
+    }
+
+    const avatarUrl = await uploadBufferToCloudinary(
+      fileBuffer,
+      "avatars",
+      mimeType
+    );
+
+    user.avatarUrl = avatarUrl;
+    await user.save();
+
+    emitUserSecurityEvent(USER_SECURITY_EVENTS.USER_PROFILE_UPDATED, {
+      userId,
+      avatarUpdated: true,
+      ...context,
+    });
+
+    return user.toSafeUser();
+  }
+
+  /**
+   * Removes avatar URL from user document (reverts to default initials).
+   *
+   * @param {string} userId - Target user ObjectId.
+   * @param {Object} [context={}] - Request telemetry.
+   * @returns {Promise<Object>} Updated safe user.
+   */
+  async deleteAvatar(userId, context = {}) {
+    const user = await User.findOne({
+      _id: userId,
+      isDeleted: false,
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User not found", [], ERROR_CODES.NOT_FOUND);
+    }
+
+    user.avatarUrl = null;
+    await user.save();
+
+    emitUserSecurityEvent(USER_SECURITY_EVENTS.USER_PROFILE_UPDATED, {
+      userId,
+      avatarRemoved: true,
       ...context,
     });
 

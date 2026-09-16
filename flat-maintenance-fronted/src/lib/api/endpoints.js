@@ -21,6 +21,8 @@ export const API_ENDPOINTS = Object.freeze({
     BY_ID: (id) => `/users/${id}`,
     STATUS: (id) => `/users/${id}/status`,
     PROFILE: "/users/profile",
+    PROFILE_AVATAR: "/users/profile/avatar",
+    USER_AVATAR: (id) => `/users/${id}/avatar`,
   },
 
   // Module 3: Roles

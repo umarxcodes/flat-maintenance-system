@@ -643,6 +643,35 @@ describe("Users Domain Module (Module 2)", () => {
         "Building scope must remain immutable from self-profile endpoint"
       );
     });
+
+    test("DELETE /api/v1/users/profile/avatar removes user avatarUrl", async () => {
+      // First set an avatarUrl directly in DB
+      await User.findByIdAndUpdate(tenantId, {
+        avatarUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+      });
+
+      const res = await apiRequest("/api/v1/users/profile/avatar", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${tenantToken}` },
+      });
+
+      assert.equal(res.status, 200);
+      assert.equal(res.data.success, true);
+      assert.equal(res.data.data.avatarUrl, null);
+
+      const userInDb = await User.findById(tenantId);
+      assert.equal(userInDb.avatarUrl, null);
+    });
+
+    test("POST /api/v1/users/profile/avatar returns 400 when no file is uploaded", async () => {
+      const res = await apiRequest("/api/v1/users/profile/avatar", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${tenantToken}` },
+      });
+
+      assert.equal(res.status, 400);
+      assert.equal(res.data.success, false);
+    });
   });
 
   // =====================  6. SECURITY INVARIANTS  ==========

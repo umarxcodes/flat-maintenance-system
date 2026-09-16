@@ -212,7 +212,10 @@ export const UsersListPage = () => {
       label: "Name",
       render: (_, row) => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Avatar sx={{ width: 32, height: 32, fontSize: "0.8125rem", bgcolor: "#4F46E5" }}>
+          <Avatar
+            src={row.avatarUrl || ""}
+            sx={{ width: 32, height: 32, fontSize: "0.8125rem", bgcolor: "#4F46E5" }}
+          >
             {`${row.firstName?.[0] || ""}${row.lastName?.[0] || ""}`.toUpperCase()}
           </Avatar>
           <Box>

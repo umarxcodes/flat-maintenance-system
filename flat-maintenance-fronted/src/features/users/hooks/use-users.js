@@ -39,3 +39,36 @@ export const useInviteUserMutation = () => {
     },
   });
 };
+
+export const useUploadAvatarMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (formData) => usersApi.uploadAvatar(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+    },
+  });
+};
+
+export const useDeleteAvatarMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => usersApi.deleteAvatar(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+    },
+  });
+};
+
+export const useUpdateProfileMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => usersApi.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+    },
+  });
+};
